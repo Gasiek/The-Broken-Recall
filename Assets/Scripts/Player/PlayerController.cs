@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float rotationSpeed = 15f;
     [SerializeField] private float gravity = -20f;
 
     private CharacterController characterController;
@@ -40,7 +41,11 @@ public class PlayerController : MonoBehaviour
             movement.Normalize();
         }
 
-        characterController.Move(movement * moveSpeed * Time.deltaTime);
+        RotateTowardsMovement(movement);
+
+        characterController.Move(
+            movement * moveSpeed * Time.deltaTime
+        );
 
         if (characterController.isGrounded && verticalVelocity < 0f)
         {
@@ -51,6 +56,22 @@ public class PlayerController : MonoBehaviour
 
         characterController.Move(
             Vector3.up * verticalVelocity * Time.deltaTime
+        );
+    }
+
+    private void RotateTowardsMovement(Vector3 movement)
+    {
+        if (movement.sqrMagnitude < 0.01f)
+        {
+            return;
+        }
+
+        Quaternion targetRotation = Quaternion.LookRotation(movement);
+
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * Time.deltaTime
         );
     }
 }
