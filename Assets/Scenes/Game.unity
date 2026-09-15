@@ -811,6 +811,7 @@ GameObject:
   - component: {fileID: 1194145303}
   - component: {fileID: 1194145302}
   - component: {fileID: 1194145307}
+  - component: {fileID: 1194145309}
   - component: {fileID: 1194145301}
   - component: {fileID: 1194145300}
   - component: {fileID: 1194145299}
@@ -1186,6 +1187,19 @@ MonoBehaviour:
   interactionLayer:
     serializedVersion: 2
     m_Bits: 8
+--- !u!114 &1194145309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194145296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9773a76da70d431a9ff3ac276bdfcdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
