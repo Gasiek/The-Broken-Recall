@@ -4,9 +4,17 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float rotationSpeed = 15f;
-    [SerializeField] private float gravity = -20f;
+    [SerializeField]
+    private DashController dashController;
+
+    [SerializeField]
+    private float moveSpeed = 5f;
+
+    [SerializeField]
+    private float rotationSpeed = 15f;
+
+    [SerializeField]
+    private float gravity = -20f;
 
     private CharacterController characterController;
 
@@ -30,11 +38,12 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        Vector3 movement = new Vector3(
-            moveInput.x,
-            0f,
-            moveInput.y
-        );
+        if (dashController.IsDashing)
+        {
+            return;
+        }
+
+        Vector3 movement = new Vector3(moveInput.x, 0f, moveInput.y);
 
         if (movement.sqrMagnitude > 1f)
         {
@@ -43,9 +52,7 @@ public class PlayerController : MonoBehaviour
 
         RotateTowardsMovement(movement);
 
-        characterController.Move(
-            movement * moveSpeed * Time.deltaTime
-        );
+        characterController.Move(movement * moveSpeed * Time.deltaTime);
 
         if (characterController.isGrounded && verticalVelocity < 0f)
         {
@@ -54,9 +61,7 @@ public class PlayerController : MonoBehaviour
 
         verticalVelocity += gravity * Time.deltaTime;
 
-        characterController.Move(
-            Vector3.up * verticalVelocity * Time.deltaTime
-        );
+        characterController.Move(Vector3.up * verticalVelocity * Time.deltaTime);
     }
 
     private void RotateTowardsMovement(Vector3 movement)

@@ -7,6 +7,8 @@ public class PlayerInputHandler : MonoBehaviour
     private ActionController actionController;
     [SerializeField]
     private InteractionController interactionController;
+    [SerializeField]
+    private DashController dashController;
 
     public void OnActionSlot1(InputAction.CallbackContext context)
     {
@@ -46,5 +48,15 @@ public class PlayerInputHandler : MonoBehaviour
         }
         
         interactionController.Interact();
+    }
+
+    public void OnRoll(InputAction.CallbackContext context)
+    {
+        if (!context.performed)
+        {
+            return;
+        }
+        
+        dashController.Dash();
     }
 }
