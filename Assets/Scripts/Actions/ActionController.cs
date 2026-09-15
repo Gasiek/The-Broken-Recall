@@ -1,14 +1,15 @@
+using System.Collections;
 using UnityEngine;
 
 public class ActionController : MonoBehaviour
 {
+    [SerializeField] private PlayerController playerController;
     [SerializeField] private ActionMemory actionMemory;
 
-    public void ExecuteSlot(int slot)
+    public void ExecuteAction(int slot)
     {
-        if (actionMemory == null)
+        if (!playerController.CanAct)
         {
-            Debug.LogError("ActionController has no ActionMemory assigned.");
             return;
         }
 
@@ -20,8 +21,24 @@ public class ActionController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"Executing action: {action.DisplayName}");
+        StartCoroutine(ExecuteActionRoutine(slot, action));
+    }
+
+    private IEnumerator ExecuteActionRoutine(
+        int slot,
+        ActionDefinition action)
+    {
+        playerController.StartActing();
+
+        Debug.Log($"Started action: {action.DisplayName}");
 
         actionMemory.ReplaceAction(slot);
+
+        // Action is active.
+        yield return new WaitForSeconds(action.Duration);
+
+        Debug.Log($"Finished action: {action.DisplayName}");
+
+        playerController.FinishActing();
     }
 }

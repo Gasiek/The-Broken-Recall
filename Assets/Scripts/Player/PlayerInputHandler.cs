@@ -5,8 +5,10 @@ public class PlayerInputHandler : MonoBehaviour
 {
     [SerializeField]
     private ActionController actionController;
+
     [SerializeField]
     private InteractionController interactionController;
+
     [SerializeField]
     private DashController dashController;
 
@@ -17,7 +19,7 @@ public class PlayerInputHandler : MonoBehaviour
             return;
         }
 
-        actionController.ExecuteSlot(0);
+        actionController.ExecuteAction(0);
     }
 
     public void OnActionSlot2(InputAction.CallbackContext context)
@@ -27,7 +29,7 @@ public class PlayerInputHandler : MonoBehaviour
             return;
         }
 
-        actionController.ExecuteSlot(1);
+        actionController.ExecuteAction(1);
     }
 
     public void OnActionSlot3(InputAction.CallbackContext context)
@@ -37,7 +39,7 @@ public class PlayerInputHandler : MonoBehaviour
             return;
         }
 
-        actionController.ExecuteSlot(2);
+        actionController.ExecuteAction(2);
     }
 
     public void OnInteract(InputAction.CallbackContext context)
@@ -46,7 +48,7 @@ public class PlayerInputHandler : MonoBehaviour
         {
             return;
         }
-        
+
         interactionController.Interact();
     }
 
@@ -56,7 +58,7 @@ public class PlayerInputHandler : MonoBehaviour
         {
             return;
         }
-        
+
         dashController.Dash();
     }
 }

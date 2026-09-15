@@ -785,7 +785,7 @@ Transform:
   m_GameObject: {fileID: 451019702}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.48, y: 0.33, z: 3.02}
+  m_LocalPosition: {x: -3.48, y: 0.81, z: 3.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -910,7 +910,7 @@ Transform:
   m_GameObject: {fileID: 480221941}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.66, y: 0.54, z: 3.28}
+  m_LocalPosition: {x: 3.66, y: 0.67, z: 3.28}
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1233,6 +1233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56a3af591c232435da53b39d6df20893, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionController
+  playerController: {fileID: 1194145301}
   actionMemory: {fileID: 1194145298}
 --- !u!114 &1194145298
 MonoBehaviour:
@@ -1296,7 +1297,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f2de3a880aa547fcbdf06c2e69d22d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  dashController: {fileID: 1194145310}
   moveSpeed: 5
   rotationSpeed: 15
   gravity: -20
@@ -1628,6 +1628,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2eab0e1c90a574e43aa59d5617841a6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DashController
+  playerController: {fileID: 1194145301}
   dashDistance: 2.5
   dashDuration: 0.2
   dashCooldown: 0.5

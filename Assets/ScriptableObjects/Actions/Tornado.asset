@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ActionDefinition
   id: action.tornado
   displayName: Tornado
+  duration: 1
   icon: {fileID: 0}

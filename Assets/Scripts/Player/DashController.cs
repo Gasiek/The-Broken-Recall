@@ -3,18 +3,17 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class DashController : MonoBehaviour
 {
+    [SerializeField] private PlayerController playerController;
+
     [SerializeField] private float dashDistance = 5f;
     [SerializeField] private float dashDuration = 0.2f;
     [SerializeField] private float dashCooldown = 0.5f;
 
     private CharacterController characterController;
 
-    private bool isDashing;
     private float dashTimer;
     private float cooldownTimer;
     private Vector3 dashDirection;
-
-    public bool IsDashing => isDashing;
 
     private void Awake()
     {
@@ -25,7 +24,7 @@ public class DashController : MonoBehaviour
     {
         UpdateCooldown();
 
-        if (isDashing)
+        if (playerController.State == PlayerState.Dashing)
         {
             UpdateDash();
         }
@@ -33,7 +32,7 @@ public class DashController : MonoBehaviour
 
     public void Dash()
     {
-        if (isDashing || cooldownTimer > 0f)
+        if (!playerController.CanDash || cooldownTimer > 0f)
         {
             return;
         }
@@ -41,7 +40,8 @@ public class DashController : MonoBehaviour
         dashDirection = transform.forward;
         dashTimer = dashDuration;
         cooldownTimer = dashCooldown;
-        isDashing = true;
+
+        playerController.StartDashing();
     }
 
     private void UpdateDash()
@@ -70,6 +70,6 @@ public class DashController : MonoBehaviour
 
     private void EndDash()
     {
-        isDashing = false;
+        playerController.FinishDashing();
     }
 }

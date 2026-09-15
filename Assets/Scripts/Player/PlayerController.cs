@@ -5,9 +5,6 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField]
-    private DashController dashController;
-
-    [SerializeField]
     private float moveSpeed = 5f;
 
     [SerializeField]
@@ -20,6 +17,12 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 moveInput;
     private float verticalVelocity;
+
+    public PlayerState State { get; private set; } = PlayerState.Normal;
+
+    public bool CanMove => State == PlayerState.Normal;
+    public bool CanAct => State == PlayerState.Normal;
+    public bool CanDash => State == PlayerState.Normal;
 
     private void Awake()
     {
@@ -38,7 +41,7 @@ public class PlayerController : MonoBehaviour
 
     private void Move()
     {
-        if (dashController.IsDashing)
+        if (!CanMove)
         {
             return;
         }
@@ -54,14 +57,7 @@ public class PlayerController : MonoBehaviour
 
         characterController.Move(movement * moveSpeed * Time.deltaTime);
 
-        if (characterController.isGrounded && verticalVelocity < 0f)
-        {
-            verticalVelocity = -2f;
-        }
-
-        verticalVelocity += gravity * Time.deltaTime;
-
-        characterController.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+        ApplyGravity();
     }
 
     private void RotateTowardsMovement(Vector3 movement)
@@ -78,5 +74,57 @@ public class PlayerController : MonoBehaviour
             targetRotation,
             rotationSpeed * Time.deltaTime
         );
+    }
+
+    private void ApplyGravity()
+    {
+        if (characterController.isGrounded && verticalVelocity < 0f)
+        {
+            verticalVelocity = -2f;
+        }
+
+        verticalVelocity += gravity * Time.deltaTime;
+
+        characterController.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+    }
+
+    public void StartActing()
+    {
+        if (!CanAct)
+        {
+            return;
+        }
+
+        State = PlayerState.Acting;
+    }
+
+    public void FinishActing()
+    {
+        if (State != PlayerState.Acting)
+        {
+            return;
+        }
+
+        State = PlayerState.Normal;
+    }
+
+    public void StartDashing()
+    {
+        if (!CanDash)
+        {
+            return;
+        }
+
+        State = PlayerState.Dashing;
+    }
+
+    public void FinishDashing()
+    {
+        if (State != PlayerState.Dashing)
+        {
+            return;
+        }
+
+        State = PlayerState.Normal;
     }
 }
