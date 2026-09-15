@@ -2,24 +2,28 @@ using UnityEngine;
 
 public class InteractionController : MonoBehaviour
 {
-    [SerializeField] private float interactionDistance = 2f;
-    [SerializeField] private LayerMask interactionLayer;
+    [SerializeField]
+    private float interactionDistance = 2f;
+
+    [SerializeField]
+    private LayerMask interactionLayer;
 
     public void Interact()
     {
-        Debug.Log("Try Interacting");
         Vector3 origin = transform.position;
         Vector3 direction = transform.forward;
 
-        if (Physics.Raycast(
-            origin,
-            direction,
-            out RaycastHit hit,
-            interactionDistance,
-            interactionLayer))
+        if (
+            Physics.Raycast(
+                origin,
+                direction,
+                out RaycastHit hit,
+                interactionDistance,
+                interactionLayer
+            )
+        )
         {
-            IInteractable interactable = 
-                hit.collider.GetComponent<IInteractable>();
+            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
 
             if (interactable != null)
             {
