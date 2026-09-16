@@ -1,10 +1,7 @@
+using System.Collections;
 using UnityEngine;
 
-[CreateAssetMenu(
-    fileName = "Action",
-    menuName = "RPG/Actions/Action Definition"
-)]
-public class ActionDefinition : ScriptableObject
+public abstract class ActionDefinition : ScriptableObject
 {
     [SerializeField] private string id;
     [SerializeField] private string displayName;
@@ -15,4 +12,5 @@ public class ActionDefinition : ScriptableObject
     public string DisplayName => displayName;
     public float Duration => duration;
     public Sprite Icon => icon;
+    public abstract IEnumerator Execute(ActionContext context);
 }

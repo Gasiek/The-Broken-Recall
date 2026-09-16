@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c0f083b25a6f417784fae77376de187, type: 3}
-  m_Name: Speed
-  m_EditorClassIdentifier: Assembly-CSharp::ActionDefinition
-  id: action.speed
-  displayName: Speed
-  duration: 2
+  m_Script: {fileID: 11500000, guid: c557894174fe54a819197a19889f499d, type: 3}
+  m_Name: BlockAction
+  m_EditorClassIdentifier: Assembly-CSharp::BlockAction
+  id: action.block
+  displayName: Block
+  duration: 1
   icon: {fileID: 0}

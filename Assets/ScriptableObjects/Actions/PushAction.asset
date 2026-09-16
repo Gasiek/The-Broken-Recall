@@ -9,9 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c0f083b25a6f417784fae77376de187, type: 3}
-  m_Name: Push
-  m_EditorClassIdentifier: Assembly-CSharp::ActionDefinition
+  m_Script: {fileID: 11500000, guid: ea64f8d2c49034f0e9d8a0f2ec742615, type: 3}
+  m_Name: PushAction
+  m_EditorClassIdentifier: Assembly-CSharp::PushAction
   id: action.push
   displayName: Push
+  duration: 0.5
   icon: {fileID: 0}

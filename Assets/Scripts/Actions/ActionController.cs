@@ -5,6 +5,7 @@ public class ActionController : MonoBehaviour
 {
     [SerializeField] private PlayerController playerController;
     [SerializeField] private ActionMemory actionMemory;
+    [SerializeField] private PlayerActionVisuals actionVisuals;
 
     public void ExecuteAction(int slot)
     {
@@ -17,7 +18,6 @@ public class ActionController : MonoBehaviour
 
         if (action == null)
         {
-            Debug.LogWarning($"No action assigned to slot {slot}.");
             return;
         }
 
@@ -32,10 +32,16 @@ public class ActionController : MonoBehaviour
 
         Debug.Log($"Started action: {action.DisplayName}");
 
+        // Replace immediately so the player can see/plan the next action.
         actionMemory.ReplaceAction(slot);
 
-        // Action is active.
-        yield return new WaitForSeconds(action.Duration);
+        ActionContext context = new ActionContext(
+            playerController,
+            actionVisuals,
+            action
+        );
+
+        yield return action.Execute(context);
 
         Debug.Log($"Finished action: {action.DisplayName}");
 

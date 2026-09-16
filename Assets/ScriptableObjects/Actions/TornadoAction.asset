@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c0f083b25a6f417784fae77376de187, type: 3}
-  m_Name: Tornado
-  m_EditorClassIdentifier: Assembly-CSharp::ActionDefinition
+  m_Script: {fileID: 11500000, guid: c24c5382315054a50ad66c0e114476d9, type: 3}
+  m_Name: TornadoAction
+  m_EditorClassIdentifier: Assembly-CSharp::TornadoAction
   id: action.tornado
   displayName: Tornado
-  duration: 1
+  duration: 0.7
   icon: {fileID: 0}

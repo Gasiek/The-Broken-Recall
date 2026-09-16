@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c0f083b25a6f417784fae77376de187, type: 3}
-  m_Name: BasicHit
-  m_EditorClassIdentifier: Assembly-CSharp::ActionDefinition
+  m_Script: {fileID: 11500000, guid: 8f7e886e6f49644b2b2b70cf07a3f3e9, type: 3}
+  m_Name: BasicHitAction
+  m_EditorClassIdentifier: Assembly-CSharp::BasicHitAction
   id: action.basicHit
   displayName: Basic Hit
   duration: 0.4

@@ -5,13 +5,16 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField]
-    private float moveSpeed = 5f;
+    private float baseMoveSpeed = 5f;
 
     [SerializeField]
     private float rotationSpeed = 15f;
 
     [SerializeField]
     private float gravity = -20f;
+    private float currentSpeedMultiplier = 1f;
+
+    public float CurrentMoveSpeed => baseMoveSpeed * currentSpeedMultiplier;
 
     private CharacterController characterController;
 
@@ -20,7 +23,7 @@ public class PlayerController : MonoBehaviour
 
     public PlayerState State { get; private set; } = PlayerState.Normal;
 
-    public bool CanMove => State == PlayerState.Normal;
+    public bool CanMove => State != PlayerState.Dashing;
     public bool CanAct => State == PlayerState.Normal;
     public bool CanDash => State == PlayerState.Normal;
 
@@ -55,7 +58,7 @@ public class PlayerController : MonoBehaviour
 
         RotateTowardsMovement(movement);
 
-        characterController.Move(movement * moveSpeed * Time.deltaTime);
+        characterController.Move(movement * CurrentMoveSpeed * Time.deltaTime);
 
         ApplyGravity();
     }
@@ -126,5 +129,15 @@ public class PlayerController : MonoBehaviour
         }
 
         State = PlayerState.Normal;
+    }
+
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        currentSpeedMultiplier = multiplier;
+    }
+
+    public void ResetSpeedMultiplier()
+    {
+        currentSpeedMultiplier = 1f;
     }
 }
