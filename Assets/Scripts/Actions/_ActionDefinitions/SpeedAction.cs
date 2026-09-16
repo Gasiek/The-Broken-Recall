@@ -3,7 +3,7 @@ using UnityEngine;
 
 [CreateAssetMenu(
     fileName = "SpeedAction",
-    menuName = "Actions/Speed"
+    menuName = "RPG/Actions/Speed"
 )]
 public class SpeedAction : ActionDefinition
 {

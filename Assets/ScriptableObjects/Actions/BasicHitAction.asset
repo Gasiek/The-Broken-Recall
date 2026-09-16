@@ -16,3 +16,8 @@ MonoBehaviour:
   displayName: Basic Hit
   duration: 0.4
   icon: {fileID: 0}
+  damage: 10
+  attackRange: 1.5
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 64

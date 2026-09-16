@@ -16,3 +16,9 @@ MonoBehaviour:
   displayName: Push
   duration: 0.5
   icon: {fileID: 0}
+  damage: 10
+  attackRange: 1.5
+  knockbackDistance: 2
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 64

@@ -16,3 +16,8 @@ MonoBehaviour:
   displayName: Tornado
   duration: 0.7
   icon: {fileID: 0}
+  damage: 10
+  radius: 1.5
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 64

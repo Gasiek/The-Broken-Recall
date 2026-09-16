@@ -47,7 +47,6 @@ public class Health : MonoBehaviour, IDamageable
         currentHealth = 0;
 
         Debug.Log($"{gameObject.name} died.");
-
         Died?.Invoke();
     }
 }

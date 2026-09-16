@@ -3,7 +3,7 @@ using UnityEngine;
 
 [CreateAssetMenu(
     fileName = "BlockAction",
-    menuName = "Actions/Block"
+    menuName = "RPG/Actions/Block"
 )]
 public class BlockAction : ActionDefinition
 {
