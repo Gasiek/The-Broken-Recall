@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDefinition
   maxHealth: 100
   moveSpeed: 3
+  patrolSpeed: 1.5
   attackDamage: 3
   attackCooldown: 3
   attackRange: 2

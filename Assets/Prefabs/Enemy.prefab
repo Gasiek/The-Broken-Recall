@@ -394,6 +394,7 @@ GameObject:
   - component: {fileID: 1103068772804608727}
   - component: {fileID: 7857942963183297402}
   - component: {fileID: 6033010264494890168}
+  - component: {fileID: 2031304770200489341}
   m_Layer: 6
   m_Name: Enemy
   m_TagString: Untagged
@@ -528,7 +529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackVisuals
   weapon: {fileID: 4324269215468510921}
-  basicAttackRotation: {x: 0, y: 0, z: 90}
+  basicAttackRotation: {x: 90, y: -20, z: 0}
   basicAttackDuration: 0.2
 --- !u!114 &7857942963183297402
 MonoBehaviour:
@@ -560,6 +561,24 @@ MonoBehaviour:
   targetLayer:
     serializedVersion: 2
     m_Bits: 128
+--- !u!114 &2031304770200489341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3603842340316313691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a317aa3b7ef9c45baa222b8557c4a9e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPatrol
+  patrolRadius: 6
+  waitChance: 0.6
+  minWaitDuration: 1
+  maxWaitDuration: 3
+  maxPointAttempts: 10
+  navMeshSampleDistance: 2
 --- !u!1 &5290805841508215483
 GameObject:
   m_ObjectHideFlags: 0
@@ -585,7 +604,7 @@ Transform:
   m_GameObject: {fileID: 5290805841508215483}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.436, y: 0.871, z: 0}
+  m_LocalPosition: {x: 0.46, y: 0.871, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

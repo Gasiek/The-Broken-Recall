@@ -38,9 +38,7 @@ public class EnemySpawner : MonoBehaviour
 
         hasTriggered = true;
 
-        StartCoroutine(
-            SpawnEnemies(other.transform)
-        );
+        StartCoroutine(SpawnEnemies(other.transform));
     }
 
     private IEnumerator SpawnEnemies(Transform player)
@@ -58,18 +56,11 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnEnemy(Transform player)
     {
-        EnemyController enemy = Instantiate(
-            enemyPrefab,
-            spawnPoint.position,
-            spawnPoint.rotation
-        );
+        EnemyController enemy = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
 
-        EnemyAggro aggro = enemy.GetComponent<EnemyAggro>();
+        EnemyStateMachine stateMachine = enemy.GetComponent<EnemyStateMachine>();
 
-        if (aggro != null)
-        {
-            aggro.Initialize(player);
-        }
+        stateMachine.Initialize(player);
     }
 
     private bool IsPlayer(Collider other)

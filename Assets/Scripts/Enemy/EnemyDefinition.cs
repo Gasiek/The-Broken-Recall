@@ -10,6 +10,9 @@ public class EnemyDefinition : ScriptableObject
     [SerializeField]
     private float moveSpeed = 3.5f;
 
+    [SerializeField]
+    private float patrolSpeed = 2f;
+
     [Header("Attack")]
     [SerializeField]
     private int attackDamage = 10;
@@ -28,7 +31,7 @@ public class EnemyDefinition : ScriptableObject
 
     public int MaxHealth => maxHealth;
     public float MoveSpeed => moveSpeed;
-
+    public float PatrolSpeed => patrolSpeed;
     public int AttackDamage => attackDamage;
     public float AttackCooldown => attackCooldown;
     public float AttackRange => attackRange;

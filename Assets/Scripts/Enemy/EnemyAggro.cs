@@ -9,7 +9,7 @@ public class EnemyAggro : MonoBehaviour
 
     public bool HasTarget => Target != null;
 
-    public void Initialize(Transform target)
+    public void SetTarget(Transform target)
     {
         Target = target;
     }

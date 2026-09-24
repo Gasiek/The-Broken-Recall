@@ -3,11 +3,13 @@ using UnityEngine;
 [RequireComponent(typeof(EnemyController))]
 [RequireComponent(typeof(EnemyAggro))]
 [RequireComponent(typeof(EnemyAttack))]
+[RequireComponent(typeof(EnemyPatrol))]
 public class EnemyStateMachine : MonoBehaviour
 {
     private EnemyController enemy;
     private EnemyAggro aggro;
     private EnemyAttack attack;
+    private EnemyPatrol patrol;
 
     public EnemyState CurrentState { get; private set; }
 
@@ -16,8 +18,21 @@ public class EnemyStateMachine : MonoBehaviour
         enemy = GetComponent<EnemyController>();
         aggro = GetComponent<EnemyAggro>();
         attack = GetComponent<EnemyAttack>();
+        patrol = GetComponent<EnemyPatrol>();
 
         CurrentState = EnemyState.Idle;
+    }
+
+    private void Start()
+    {
+        ChangeState(EnemyState.Patrolling);
+    }
+
+    public void Initialize(Transform target)
+    {
+        aggro.SetTarget(target);
+
+        ChangeState(EnemyState.Chasing);
     }
 
     private void OnEnable()
@@ -51,6 +66,10 @@ public class EnemyStateMachine : MonoBehaviour
 
             case EnemyState.Returning:
                 UpdateReturning();
+                break;
+
+            case EnemyState.Patrolling:
+                UpdatePatrolling();
                 break;
 
             case EnemyState.Dead:
@@ -105,29 +124,72 @@ public class EnemyStateMachine : MonoBehaviour
             return;
         }
 
+        if (HasReachedPatrolArea())
+        {
+            ChangeState(EnemyState.Patrolling);
+            return;
+        }
+
         enemy.Agent.isStopped = false;
 
         enemy.Agent.SetDestination(enemy.HomePosition);
+    }
 
-        if (HasReachedHome())
+    private void UpdatePatrolling()
+    {
+        if (aggro.HasTarget)
         {
-            ChangeState(EnemyState.Idle);
+            ChangeState(EnemyState.Chasing);
+            return;
+        }
+
+        if (patrol.IsWaiting)
+        {
+            if (patrol.UpdateWait())
+            {
+                SetNewPatrolTarget();
+            }
+
+            return;
+        }
+
+        if (!patrol.HasPatrolTarget)
+        {
+            SetNewPatrolTarget();
+            return;
+        }
+
+        if (patrol.HasReachedPatrolTarget())
+        {
+            enemy.Agent.isStopped = true;
+
+            patrol.StartWait();
+
+            if (!patrol.IsWaiting)
+            {
+                SetNewPatrolTarget();
+            }
         }
     }
 
-    private bool HasReachedHome()
+    private void SetNewPatrolTarget()
     {
-        if (enemy.Agent.pathPending)
+        if (!patrol.TrySetNewPatrolTarget())
         {
-            return false;
+            enemy.Agent.isStopped = true;
+            return;
         }
 
-        if (!enemy.Agent.hasPath)
-        {
-            return true;
-        }
+        enemy.Agent.isStopped = false;
 
-        return enemy.Agent.remainingDistance <= enemy.Agent.stoppingDistance + 0.2f;
+        enemy.Agent.SetDestination(patrol.PatrolTarget);
+    }
+
+    private bool HasReachedPatrolArea()
+    {
+        float distanceToHome = Vector3.Distance(transform.position, enemy.HomePosition);
+
+        return distanceToHome <= patrol.PatrolRadius;
     }
 
     private void ChangeState(EnemyState newState)
@@ -159,6 +221,10 @@ public class EnemyStateMachine : MonoBehaviour
                 EnterReturning();
                 break;
 
+            case EnemyState.Patrolling:
+                EnterPatrolling();
+                break;
+
             case EnemyState.Dead:
                 EnterDead();
                 break;
@@ -173,6 +239,7 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void EnterChasing()
     {
+        enemy.Agent.speed = enemy.Definition.MoveSpeed;
         enemy.Agent.isStopped = false;
     }
 
@@ -185,7 +252,16 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void EnterReturning()
     {
+        enemy.Agent.speed = enemy.Definition.MoveSpeed;
         enemy.Agent.isStopped = false;
+    }
+
+    private void EnterPatrolling()
+    {
+        enemy.Agent.speed = enemy.Definition.PatrolSpeed;
+        enemy.Agent.isStopped = false;
+
+        SetNewPatrolTarget();
     }
 
     private void EnterDead()
