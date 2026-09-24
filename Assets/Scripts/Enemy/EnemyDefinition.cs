@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "EnemyDefinition", menuName = "Game/Enemy Definition")]
+[CreateAssetMenu(fileName = "EnemyDefinition", menuName = "RPG/Enemy Definition")]
 public class EnemyDefinition : ScriptableObject
 {
     [Header("Stats")]

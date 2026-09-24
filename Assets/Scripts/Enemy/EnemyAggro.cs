@@ -9,6 +9,11 @@ public class EnemyAggro : MonoBehaviour
 
     public bool HasTarget => Target != null;
 
+    public void Initialize(Transform target)
+    {
+        Target = target;
+    }
+
     public void HandleAggroEnter(Collider other)
     {
         if (!IsTarget(other))
