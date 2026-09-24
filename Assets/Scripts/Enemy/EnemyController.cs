@@ -1,44 +1,40 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyController : MonoBehaviour
 {
-    [SerializeField]
-    private Transform target;
     private Health health;
     private NavMeshAgent agent;
+
+    private Vector3 homePosition;
+
+    public NavMeshAgent Agent => agent;
+    public Vector3 HomePosition => homePosition;
+
+    public event Action Died;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         health = GetComponent<Health>();
 
-        health.Died += Die;
-    }
+        homePosition = transform.position;
 
-    private void Update()
-    {
-        if (target == null)
-        {
-            return;
-        }
-
-        agent.SetDestination(target.position);
+        health.Died += HandleDeath;
     }
 
     private void OnDestroy()
     {
         if (health != null)
         {
-            health.Died -= Die;
+            health.Died -= HandleDeath;
         }
     }
 
-    private void Die()
+    private void HandleDeath()
     {
-        agent.isStopped = true;
-
-        Destroy(gameObject);
+        Died?.Invoke();
     }
 }

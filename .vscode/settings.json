@@ -74,5 +74,11 @@
         "**/Logs/**": true,
         "**/Build/**": true
     },
+    "[csharp]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+      },
+      "[xml]": {
+        "editor.defaultFormatter": "csharpier.csharpier-vscode"
+      },
     "dotnet.defaultSolution": "The Broken Recall.sln"
 }
