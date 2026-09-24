@@ -3,8 +3,7 @@ using UnityEngine;
 
 public class Health : MonoBehaviour, IDamageable
 {
-    [SerializeField] private int maxHealth = 100;
-
+    private int maxHealth;
     private int currentHealth;
 
     public int CurrentHealth => currentHealth;
@@ -12,8 +11,9 @@ public class Health : MonoBehaviour, IDamageable
 
     public event Action Died;
 
-    private void Awake()
+    public void Initialize(int maxHealth)
     {
+        this.maxHealth = maxHealth;
         currentHealth = maxHealth;
     }
 
@@ -32,8 +32,7 @@ public class Health : MonoBehaviour, IDamageable
         currentHealth -= amount;
 
         Debug.Log(
-            $"{gameObject.name} took {amount} damage. " +
-            $"Health: {currentHealth}/{maxHealth}"
+            $"{gameObject.name} took {amount} damage. " + $"Health: {currentHealth}/{maxHealth}"
         );
 
         if (currentHealth <= 0)
@@ -47,6 +46,7 @@ public class Health : MonoBehaviour, IDamageable
         currentHealth = 0;
 
         Debug.Log($"{gameObject.name} died.");
+
         Died?.Invoke();
     }
 }

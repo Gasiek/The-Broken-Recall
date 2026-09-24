@@ -2,40 +2,25 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(EnemyAttackVisuals))]
+[RequireComponent(typeof(EnemyController))]
 public class EnemyAttack : MonoBehaviour
 {
     [SerializeField]
-    private int damage = 10;
-
-    [SerializeField]
-    private float attackRange = 1.5f;
-
-    [Tooltip("The radius of the sphere cast for the attack.")]
-    [SerializeField]
-    private float attackRadius = 0.35f;
-
-    [SerializeField]
     private LayerMask targetLayer;
-
-    [SerializeField]
-    private float attackDuration = 0.4f;
-
-    [SerializeField]
-    private float attackCooldown = 1f;
-
+    private EnemyController enemy;
     private EnemyAttackVisuals visuals;
 
     private float cooldownTimer;
 
-    public float AttackRange => attackRange;
+    public float AttackRange => enemy.Definition.AttackRange;
 
-    public bool CanAttack =>
-        cooldownTimer <= 0f && !IsAttacking;
+    public bool CanAttack => cooldownTimer <= 0f && !IsAttacking;
 
     public bool IsAttacking { get; private set; }
 
     private void Awake()
     {
+        enemy = GetComponent<EnemyController>();
         visuals = GetComponent<EnemyAttackVisuals>();
     }
 
@@ -62,21 +47,18 @@ public class EnemyAttack : MonoBehaviour
     private IEnumerator AttackRoutine(Transform target)
     {
         IsAttacking = true;
-        cooldownTimer = attackCooldown;
+
+        cooldownTimer = enemy.Definition.AttackCooldown;
 
         FaceTarget(target);
 
         visuals.BasicAttack();
 
-        yield return new WaitForSeconds(
-            attackDuration * 0.5f
-        );
+        yield return new WaitForSeconds(enemy.Definition.AttackDuration * 0.5f);
 
         DealDamage(target);
 
-        yield return new WaitForSeconds(
-            attackDuration * 0.5f
-        );
+        yield return new WaitForSeconds(enemy.Definition.AttackDuration * 0.5f);
 
         IsAttacking = false;
     }
@@ -91,9 +73,7 @@ public class EnemyAttack : MonoBehaviour
             return;
         }
 
-        transform.rotation = Quaternion.LookRotation(
-            direction
-        );
+        transform.rotation = Quaternion.LookRotation(direction);
     }
 
     private void DealDamage(Transform target)
@@ -115,25 +95,27 @@ public class EnemyAttack : MonoBehaviour
 
         direction.Normalize();
 
-        if (!Physics.SphereCast(
+        if (
+            !Physics.SphereCast(
                 origin,
-                attackRadius,
+                enemy.Definition.AttackRadius,
                 direction,
                 out RaycastHit hit,
-                attackRange,
-                targetLayer))
+                enemy.Definition.AttackRange,
+                targetLayer
+            )
+        )
         {
             return;
         }
 
-        IDamageable damageable =
-            hit.collider.GetComponentInParent<IDamageable>();
+        IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
 
         if (damageable == null)
         {
             return;
         }
 
-        damageable.TakeDamage(damage);
+        damageable.TakeDamage(enemy.Definition.AttackDamage);
     }
 }

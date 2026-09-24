@@ -1,12 +1,12 @@
 using UnityEngine;
 
 [RequireComponent(typeof(EnemyController))]
-[RequireComponent(typeof(EnemyDetection))]
+[RequireComponent(typeof(EnemyAggro))]
 [RequireComponent(typeof(EnemyAttack))]
 public class EnemyStateMachine : MonoBehaviour
 {
     private EnemyController enemy;
-    private EnemyDetection detection;
+    private EnemyAggro aggro;
     private EnemyAttack attack;
 
     public EnemyState CurrentState { get; private set; }
@@ -14,7 +14,7 @@ public class EnemyStateMachine : MonoBehaviour
     private void Awake()
     {
         enemy = GetComponent<EnemyController>();
-        detection = GetComponent<EnemyDetection>();
+        aggro = GetComponent<EnemyAggro>();
         attack = GetComponent<EnemyAttack>();
 
         CurrentState = EnemyState.Idle;
@@ -60,7 +60,7 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void UpdateIdle()
     {
-        if (detection.IsTargetInAggroRange)
+        if (aggro.HasTarget)
         {
             ChangeState(EnemyState.Chasing);
         }
@@ -68,25 +68,17 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void UpdateChasing()
     {
-        if (detection.Target == null)
+        if (!aggro.HasTarget)
         {
             ChangeState(EnemyState.Returning);
             return;
         }
 
-        if (detection.IsTargetOutsideLoseRange)
-        {
-            ChangeState(EnemyState.Returning);
-            return;
-        }
+        Transform target = aggro.Target;
 
-        float distanceToTarget = Vector3.Distance(
-            transform.position,
-            detection.Target.position
-        );
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        if (distanceToTarget <= attack.AttackRange &&
-            attack.CanAttack)
+        if (distanceToTarget <= attack.AttackRange && attack.CanAttack)
         {
             ChangeState(EnemyState.Attacking);
             return;
@@ -94,15 +86,11 @@ public class EnemyStateMachine : MonoBehaviour
 
         enemy.Agent.isStopped = false;
 
-        enemy.Agent.SetDestination(
-            detection.Target.position
-        );
+        enemy.Agent.SetDestination(target.position);
     }
 
     private void UpdateAttacking()
     {
-        // EnemyAttack handles the attack itself.
-        // We only wait until it finishes.
         if (!attack.IsAttacking)
         {
             ChangeState(EnemyState.Chasing);
@@ -111,8 +99,7 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void UpdateReturning()
     {
-        // Re-aggro while returning home.
-        if (detection.IsTargetInAggroRange)
+        if (aggro.HasTarget)
         {
             ChangeState(EnemyState.Chasing);
             return;
@@ -120,9 +107,7 @@ public class EnemyStateMachine : MonoBehaviour
 
         enemy.Agent.isStopped = false;
 
-        enemy.Agent.SetDestination(
-            enemy.HomePosition
-        );
+        enemy.Agent.SetDestination(enemy.HomePosition);
 
         if (HasReachedHome())
         {
@@ -142,8 +127,7 @@ public class EnemyStateMachine : MonoBehaviour
             return true;
         }
 
-        return enemy.Agent.remainingDistance
-            <= enemy.Agent.stoppingDistance + 0.2f;
+        return enemy.Agent.remainingDistance <= enemy.Agent.stoppingDistance + 0.2f;
     }
 
     private void ChangeState(EnemyState newState)
@@ -155,9 +139,7 @@ public class EnemyStateMachine : MonoBehaviour
 
         CurrentState = newState;
 
-        Debug.Log(
-            $"{gameObject.name} → {CurrentState}"
-        );
+        Debug.Log($"{gameObject.name} → {CurrentState}");
 
         switch (CurrentState)
         {
@@ -198,9 +180,7 @@ public class EnemyStateMachine : MonoBehaviour
     {
         enemy.Agent.isStopped = true;
 
-        attack.TryAttack(
-            detection.Target
-        );
+        attack.TryAttack(aggro.Target);
     }
 
     private void EnterReturning()
