@@ -15,7 +15,7 @@ MonoBehaviour:
   id: action.tornado
   displayName: Tornado
   duration: 0.7
-  icon: {fileID: 0}
+  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   damage: 10
   radius: 1.5
   targetLayer:

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class ActionController : MonoBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private ActionMemory actionMemory;
     [SerializeField] private PlayerActionVisuals actionVisuals;
+
+    public event Action<float> ActionStarted;
 
     public void ExecuteAction(int slot)
     {
@@ -31,6 +34,9 @@ public class ActionController : MonoBehaviour
         playerController.StartActing();
 
         Debug.Log($"Started action: {action.DisplayName}");
+
+        // Tell interested presentation systems that an action has started.
+        ActionStarted?.Invoke(action.Duration);
 
         // Replace immediately so the player can see/plan the next action.
         actionMemory.ReplaceAction(slot);

@@ -15,9 +15,10 @@ MonoBehaviour:
   id: action.basicHit
   displayName: Basic Hit
   duration: 0.4
-  icon: {fileID: 0}
+  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   damage: 10
   attackRange: 1.5
+  attackRadius: 0.35
   targetLayer:
     serializedVersion: 2
     m_Bits: 64
