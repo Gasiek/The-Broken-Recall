@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Player/Player Definition")]
+[CreateAssetMenu(menuName = "RPG/Player Definition")]
 public class PlayerDefinition : ScriptableObject
 {
     [Header("Health")]

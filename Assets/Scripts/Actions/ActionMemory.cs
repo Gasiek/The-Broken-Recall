@@ -9,107 +9,135 @@ public class ActionMemory : MonoBehaviour
 
     private ActionCollection actionCollection;
 
-    [SerializeField]
-    private ActionDefinition[] slots = new ActionDefinition[SlotCount];
+    private readonly ActionDefinition[] actions = new ActionDefinition[SlotCount];
+
+    public IReadOnlyList<ActionDefinition> Actions => actions;
 
     public event Action MemoryChanged;
 
     private void Awake()
     {
         actionCollection = GetComponent<ActionCollection>();
-    }
-
-    private void Start()
-    {
-        Initialize();
+        FillMemory();
     }
 
     public ActionDefinition GetAction(int slot)
     {
-        if (!IsValidSlot(slot))
+        if (slot < 0 || slot >= SlotCount)
         {
             Debug.LogWarning($"Invalid action memory slot: {slot}");
             return null;
         }
 
-        return slots[slot];
+        return actions[slot];
     }
 
-    public void Initialize()
+    public void FillMemory()
+    {
+        for (int slot = 0; slot < SlotCount; slot++)
+        {
+            actions[slot] = GetRandomAvailableAction();
+        }
+
+        MemoryChanged?.Invoke();
+    }
+
+    public void ReplaceAction(int slot)
+    {
+        if (slot < 0 || slot >= SlotCount)
+        {
+            Debug.LogWarning($"Invalid action memory slot: {slot}");
+            return;
+        }
+
+        actions[slot] = GetRandomAvailableAction();
+
+        MemoryChanged?.Invoke();
+    }
+
+    public bool RemoveAndReplace(ActionDefinition action)
+    {
+        if (action == null)
+        {
+            return false;
+        }
+
+        int slot = FindSlot(action);
+
+        if (slot < 0)
+        {
+            return false;
+        }
+
+        actions[slot] = GetRandomAvailableAction();
+
+        MemoryChanged?.Invoke();
+
+        return true;
+    }
+
+    private int FindSlot(ActionDefinition action)
     {
         for (int i = 0; i < SlotCount; i++)
         {
-            slots[i] = GetRandomAvailableAction();
+            if (actions[i] == action)
+            {
+                return i;
+            }
         }
 
-        MemoryChanged?.Invoke();
+        return -1;
     }
 
-    public ActionDefinition ReplaceAction(int slot)
+    private ActionDefinition GetRandomAvailableAction()
     {
-        if (!IsValidSlot(slot))
+        if (actionCollection == null)
         {
-            Debug.LogWarning($"Invalid action memory slot: {slot}");
-            return null;
-        }
-
-        ActionDefinition oldAction = slots[slot];
-
-        ActionDefinition newAction = GetRandomAvailableAction(slot);
-
-        if (newAction == null)
-        {
-            Debug.LogWarning("Could not replace action because no unique action is available.");
+            Debug.LogWarning("ActionMemory has no ActionCollection.");
 
             return null;
         }
 
-        slots[slot] = newAction;
+        if (actionCollection.Actions.Count == 0)
+        {
+            return null;
+        }
 
-        MemoryChanged?.Invoke();
-
-        return oldAction;
-    }
-
-    private ActionDefinition GetRandomAvailableAction(int slotToIgnore = -1)
-    {
         List<ActionDefinition> availableActions = new();
 
         foreach (ActionDefinition action in actionCollection.Actions)
         {
             if (action == null)
+            {
                 continue;
+            }
 
-            if (IsInMemory(action, slotToIgnore))
-                continue;
-
-            availableActions.Add(action);
+            if (!IsInMemory(action))
+            {
+                availableActions.Add(action);
+            }
         }
 
         if (availableActions.Count == 0)
+        {
             return null;
+        }
 
-        int randomIndex = UnityEngine.Random.Range(0, availableActions.Count);
+        int index = UnityEngine.Random.Range(0, availableActions.Count);
 
-        return availableActions[randomIndex];
+        return availableActions[index];
     }
 
-    private bool IsInMemory(ActionDefinition action, int slotToIgnore = -1)
+    private bool IsInMemory(ActionDefinition action)
     {
-        for (int i = 0; i < slots.Length; i++)
+        for (int i = 0; i < SlotCount; i++)
         {
-            if (i == slotToIgnore)
-                continue;
-
-            if (slots[i] == action)
+            if (actions[i] == action)
+            {
                 return true;
+            }
         }
 
         return false;
-    }
-
-    private bool IsValidSlot(int slot)
-    {
-        return slot >= 0 && slot < SlotCount;
     }
 }
