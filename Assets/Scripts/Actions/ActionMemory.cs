@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(ActionCollection))]
@@ -18,6 +19,11 @@ public class ActionMemory : MonoBehaviour
         actionCollection = GetComponent<ActionCollection>();
     }
 
+    private void Start()
+    {
+        Initialize();
+    }
+
     public ActionDefinition GetAction(int slot)
     {
         if (!IsValidSlot(slot))
@@ -31,15 +37,9 @@ public class ActionMemory : MonoBehaviour
 
     public void Initialize()
     {
-        if (actionCollection == null)
-        {
-            Debug.LogError("ActionMemory has no ActionCollection assigned.");
-            return;
-        }
-
         for (int i = 0; i < SlotCount; i++)
         {
-            slots[i] = actionCollection.GetRandomAction();
+            slots[i] = GetRandomAvailableAction();
         }
 
         MemoryChanged?.Invoke();
@@ -53,14 +53,16 @@ public class ActionMemory : MonoBehaviour
             return null;
         }
 
-        if (actionCollection == null)
+        ActionDefinition oldAction = slots[slot];
+
+        ActionDefinition newAction = GetRandomAvailableAction(slot);
+
+        if (newAction == null)
         {
-            Debug.LogError("ActionMemory has no ActionCollection assigned.");
+            Debug.LogWarning("Could not replace action because no unique action is available.");
+
             return null;
         }
-
-        ActionDefinition oldAction = slots[slot];
-        ActionDefinition newAction = actionCollection.GetRandomAction();
 
         slots[slot] = newAction;
 
@@ -69,9 +71,41 @@ public class ActionMemory : MonoBehaviour
         return oldAction;
     }
 
-    private void Start()
+    private ActionDefinition GetRandomAvailableAction(int slotToIgnore = -1)
     {
-        Initialize();
+        List<ActionDefinition> availableActions = new();
+
+        foreach (ActionDefinition action in actionCollection.Actions)
+        {
+            if (action == null)
+                continue;
+
+            if (IsInMemory(action, slotToIgnore))
+                continue;
+
+            availableActions.Add(action);
+        }
+
+        if (availableActions.Count == 0)
+            return null;
+
+        int randomIndex = UnityEngine.Random.Range(0, availableActions.Count);
+
+        return availableActions[randomIndex];
+    }
+
+    private bool IsInMemory(ActionDefinition action, int slotToIgnore = -1)
+    {
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (i == slotToIgnore)
+                continue;
+
+            if (slots[i] == action)
+                return true;
+        }
+
+        return false;
     }
 
     private bool IsValidSlot(int slot)
