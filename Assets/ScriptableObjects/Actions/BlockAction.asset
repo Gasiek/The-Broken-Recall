@@ -15,4 +15,4 @@ MonoBehaviour:
   id: action.block
   displayName: Block
   duration: 1
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 466824447609058672, guid: bc9f0d0d53d3b4802a73bccf64656fe0, type: 3}

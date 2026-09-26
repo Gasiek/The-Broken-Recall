@@ -15,7 +15,7 @@ MonoBehaviour:
   id: action.push
   displayName: Push
   duration: 0.5
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 6627523530715426189, guid: cbd3823053c754fc09d1e26754990b7f, type: 3}
   damage: 10
   attackRange: 1.5
   attackRadius: 0.35

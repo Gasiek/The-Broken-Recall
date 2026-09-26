@@ -15,5 +15,5 @@ MonoBehaviour:
   id: action.speed
   displayName: Speed
   duration: 2
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 6341249411951536026, guid: d01fc718efbea4372ab90262984dfe1f, type: 3}
   speedMultiplier: 2
