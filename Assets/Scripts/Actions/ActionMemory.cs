@@ -1,17 +1,22 @@
 using System;
 using UnityEngine;
 
+[RequireComponent(typeof(ActionCollection))]
 public class ActionMemory : MonoBehaviour
 {
     public const int SlotCount = 3;
 
-    [SerializeField]
     private ActionCollection actionCollection;
 
     [SerializeField]
     private ActionDefinition[] slots = new ActionDefinition[SlotCount];
 
     public event Action MemoryChanged;
+
+    private void Awake()
+    {
+        actionCollection = GetComponent<ActionCollection>();
+    }
 
     public ActionDefinition GetAction(int slot)
     {
@@ -37,8 +42,6 @@ public class ActionMemory : MonoBehaviour
             slots[i] = actionCollection.GetRandomAction();
         }
 
-        LogMemory();
-
         MemoryChanged?.Invoke();
     }
 
@@ -61,8 +64,6 @@ public class ActionMemory : MonoBehaviour
 
         slots[slot] = newAction;
 
-        LogMemory();
-
         MemoryChanged?.Invoke();
 
         return oldAction;
@@ -76,30 +77,5 @@ public class ActionMemory : MonoBehaviour
     private bool IsValidSlot(int slot)
     {
         return slot >= 0 && slot < SlotCount;
-    }
-
-    private void LogMemory()
-    {
-        Debug.Log(
-            $"Action Memory:\n"
-                + $"[1] {GetActionName(0)}\t"
-                + $"[2] {GetActionName(1)}\t"
-                + $"[3] {GetActionName(2)}"
-        );
-    }
-
-    private string GetActionName(int slot)
-    {
-        if (!IsValidSlot(slot))
-        {
-            return "Invalid";
-        }
-
-        if (slots[slot] == null)
-        {
-            return "Empty";
-        }
-
-        return slots[slot].DisplayName;
     }
 }

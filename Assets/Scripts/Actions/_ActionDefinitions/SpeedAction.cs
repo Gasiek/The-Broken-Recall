@@ -11,10 +11,10 @@ public class SpeedAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
-        context.Player.SetSpeedMultiplier(speedMultiplier);
+        context.Movement.SetSpeedMultiplier(speedMultiplier);
 
         yield return new WaitForSeconds(Duration);
 
-        context.Player.ResetSpeedMultiplier();
+        context.Movement.ResetSpeedMultiplier();
     }
 }

@@ -2,5 +2,6 @@ public enum PlayerState
 {
     Normal,
     Acting,
-    Dashing
+    Dashing,
+    Dead
 }

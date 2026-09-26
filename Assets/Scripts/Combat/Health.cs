@@ -9,12 +9,15 @@ public class Health : MonoBehaviour, IDamageable
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
 
+    public event Action HealthChanged;
     public event Action Died;
 
     public void Initialize(int maxHealth)
     {
         this.maxHealth = maxHealth;
         currentHealth = maxHealth;
+
+        HealthChanged?.Invoke();
     }
 
     public void TakeDamage(int amount)
@@ -30,10 +33,13 @@ public class Health : MonoBehaviour, IDamageable
         }
 
         currentHealth -= amount;
+        currentHealth = Mathf.Max(currentHealth, 0);
 
         Debug.Log(
             $"{gameObject.name} took {amount} damage. " + $"Health: {currentHealth}/{maxHealth}"
         );
+
+        HealthChanged?.Invoke();
 
         if (currentHealth <= 0)
         {
@@ -43,8 +49,6 @@ public class Health : MonoBehaviour, IDamageable
 
     private void Die()
     {
-        currentHealth = 0;
-
         Debug.Log($"{gameObject.name} died.");
 
         Died?.Invoke();

@@ -15,7 +15,7 @@ MonoBehaviour:
   maxHealth: 100
   moveSpeed: 3
   patrolSpeed: 1.5
-  attackDamage: 3
+  attackDamage: 20
   attackCooldown: 3
   attackRange: 2
   attackRadius: 0.35

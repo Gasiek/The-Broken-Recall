@@ -1,16 +1,23 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(ActionController))]
+[RequireComponent(typeof(InteractionController))]
+[RequireComponent(typeof(DashController))]
 public class PlayerInputHandler : MonoBehaviour
 {
-    [SerializeField]
     private ActionController actionController;
 
     [SerializeField]
     private InteractionController interactionController;
-
-    [SerializeField]
     private DashController dashController;
+
+    private void Awake()
+    {
+        actionController = GetComponent<ActionController>();
+        interactionController = GetComponent<InteractionController>();
+        dashController = GetComponent<DashController>();
+    }
 
     public void OnActionSlot1(InputAction.CallbackContext context)
     {

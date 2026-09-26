@@ -1,13 +1,13 @@
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(PlayerStateMachine))]
+[RequireComponent(typeof(Player))]
 public class DashController : MonoBehaviour
 {
-    [SerializeField] private PlayerController playerController;
+    private PlayerStateMachine stateMachine;
 
-    [SerializeField] private float dashDistance = 5f;
-    [SerializeField] private float dashDuration = 0.2f;
-    [SerializeField] private float dashCooldown = 0.5f;
+    private PlayerDefinition playerDefinition;
 
     private CharacterController characterController;
 
@@ -18,13 +18,19 @@ public class DashController : MonoBehaviour
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        stateMachine = GetComponent<PlayerStateMachine>();
+        Player player = GetComponent<Player>();
+        playerDefinition = player.Definition;
+
+        if (playerDefinition == null)
+            Debug.LogError("DashController has no PlayerDefinition assigned.");
     }
 
     private void Update()
     {
         UpdateCooldown();
 
-        if (playerController.State == PlayerState.Dashing)
+        if (stateMachine.CurrentState == PlayerState.Dashing)
         {
             UpdateDash();
         }
@@ -32,25 +38,24 @@ public class DashController : MonoBehaviour
 
     public void Dash()
     {
-        if (!playerController.CanDash || cooldownTimer > 0f)
+        if (!stateMachine.CanDash || cooldownTimer > 0f)
         {
             return;
         }
 
         dashDirection = transform.forward;
-        dashTimer = dashDuration;
-        cooldownTimer = dashCooldown;
 
-        playerController.StartDashing();
+        dashTimer = playerDefinition.DashDuration;
+        cooldownTimer = playerDefinition.DashCooldown;
+
+        stateMachine.StartDashing();
     }
 
     private void UpdateDash()
     {
-        float dashSpeed = dashDistance / dashDuration;
+        float dashSpeed = playerDefinition.DashDistance / playerDefinition.DashDuration;
 
-        characterController.Move(
-            dashDirection * dashSpeed * Time.deltaTime
-        );
+        characterController.Move(dashDirection * dashSpeed * Time.deltaTime);
 
         dashTimer -= Time.deltaTime;
 
@@ -62,14 +67,21 @@ public class DashController : MonoBehaviour
 
     private void UpdateCooldown()
     {
-        if (cooldownTimer > 0f)
+        if (cooldownTimer <= 0f)
         {
-            cooldownTimer -= Time.deltaTime;
+            return;
+        }
+
+        cooldownTimer -= Time.deltaTime;
+
+        if (cooldownTimer < 0f)
+        {
+            cooldownTimer = 0f;
         }
     }
 
     private void EndDash()
     {
-        playerController.FinishDashing();
+        stateMachine.FinishDashing();
     }
 }

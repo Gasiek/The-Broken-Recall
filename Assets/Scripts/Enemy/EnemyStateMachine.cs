@@ -201,8 +201,6 @@ public class EnemyStateMachine : MonoBehaviour
 
         CurrentState = newState;
 
-        Debug.Log($"{gameObject.name} → {CurrentState}");
-
         switch (CurrentState)
         {
             case EnemyState.Idle:

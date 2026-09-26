@@ -24,7 +24,7 @@ public class TornadoAction : ActionDefinition
 
     private void DealDamage(ActionContext context)
     {
-        Vector3 center = context.Player.transform.position;
+        Vector3 center = context.Player.position;
 
         Collider[] hits = Physics.OverlapSphere(
             center,

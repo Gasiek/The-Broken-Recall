@@ -1,15 +1,21 @@
+using UnityEngine;
+
 public class ActionContext
 {
-    public PlayerController Player { get; }
+    public Transform Player { get; }
+    public PlayerMovement Movement { get; }
     public PlayerActionVisuals Visuals { get; }
     public ActionDefinition Action { get; }
 
     public ActionContext(
-        PlayerController player,
+        Transform player,
+        PlayerMovement movement,
         PlayerActionVisuals visuals,
-        ActionDefinition action)
+        ActionDefinition action
+    )
     {
         Player = player;
+        Movement = movement;
         Visuals = visuals;
         Action = action;
     }

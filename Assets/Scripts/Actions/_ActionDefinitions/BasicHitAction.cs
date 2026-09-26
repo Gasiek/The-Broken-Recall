@@ -26,8 +26,8 @@ public class BasicHitAction : ActionDefinition
 
     private void DealDamage(ActionContext context)
     {
-        Vector3 origin = context.Player.transform.position;
-        Vector3 direction = context.Player.transform.forward;
+        Vector3 origin = context.Player.position;
+        Vector3 direction = context.Player.forward;
         if (!Physics.SphereCast(
             origin,
             attackRadius,
