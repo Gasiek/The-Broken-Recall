@@ -12,7 +12,7 @@ public class ActionController : MonoBehaviour
     private PlayerMovement playerMovement;
     private ActionMemory actionMemory;
     private PlayerActionVisuals actionVisuals;
-
+    private Health health;
     public event Action<float> ActionStarted;
 
     private void Awake()
@@ -21,6 +21,7 @@ public class ActionController : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
         actionMemory = GetComponent<ActionMemory>();
         actionVisuals = GetComponent<PlayerActionVisuals>();
+        health = GetComponent<Health>();
     }
 
     public void ExecuteAction(int slot)
@@ -46,7 +47,7 @@ public class ActionController : MonoBehaviour
 
         actionMemory.ReplaceAction(slot);
 
-        ActionContext context = new ActionContext(transform, playerMovement, actionVisuals, action);
+        ActionContext context = new ActionContext(transform, playerMovement, health, actionVisuals, action);
 
         yield return action.Execute(context);
 

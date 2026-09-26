@@ -8,6 +8,7 @@ public class Health : MonoBehaviour, IDamageable
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
+    public bool IsInvincible { get; private set; }
 
     public event Action HealthChanged;
     public event Action Died;
@@ -16,6 +17,7 @@ public class Health : MonoBehaviour, IDamageable
     {
         this.maxHealth = maxHealth;
         currentHealth = maxHealth;
+        IsInvincible = false;
 
         HealthChanged?.Invoke();
     }
@@ -23,14 +25,13 @@ public class Health : MonoBehaviour, IDamageable
     public void TakeDamage(int amount)
     {
         if (amount <= 0)
-        {
             return;
-        }
 
         if (currentHealth <= 0)
-        {
             return;
-        }
+
+        if (IsInvincible)
+            return;
 
         currentHealth -= amount;
         currentHealth = Mathf.Max(currentHealth, 0);
@@ -42,15 +43,22 @@ public class Health : MonoBehaviour, IDamageable
         HealthChanged?.Invoke();
 
         if (currentHealth <= 0)
-        {
             Die();
-        }
+    }
+
+    public void StartInvincibility()
+    {
+        IsInvincible = true;
+    }
+
+    public void StopInvincibility()
+    {
+        IsInvincible = false;
     }
 
     private void Die()
     {
         Debug.Log($"{gameObject.name} died.");
-
         Died?.Invoke();
     }
 }
