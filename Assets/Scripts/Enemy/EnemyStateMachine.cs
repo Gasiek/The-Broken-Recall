@@ -2,13 +2,13 @@ using UnityEngine;
 
 [RequireComponent(typeof(EnemyController))]
 [RequireComponent(typeof(EnemyAggro))]
-[RequireComponent(typeof(EnemyAttack))]
 [RequireComponent(typeof(EnemyPatrol))]
 public class EnemyStateMachine : MonoBehaviour
 {
     private EnemyController enemy;
     private EnemyAggro aggro;
-    private EnemyAttack attack;
+    private EnemyAttack meleeAttack;
+    private RangedEnemyAttack rangedAttack;
     private EnemyPatrol patrol;
 
     public EnemyState CurrentState { get; private set; }
@@ -17,7 +17,8 @@ public class EnemyStateMachine : MonoBehaviour
     {
         enemy = GetComponent<EnemyController>();
         aggro = GetComponent<EnemyAggro>();
-        attack = GetComponent<EnemyAttack>();
+        meleeAttack = GetComponent<EnemyAttack>();
+        rangedAttack = GetComponent<RangedEnemyAttack>();
         patrol = GetComponent<EnemyPatrol>();
 
         CurrentState = EnemyState.Idle;
@@ -97,10 +98,30 @@ public class EnemyStateMachine : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        if (distanceToTarget <= attack.AttackRange && attack.CanAttack)
+        if (rangedAttack != null)
         {
-            ChangeState(EnemyState.Attacking);
-            return;
+            if (distanceToTarget <= rangedAttack.AttackRange)
+            {
+                enemy.Agent.isStopped = true;
+
+                FaceTarget(target);
+
+                if (rangedAttack.CanAttack)
+                {
+                    ChangeState(EnemyState.Attacking);
+                }
+
+                return;
+            }
+        }
+
+        if (meleeAttack != null)
+        {
+            if (distanceToTarget <= meleeAttack.AttackRange && meleeAttack.CanAttack)
+            {
+                ChangeState(EnemyState.Attacking);
+                return;
+            }
         }
 
         enemy.Agent.isStopped = false;
@@ -110,9 +131,22 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void UpdateAttacking()
     {
-        if (!attack.IsAttacking)
+        if (rangedAttack != null)
         {
-            ChangeState(EnemyState.Chasing);
+            if (!rangedAttack.IsAttacking)
+            {
+                ChangeState(EnemyState.Chasing);
+            }
+
+            return;
+        }
+
+        if (meleeAttack != null)
+        {
+            if (!meleeAttack.IsAttacking)
+            {
+                ChangeState(EnemyState.Chasing);
+            }
         }
     }
 
@@ -245,7 +279,24 @@ public class EnemyStateMachine : MonoBehaviour
     {
         enemy.Agent.isStopped = true;
 
-        attack.TryAttack(aggro.Target);
+        Transform target = aggro.Target;
+
+        if (target == null)
+        {
+            ChangeState(EnemyState.Returning);
+            return;
+        }
+
+        if (rangedAttack != null)
+        {
+            rangedAttack.TryAttack(target);
+            return;
+        }
+
+        if (meleeAttack != null)
+        {
+            meleeAttack.TryAttack(target);
+        }
     }
 
     private void EnterReturning()
@@ -273,5 +324,19 @@ public class EnemyStateMachine : MonoBehaviour
         ChangeState(EnemyState.Dead);
 
         Destroy(gameObject);
+    }
+
+    private void FaceTarget(Transform target)
+    {
+        Vector3 direction = target.position - transform.position;
+
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <= 0.001f)
+        {
+            return;
+        }
+
+        transform.rotation = Quaternion.LookRotation(direction);
     }
 }

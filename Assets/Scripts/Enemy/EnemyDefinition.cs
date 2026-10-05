@@ -29,6 +29,19 @@ public class EnemyDefinition : ScriptableObject
     [SerializeField]
     private float attackDuration = 0.4f;
 
+    [Header("Ranged Attack")]
+    [SerializeField]
+    private float rangedAttackRange = 8f;
+
+    [SerializeField]
+    private GameObject projectilePrefab;
+
+    [SerializeField]
+    private float projectileSpeed = 10f;
+
+    [SerializeField]
+    private float projectileLifetime = 10f;
+
     public int MaxHealth => maxHealth;
     public float MoveSpeed => moveSpeed;
     public float PatrolSpeed => patrolSpeed;
@@ -37,4 +50,8 @@ public class EnemyDefinition : ScriptableObject
     public float AttackRange => attackRange;
     public float AttackRadius => attackRadius;
     public float AttackDuration => attackDuration;
+    public float RangedAttackRange => rangedAttackRange;
+    public GameObject ProjectilePrefab => projectilePrefab;
+    public float ProjectileSpeed => projectileSpeed;
+    public float ProjectileLifetime => projectileLifetime;
 }
