@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(ActionCollection))]
 public class ActionMemory : MonoBehaviour
 {
-    public const int SlotCount = 3;
+    public const int SlotCount = 2;
 
     private ActionCollection actionCollection;
 

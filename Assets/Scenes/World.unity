@@ -21224,6 +21224,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Slot3
       objectReference: {fileID: 0}
+    - target: {fileID: 2646303505966815848, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5403812297738439157, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_text
       value: 3
@@ -21242,7 +21246,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_AnchorMin.x
@@ -21250,7 +21254,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_SizeDelta.x
@@ -21290,11 +21294,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 441.2
       objectReference: {fileID: 0}
     - target: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: -102.05
       objectReference: {fileID: 0}
     - target: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -21318,17 +21322,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6151454153182523212, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
   m_PrefabInstance: {fileID: 1719700102}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1719700104 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 874504777533456384, guid: a9d239f862d8348ef9b67a7aad9d6cd2, type: 3}
-  m_PrefabInstance: {fileID: 1719700102}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11681c6b74bed43e985330bb8940e3bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ActionSlotUI
 --- !u!1 &1774760833
 GameObject:
   m_ObjectHideFlags: 0
@@ -23174,7 +23167,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 542.4, y: 204.1}
+  m_SizeDelta: {x: 362.2, y: 204.1}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &2104569846
 MonoBehaviour:
@@ -23193,7 +23186,6 @@ MonoBehaviour:
   slots:
   - {fileID: 6553525504731304843}
   - {fileID: 878523371}
-  - {fileID: 1719700104}
 --- !u!114 &2104569847
 MonoBehaviour:
   m_ObjectHideFlags: 0
