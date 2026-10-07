@@ -456,6 +456,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9773a76da70d431a9ff3ac276bdfcdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
+  hitSound: {fileID: 8300000, guid: dd11a23aa62324675ae7f2db91c9b9ad, type: 3}
+  hitSoundVolume: 1
 --- !u!195 &3622533564039360608
 NavMeshAgent:
   m_ObjectHideFlags: 0

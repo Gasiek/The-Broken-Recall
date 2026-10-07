@@ -22,6 +22,21 @@ public class Health : MonoBehaviour, IDamageable
         HealthChanged?.Invoke();
     }
 
+    [Header("Audio")]
+    [SerializeField]
+    private AudioClip hitSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float hitSoundVolume = 1f;
+
+    [SerializeField]
+    private AudioClip blockSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float blockSoundVolume = 1f;
+
     public void TakeDamage(int amount)
     {
         if (amount <= 0)
@@ -31,7 +46,13 @@ public class Health : MonoBehaviour, IDamageable
             return;
 
         if (IsInvincible)
+        {
+            if (blockSound != null)
+            {
+                AudioSource.PlayClipAtPoint(blockSound, transform.position, blockSoundVolume);
+            }
             return;
+        }
 
         currentHealth -= amount;
         currentHealth = Mathf.Max(currentHealth, 0);
@@ -39,6 +60,11 @@ public class Health : MonoBehaviour, IDamageable
         Debug.Log(
             $"{gameObject.name} took {amount} damage. " + $"Health: {currentHealth}/{maxHealth}"
         );
+
+        if (hitSound != null)
+        {
+            AudioSource.PlayClipAtPoint(hitSound, transform.position, hitSoundVolume);
+        }
 
         HealthChanged?.Invoke();
 
