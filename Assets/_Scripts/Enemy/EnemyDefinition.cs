@@ -27,7 +27,7 @@ public class EnemyDefinition : ScriptableObject
     private float attackRadius = 0.35f;
 
     [SerializeField]
-    private float attackDuration = 0.4f;
+    private float attackDelay = 0.2f;
 
     [Header("Ranged Attack")]
     [SerializeField]
@@ -49,7 +49,7 @@ public class EnemyDefinition : ScriptableObject
     public float AttackCooldown => attackCooldown;
     public float AttackRange => attackRange;
     public float AttackRadius => attackRadius;
-    public float AttackDuration => attackDuration;
+    public float AttackDelay => attackDelay;
     public float RangedAttackRange => rangedAttackRange;
     public GameObject ProjectilePrefab => projectilePrefab;
     public float ProjectileSpeed => projectileSpeed;

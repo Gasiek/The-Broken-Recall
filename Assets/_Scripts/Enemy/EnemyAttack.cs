@@ -7,6 +7,7 @@ public class EnemyAttack : MonoBehaviour
 {
     [SerializeField]
     private LayerMask targetLayer;
+
     private EnemyController enemy;
     private EnemyAttackVisuals visuals;
 
@@ -48,17 +49,21 @@ public class EnemyAttack : MonoBehaviour
     {
         IsAttacking = true;
 
+        // Start the cooldown immediately when the attack is committed.
         cooldownTimer = enemy.Definition.AttackCooldown;
 
+        // Lock the attack direction at the moment the attack starts.
         FaceTarget(target);
 
+        // Wait for the attack wind-up.
+        yield return new WaitForSeconds(enemy.Definition.AttackDelay);
+
+        // Play the attack animation/effect. TODO: when proper animations are implemented, we need to change the timing of when the damage id dealt
         visuals.BasicAttack();
 
-        yield return new WaitForSeconds(enemy.Definition.AttackDuration * 0.5f);
-
-        DealDamage(target);
-
-        yield return new WaitForSeconds(enemy.Definition.AttackDuration * 0.5f);
+        // Check what is actually in front of the enemy NOW.
+        // We do not use the target Transform here.
+        DealDamage();
 
         IsAttacking = false;
     }
@@ -76,24 +81,15 @@ public class EnemyAttack : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(direction);
     }
 
-    private void DealDamage(Transform target)
+    private void DealDamage()
     {
-        if (target == null)
-        {
-            return;
-        }
-
-        Vector3 origin = transform.position;
-
-        Vector3 direction = target.position - origin;
-        direction.y = 0f;
+        Vector3 origin = transform.position + 0.5f * transform.up;
+        Vector3 direction = transform.forward;
 
         if (direction.sqrMagnitude <= 0.001f)
         {
             return;
         }
-
-        direction.Normalize();
 
         if (
             !Physics.SphereCast(
@@ -102,7 +98,8 @@ public class EnemyAttack : MonoBehaviour
                 direction,
                 out RaycastHit hit,
                 enemy.Definition.AttackRange,
-                targetLayer
+                targetLayer,
+                QueryTriggerInteraction.Ignore
             )
         )
         {
@@ -117,5 +114,30 @@ public class EnemyAttack : MonoBehaviour
         }
 
         damageable.TakeDamage(enemy.Definition.AttackDamage);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (enemy == null || enemy.Definition == null)
+        {
+            return;
+        }
+
+        float radius = enemy.Definition.AttackRadius;
+        float distance = enemy.Definition.AttackRange;
+
+        Vector3 start = transform.position + 0.5f * transform.up;
+        Vector3 end = start + transform.forward * distance;
+
+        Gizmos.DrawWireSphere(start, radius);
+        Gizmos.DrawWireSphere(end, radius);
+
+        Gizmos.DrawLine(start + transform.right * radius, end + transform.right * radius);
+
+        Gizmos.DrawLine(start - transform.right * radius, end - transform.right * radius);
+
+        Gizmos.DrawLine(start + transform.up * radius, end + transform.up * radius);
+
+        Gizmos.DrawLine(start - transform.up * radius, end - transform.up * radius);
     }
 }

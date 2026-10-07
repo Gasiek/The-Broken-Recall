@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1153013561129614876}
   - component: {fileID: 5552851828662028611}
   - component: {fileID: 8306963563605374322}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 833102573639499160}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -139,7 +139,7 @@ GameObject:
   - component: {fileID: 2843368209447120811}
   - component: {fileID: 1769461324064003629}
   - component: {fileID: 737954095528008972}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Cylinder (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -229,7 +229,7 @@ GameObject:
   - component: {fileID: 5235408138298005353}
   - component: {fileID: 4796503979726768186}
   - component: {fileID: 3183584103621033035}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: LoseTargetTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -297,7 +297,7 @@ GameObject:
   - component: {fileID: 7504061799798465466}
   - component: {fileID: 6641778395844346099}
   - component: {fileID: 2250856418849261714}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -532,7 +532,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttackVisuals
   weapon: {fileID: 4324269215468510921}
   basicAttackRotation: {x: 90, y: -20, z: 0}
-  basicAttackDuration: 0.2
+  basicAttackDuration: 0.15
 --- !u!114 &7857942963183297402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -590,7 +590,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4324269215468510921}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Weapon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -624,7 +624,7 @@ GameObject:
   - component: {fileID: 634741436243529143}
   - component: {fileID: 1537471434911987592}
   - component: {fileID: 4246133533933912300}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -714,7 +714,7 @@ GameObject:
   - component: {fileID: 297389071357420029}
   - component: {fileID: 3188111000577531752}
   - component: {fileID: 5593173693340445136}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Cylinder (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -804,8 +804,7 @@ GameObject:
   - component: {fileID: 135040985293261803}
   - component: {fileID: 6219514738122465800}
   - component: {fileID: 5629720123604421603}
-  - component: {fileID: 3419787818133191138}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: WeaponVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -884,29 +883,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &3419787818133191138
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7626610888931915969}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &7892518969424428403
 GameObject:
   m_ObjectHideFlags: 0
@@ -918,7 +894,7 @@ GameObject:
   - component: {fileID: 2964096217443251870}
   - component: {fileID: 8898392738617078709}
   - component: {fileID: 7790876314806777824}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Cylinder (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1008,7 +984,7 @@ GameObject:
   - component: {fileID: 2694334415642326322}
   - component: {fileID: 6251928842329314704}
   - component: {fileID: 7165563254600209539}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: AggroTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1076,7 +1052,7 @@ GameObject:
   - component: {fileID: 4373765770904112215}
   - component: {fileID: 301462846615086682}
   - component: {fileID: 3784648604413728041}
-  m_Layer: 6
+  m_Layer: 0
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}

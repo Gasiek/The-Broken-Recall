@@ -19,4 +19,8 @@ MonoBehaviour:
   attackCooldown: 3
   attackRange: 2
   attackRadius: 0.35
-  attackDuration: 0.4
+  attackDelay: 0.3
+  rangedAttackRange: 8
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 10
+  projectileLifetime: 10

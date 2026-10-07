@@ -45,8 +45,8 @@ public class PlayerInputHandler : MonoBehaviour
         {
             return;
         }
-
-        actionController.ExecuteAction(2);
+        Debug.Log("Currently slot 3 is disabled.");
+        // actionController.ExecuteAction(2);
     }
 
     public void OnInteract(InputAction.CallbackContext context)
