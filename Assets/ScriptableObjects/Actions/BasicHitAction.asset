@@ -18,7 +18,7 @@ MonoBehaviour:
   icon: {fileID: -5512061999450555946, guid: 7d81af5fc45c04784afc3e5b937c5dd2, type: 3}
   damage: 10
   attackRange: 1.5
-  attackRadius: 0.35
+  attackRadius: 0.5
   targetLayer:
     serializedVersion: 2
     m_Bits: 64

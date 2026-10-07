@@ -366,7 +366,7 @@ GameObject:
   - component: {fileID: 46023417}
   - component: {fileID: 46023420}
   - component: {fileID: 46023419}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: EyeR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1370,7 +1370,7 @@ GameObject:
   - component: {fileID: 155808738}
   - component: {fileID: 155808737}
   - component: {fileID: 155808736}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: SwordVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1819,7 +1819,7 @@ GameObject:
   - component: {fileID: 245038203}
   - component: {fileID: 245038206}
   - component: {fileID: 245038205}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: HandR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7308,7 +7308,7 @@ GameObject:
   - component: {fileID: 841472619}
   - component: {fileID: 841472622}
   - component: {fileID: 841472621}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: EyeL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7396,7 +7396,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 853815500}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7428,7 +7428,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 875779526}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: VisualBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7476,7 +7476,7 @@ GameObject:
   - component: {fileID: 881216791}
   - component: {fileID: 881216794}
   - component: {fileID: 881216793}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: HandL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -21189,7 +21189,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1681897177}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: TornadoPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
