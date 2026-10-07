@@ -12,6 +12,16 @@ public class PlayerMovement : MonoBehaviour
     private float verticalVelocity;
     private float currentSpeedMultiplier = 1f;
 
+    [Header("Audio")]
+    [SerializeField]
+    private AudioClip footstepSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float footstepVolume = 0.5f;
+
+    private AudioSource footstepAudioSource;
+
     public float CurrentMoveSpeed => playerDefinition.MoveSpeed * currentSpeedMultiplier;
 
     private void Awake()
@@ -21,8 +31,20 @@ public class PlayerMovement : MonoBehaviour
         Player player = GetComponent<Player>();
         playerDefinition = player.Definition;
 
+        SetupFootstepAudio();
+
         if (playerDefinition == null)
             Debug.LogError("PlayerMovement has no PlayerDefinition assigned.");
+    }
+
+    private void SetupFootstepAudio()
+    {
+        footstepAudioSource = gameObject.AddComponent<AudioSource>();
+        footstepAudioSource.clip = footstepSound;
+        footstepAudioSource.volume = footstepVolume;
+        footstepAudioSource.loop = true;
+        footstepAudioSource.playOnAwake = false;
+        footstepAudioSource.spatialBlend = 1f; // 3D sound
     }
 
     private void Update()
@@ -38,7 +60,10 @@ public class PlayerMovement : MonoBehaviour
     private void Move()
     {
         if (!stateMachine.CanMove)
+        {
+            StopFootsteps();
             return;
+        }
 
         Vector3 cameraForward = Camera.main != null ? Camera.main.transform.forward : Vector3.forward;
         Vector3 cameraRight = Camera.main != null ? Camera.main.transform.right : Vector3.right;
@@ -58,6 +83,42 @@ public class PlayerMovement : MonoBehaviour
         characterController.Move(movement * CurrentMoveSpeed * Time.deltaTime);
 
         ApplyGravity();
+
+        HandleFootsteps(movement);
+    }
+
+    private void HandleFootsteps(Vector3 movement)
+    {
+        if (footstepSound == null)
+            return;
+
+        // Make sure audio source has the right volume/clip if changed in inspector
+        footstepAudioSource.volume = footstepVolume;
+        if (footstepAudioSource.clip != footstepSound)
+            footstepAudioSource.clip = footstepSound;
+
+        // Player is moving on the ground
+        bool isWalking = movement.sqrMagnitude > 0.01f && characterController.isGrounded;
+
+        if (isWalking)
+        {
+            if (!footstepAudioSource.isPlaying)
+            {
+                footstepAudioSource.Play();
+            }
+        }
+        else
+        {
+            StopFootsteps();
+        }
+    }
+
+    private void StopFootsteps()
+    {
+        if (footstepAudioSource != null && footstepAudioSource.isPlaying)
+        {
+            footstepAudioSource.Stop();
+        }
     }
 
     private void RotateTowardsMovement(Vector3 movement)
