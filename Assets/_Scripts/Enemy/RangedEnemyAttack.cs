@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class RangedEnemyAttack : MonoBehaviour
@@ -11,7 +12,7 @@ public class RangedEnemyAttack : MonoBehaviour
 
     public bool IsAttacking { get; private set; }
 
-    public bool CanAttack => cooldownTimer <= 0f;
+    public bool CanAttack => cooldownTimer <= 0f && !IsAttacking;
 
     public float AttackRange => enemy.Definition.RangedAttackRange;
 
@@ -28,18 +29,34 @@ public class RangedEnemyAttack : MonoBehaviour
         }
     }
 
-    public void TryAttack(Transform target)
+    public bool TryAttack(Transform target)
     {
         if (!CanAttack || target == null)
         {
-            return;
+            return false;
         }
 
+        StartCoroutine(AttackRoutine(target));
+
+        return true;
+    }
+
+    private IEnumerator AttackRoutine(Transform target)
+    {
         IsAttacking = true;
 
+        // Start cooldown when the attack is committed.
         cooldownTimer = enemy.Definition.AttackCooldown;
 
-        FireProjectile(target);
+        // Wait for the attack delay.
+        // For ranged enemies this can be 0.
+        yield return new WaitForSeconds(enemy.Definition.AttackDelay);
+
+        // Check that the target still exists before firing.
+        if (target != null)
+        {
+            FireProjectile(target);
+        }
 
         IsAttacking = false;
     }
@@ -50,6 +67,20 @@ public class RangedEnemyAttack : MonoBehaviour
         {
             Debug.LogError($"{gameObject.name} has no projectile spawn point.", gameObject);
 
+            return;
+        }
+
+        if (enemy.Definition.ProjectilePrefab == null)
+        {
+            Debug.LogError($"{gameObject.name} has no projectile prefab.", gameObject);
+
+            return;
+        }
+
+        Vector3 direction = target.position - projectileSpawnPoint.position;
+
+        if (direction.sqrMagnitude <= 0.001f)
+        {
             return;
         }
 
@@ -65,14 +96,6 @@ public class RangedEnemyAttack : MonoBehaviour
         {
             Debug.LogError("Projectile prefab is missing Projectile component.", projectileObject);
 
-            Destroy(projectileObject);
-            return;
-        }
-
-        Vector3 direction = target.position - projectileSpawnPoint.position;
-
-        if (direction.sqrMagnitude <= 0.001f)
-        {
             Destroy(projectileObject);
             return;
         }

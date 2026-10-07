@@ -19,7 +19,7 @@ MonoBehaviour:
   attackCooldown: 1.5
   attackRange: 2
   attackRadius: 0.35
-  attackDuration: 0.4
+  attackDelay: 0
   rangedAttackRange: 8
   projectilePrefab: {fileID: 634076412066877005, guid: 3b6396541c4254f43a6bff7f11eba416, type: 3}
   projectileSpeed: 6
