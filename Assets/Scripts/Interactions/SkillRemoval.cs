@@ -10,11 +10,14 @@ public class SkillRemoval : MonoBehaviour, IInteractable
 
     [SerializeField]
     private SkillRemovalUI skillRemovalUI;
-    private bool hasRemoved;
+
+    private bool interactionCompleted;
+
+    public bool CanInteract => !interactionCompleted;
 
     public void Interact()
     {
-        if (hasRemoved)
+        if (interactionCompleted)
         {
             return;
         }
@@ -38,6 +41,6 @@ public class SkillRemoval : MonoBehaviour, IInteractable
 
         actionMemory.RemoveAndReplace(action);
 
-        hasRemoved = true;
+        interactionCompleted = true;
     }
 }

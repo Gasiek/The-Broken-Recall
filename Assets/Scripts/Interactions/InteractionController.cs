@@ -2,33 +2,89 @@ using UnityEngine;
 
 public class InteractionController : MonoBehaviour
 {
+    [Header("Interaction")]
     [SerializeField]
-    private float interactionDistance = 2f;
+    private float interactionDistance = 1.5f;
+
+    [SerializeField]
+    private float interactionRadius = 1.8f;
 
     [SerializeField]
     private LayerMask interactionLayer;
 
-    public void Interact()
+    [Header("UI")]
+    [SerializeField]
+    private InteractionPromptUI interactionPrompt;
+
+    public IInteractable CurrentInteractable { get; private set; }
+
+    private void Update()
     {
-        Vector3 origin = transform.position;
-        Vector3 direction = transform.forward;
+        FindInteractable();
+    }
 
-        if (
-            Physics.Raycast(
-                origin,
-                direction,
-                out RaycastHit hit,
-                interactionDistance,
-                interactionLayer
-            )
-        )
+    private void FindInteractable()
+    {
+        Vector3 origin = transform.position + Vector3.up * 1.0f;
+
+        Vector3 interactionCenter = origin + transform.forward * interactionDistance;
+
+        Collider[] colliders = Physics.OverlapSphere(
+            interactionCenter,
+            interactionRadius,
+            interactionLayer
+        );
+
+        IInteractable newInteractable = null;
+
+        foreach (Collider collider in colliders)
         {
-            IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+            IInteractable interactable = collider.GetComponentInParent<IInteractable>();
 
-            if (interactable != null)
+            if (interactable != null && interactable.CanInteract)
             {
-                interactable.Interact();
+                newInteractable = interactable;
+                break;
             }
         }
+
+        if (newInteractable == CurrentInteractable)
+        {
+            return;
+        }
+
+        CurrentInteractable = newInteractable;
+
+        if (CurrentInteractable != null)
+        {
+            interactionPrompt.Show();
+        }
+        else
+        {
+            interactionPrompt.Hide();
+        }
+    }
+
+    public void Interact()
+    {
+        if (CurrentInteractable == null)
+        {
+            return;
+        }
+
+        CurrentInteractable.Interact();
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+
+        Vector3 origin = transform.position + Vector3.up * 1.0f;
+
+        Vector3 interactionCenter = origin + transform.forward * interactionDistance;
+
+        Gizmos.DrawWireSphere(interactionCenter, interactionRadius);
+
+        Gizmos.DrawLine(origin, interactionCenter);
     }
 }

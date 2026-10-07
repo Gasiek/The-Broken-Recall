@@ -11,32 +11,47 @@ public class TeacherNPC : MonoBehaviour, IInteractable
     [SerializeField]
     private SkillLearnUI skillLearnUI;
 
-    private bool hasTaught;
+    [SerializeField]
+    private string[] completedInteractionTexts;
+
+    private bool interactionCompleted;
+
+    public bool CanInteract
+    {
+        get
+        {
+            if (!interactionCompleted)
+            {
+                return true;
+            }
+
+            return completedInteractionTexts != null && completedInteractionTexts.Length > 0;
+        }
+    }
 
     public void Interact()
     {
-        if (hasTaught)
+        if (interactionCompleted)
         {
+            InteractAfterCompletion();
             return;
         }
 
         if (actionToTeach == null)
         {
             Debug.LogWarning($"{name} has no action assigned to teach.");
-
             return;
         }
 
         if (actionCollection == null)
         {
             Debug.LogWarning($"{name} has no ActionCollection assigned.");
-
             return;
         }
 
         if (actionCollection.Contains(actionToTeach))
         {
-            hasTaught = true;
+            interactionCompleted = true;
             return;
         }
 
@@ -45,7 +60,7 @@ public class TeacherNPC : MonoBehaviour, IInteractable
 
     public void LearnAction()
     {
-        if (hasTaught)
+        if (interactionCompleted)
         {
             return;
         }
@@ -62,12 +77,24 @@ public class TeacherNPC : MonoBehaviour, IInteractable
 
         if (actionCollection.Contains(actionToTeach))
         {
-            hasTaught = true;
+            interactionCompleted = true;
             return;
         }
 
         actionCollection.Add(actionToTeach);
 
-        hasTaught = true;
+        interactionCompleted = true;
+    }
+
+    private void InteractAfterCompletion()
+    {
+        if (completedInteractionTexts == null || completedInteractionTexts.Length == 0)
+        {
+            return;
+        }
+
+        string text = completedInteractionTexts[Random.Range(0, completedInteractionTexts.Length)];
+
+        Debug.Log(text);
     }
 }

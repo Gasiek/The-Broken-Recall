@@ -12,9 +12,8 @@ GameObject:
   - component: {fileID: 7149642870095393564}
   - component: {fileID: 5192947650415704321}
   - component: {fileID: 5635925712021878298}
-  - component: {fileID: 6714409660002449559}
   m_Layer: 3
-  m_Name: NPC
+  m_Name: _NPC
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -115,18 +114,3 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6714409660002449559
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7548489536133615684}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7baa58e4a157c4fee918bb4cde5b8f76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TeacherNPC
-  actionToTeach: {fileID: 11400000, guid: 4ded916a11731426389cfff2e0d5992e, type: 2}
-  actionCollection: {fileID: 0}
-  skillLearnUI: {fileID: 0}
