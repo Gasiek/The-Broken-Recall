@@ -40,7 +40,15 @@ public class PlayerMovement : MonoBehaviour
         if (!stateMachine.CanMove)
             return;
 
-        Vector3 movement = new Vector3(moveInput.x, 0f, moveInput.y);
+        Vector3 cameraForward = Camera.main != null ? Camera.main.transform.forward : Vector3.forward;
+        Vector3 cameraRight = Camera.main != null ? Camera.main.transform.right : Vector3.right;
+
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        Vector3 movement = cameraRight * moveInput.x + cameraForward * moveInput.y;
 
         if (movement.sqrMagnitude > 1f)
             movement.Normalize();
