@@ -1,0 +1,53 @@
+:root {
+}
+
+.panel {
+    background-color: rgba(0, 0, 0, 0.29);
+    backdrop-filter: blur(2);
+    align-items: center;
+    justify-content: center;
+    align-self: auto;
+}
+
+.buttons {
+    flex-basis: auto;
+    height: auto;
+    background-color: rgb(156, 139, 139);
+    position: absolute;
+    padding-top: 16px;
+    padding-right: 30px;
+    padding-bottom: 16px;
+    padding-left: 30px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+}
+
+.button {
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Bangers.ttf?fileID=12800000&guid=5dd49b3eacc540408c98eee0de38e0f1&type=3#Bangers");
+    font-size: 62px;
+    -unity-text-outline-width: 2px;
+    color: rgb(255, 255, 255);
+    -unity-text-outline-color: rgb(0, 0, 0);
+    letter-spacing: 3px;
+    padding-top: 18px;
+    padding-right: 18px;
+    padding-bottom: 18px;
+    padding-left: 18px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    background-color: rgb(200, 165, 112);
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.button:hover {
+    scale: 1.05 1.05;
+    background-color: rgb(221, 183, 124);
+    transition-property: scale;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
