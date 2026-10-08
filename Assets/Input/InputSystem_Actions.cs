@@ -408,7 +408,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""9c8ea076-8bee-4c50-9801-900f38407631"",
-                    ""path"": ""<Gamepad>/leftStick"",
+                    ""path"": ""<Gamepad>/rightStick"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Gamepad"",
