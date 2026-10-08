@@ -2,35 +2,37 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Player))]
+[RequireComponent(typeof(PlayerStateMachine))]
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Movement Reference")]
+    [SerializeField]
+    private Transform movementReference;
     private PlayerStateMachine stateMachine;
     private PlayerDefinition playerDefinition;
     private CharacterController characterController;
-
     private Vector2 moveInput;
     private float verticalVelocity;
     private float currentSpeedMultiplier = 1f;
-
     public float BaseMoveSpeed => playerDefinition.MoveSpeed;
-
     public float CurrentMoveSpeed => playerDefinition.MoveSpeed * currentSpeedMultiplier;
-
     public bool IsMoving { get; private set; }
-
-    public bool IsGrounded => characterController != null && characterController.isGrounded;
+    public bool IsGrounded => characterController.isGrounded;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
         stateMachine = GetComponent<PlayerStateMachine>();
-
         Player player = GetComponent<Player>();
         playerDefinition = player.Definition;
-
         if (playerDefinition == null)
         {
             Debug.LogError("PlayerMovement has no PlayerDefinition assigned.");
+        }
+        if (movementReference == null)
+        {
+            Debug.LogError("PlayerMovement has no movement reference assigned.");
         }
     }
 
@@ -51,41 +53,40 @@ public class PlayerMovement : MonoBehaviour
             IsMoving = false;
             return;
         }
+        Vector3 movement = GetMovementDirection();
+        IsMoving = movement.sqrMagnitude > 0.01f;
+        RotateTowardsMovement(movement);
+        characterController.Move(movement * CurrentMoveSpeed * Time.deltaTime);
+        ApplyGravity();
+    }
 
-        Vector3 cameraForward =
-            Camera.main != null ? Camera.main.transform.forward : Vector3.forward;
-
-        Vector3 cameraRight = Camera.main != null ? Camera.main.transform.right : Vector3.right;
-
-        cameraForward.y = 0f;
-        cameraRight.y = 0f;
-
-        cameraForward.Normalize();
-        cameraRight.Normalize();
-
-        Vector3 movement = cameraRight * moveInput.x + cameraForward * moveInput.y;
-
+    private Vector3 GetMovementDirection()
+    {
+        if (movementReference == null)
+        {
+            return Vector3.zero;
+        }
+        Vector3 forward = movementReference.forward;
+        Vector3 right = movementReference.right;
+        forward.y = 0f;
+        right.y = 0f;
+        forward.Normalize();
+        right.Normalize();
+        Vector3 movement = right * moveInput.x + forward * moveInput.y;
         if (movement.sqrMagnitude > 1f)
         {
             movement.Normalize();
         }
-
-        IsMoving = movement.sqrMagnitude > 0.01f;
-
-        RotateTowardsMovement(movement);
-
-        characterController.Move(movement * CurrentMoveSpeed * Time.deltaTime);
-
-        ApplyGravity();
+        return movement;
     }
 
     private void RotateTowardsMovement(Vector3 movement)
     {
         if (movement.sqrMagnitude < 0.01f)
+        {
             return;
-
+        }
         Quaternion targetRotation = Quaternion.LookRotation(movement);
-
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             targetRotation,
@@ -99,9 +100,7 @@ public class PlayerMovement : MonoBehaviour
         {
             verticalVelocity = -2f;
         }
-
         verticalVelocity += playerDefinition.Gravity * Time.deltaTime;
-
         characterController.Move(Vector3.up * verticalVelocity * Time.deltaTime);
     }
 

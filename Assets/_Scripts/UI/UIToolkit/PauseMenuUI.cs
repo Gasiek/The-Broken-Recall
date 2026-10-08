@@ -5,21 +5,26 @@ public class PauseMenuUI : MonoBehaviour
 {
     [SerializeField]
     private PauseController pauseController;
+
     private PanelRenderer panelRenderer;
+
     private Button resumeButton;
     private Button quitButton;
     private VisualElement pauseMenu;
 
-
     private void OnEnable()
     {
         panelRenderer = GetComponent<PanelRenderer>();
+
         panelRenderer.RegisterUIReloadCallback(OnUIReload);
     }
 
     private void OnDisable()
     {
-        panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+        if (panelRenderer != null)
+        {
+            panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+        }
     }
 
     private void OnUIReload(PanelRenderer panelRenderer, VisualElement root, int version)
@@ -36,13 +41,16 @@ public class PauseMenuUI : MonoBehaviour
 
     public void Show()
     {
-        pauseMenu.visible = true;
+        pauseMenu.style.display = DisplayStyle.Flex;
+        pauseMenu.style.visibility = Visibility.Visible;
+
         resumeButton.Focus();
     }
 
     public void Hide()
     {
-        pauseMenu.visible = false;
+        pauseMenu.style.display = DisplayStyle.None;
+        pauseMenu.style.visibility = Visibility.Hidden;
     }
 
     private void HandleResumeClicked()

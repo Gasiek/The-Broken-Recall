@@ -12,13 +12,9 @@ public class CameraFollow : MonoBehaviour
     private float distance = 8f;
 
     [SerializeField]
-    private float height = 8f;
+    private float height = 1.5f;
 
-    [Header("Follow Settings")]
-    [SerializeField]
-    private float followSpeed = 25f;
-
-    [Header("Mouse Orbit Settings")]
+    [Header("Orbit Settings")]
     [SerializeField]
     private float mouseSensitivity = 1.5f;
 
@@ -28,11 +24,16 @@ public class CameraFollow : MonoBehaviour
     [SerializeField]
     private float maxPitch = 70f;
 
-    [SerializeField]
-    private bool lockCursor = true;
-
     private float currentYaw;
     private float currentPitch = 40f;
+
+    private void Awake()
+    {
+        if (target == null)
+        {
+            Debug.LogError("CameraFollow has no target assigned.");
+        }
+    }
 
     private void Start()
     {
@@ -41,11 +42,7 @@ public class CameraFollow : MonoBehaviour
             currentYaw = target.eulerAngles.y;
         }
 
-        if (lockCursor)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
+        LockCursor();
     }
 
     private void LateUpdate()
@@ -55,46 +52,61 @@ public class CameraFollow : MonoBehaviour
             return;
         }
 
-        HandleMouseInput();
-
-        // Target point (center of the player)
-        Vector3 targetFocusPoint = target.position + Vector3.up * 1.5f;
-
-        // Calculate exact rotation around player
-        Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
-
-        // Strict constant distance sphere orbit:
-        // Position is ALWAYS exactly 'distance' away from targetFocusPoint
-        Vector3 orbitOffset = rotation * (Vector3.back * distance);
-        transform.position = targetFocusPoint + orbitOffset;
-
-        // Camera is ALWAYS 100% oriented directly at player focus point
-        transform.rotation = rotation;
+        UpdateCameraPosition();
     }
 
-    private void HandleMouseInput()
+    public void OnLook(InputAction.CallbackContext context)
     {
-        if (Mouse.current != null)
+        if (!context.performed)
         {
-            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-            currentYaw += mouseDelta.x * mouseSensitivity;
-            currentPitch -= mouseDelta.y * mouseSensitivity;
-            currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
+            return;
         }
 
-        // Toggle cursor lock with Escape
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
-                ? CursorLockMode.None
-                : CursorLockMode.Locked;
-            Cursor.visible = Cursor.lockState != CursorLockMode.Locked;
-        }
+        Vector2 lookInput = context.ReadValue<Vector2>();
+
+        currentYaw += lookInput.x * mouseSensitivity;
+        currentPitch -= lookInput.y * mouseSensitivity;
+
+        currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
+    }
+
+    public void OnPause()
+    {
+        UnlockCursor();
+    }
+
+    public void OnResume()
+    {
+        LockCursor();
+    }
+
+    private void UpdateCameraPosition()
+    {
+        Vector3 targetFocusPoint = target.position + Vector3.up * height;
+
+        Quaternion orbitRotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
+
+        Vector3 orbitOffset = orbitRotation * (Vector3.back * distance);
+
+        transform.position = targetFocusPoint + orbitOffset;
+
+        transform.LookAt(targetFocusPoint);
+    }
+
+    private void LockCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void UnlockCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     private void OnDestroy()
     {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+        UnlockCursor();
     }
 }
