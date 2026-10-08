@@ -15,10 +15,23 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 moveInput;
     private float verticalVelocity;
     private float currentSpeedMultiplier = 1f;
+    private bool isMovementOverridden;
+
     public float BaseMoveSpeed => playerDefinition.MoveSpeed;
     public float CurrentMoveSpeed => playerDefinition.MoveSpeed * currentSpeedMultiplier;
     public bool IsMoving { get; private set; }
     public bool IsGrounded => characterController.isGrounded;
+    public CharacterController CharacterController => characterController;
+
+    public void SetMovementOverridden(bool overridden)
+    {
+        isMovementOverridden = overridden;
+        if (overridden)
+        {
+            verticalVelocity = 0f;
+            IsMoving = false;
+        }
+    }
 
     private void Awake()
     {
@@ -48,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
-        if (!stateMachine.CanMove)
+        if (!stateMachine.CanMove || isMovementOverridden)
         {
             IsMoving = false;
             return;

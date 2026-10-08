@@ -51,6 +51,19 @@ public class PlayerActionVisuals : MonoBehaviour
     [SerializeField]
     private float blockTransitionDuration = 0.15f;
 
+    [Header("Jump Slam")]
+    [SerializeField]
+    private Vector3 jumpSlamPrepRotation = new Vector3(-60f, 0f, 0f);
+
+    [SerializeField]
+    private Vector3 jumpSlamPrepOffset = new Vector3(0f, 0.8f, -0.2f);
+
+    [SerializeField]
+    private Vector3 jumpSlamLandRotation = new Vector3(80f, 0f, 0f);
+
+    [SerializeField]
+    private Vector3 jumpSlamLandOffset = new Vector3(0f, -0.4f, 0.6f);
+
     private Vector3 swordIdleRotation;
     private Vector3 swordIdlePosition;
 
@@ -158,5 +171,62 @@ public class PlayerActionVisuals : MonoBehaviour
         sequence.Append(
             sword.DOLocalRotate(swordIdleRotation, pushTransitionDuration).SetEase(Ease.InQuad)
         );
+    }
+
+    public void JumpSlam(float duration)
+    {
+        sword.DOKill();
+
+        float prepTime = duration * 0.45f;
+        float slamTime = duration * 0.25f;
+        float returnTime = Mathf.Max(0.05f, duration - prepTime - slamTime);
+
+        Sequence sequence = DOTween.Sequence();
+
+        // 1. Rise & windup: raise sword overhead
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation + jumpSlamPrepRotation, prepTime)
+                .SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition + jumpSlamPrepOffset, prepTime)
+                .SetEase(Ease.OutQuad)
+        );
+
+        // 2. Drive sword down during descent
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation + jumpSlamLandRotation, slamTime)
+                .SetEase(Ease.InCubic)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition + jumpSlamLandOffset, slamTime)
+                .SetEase(Ease.InCubic)
+        );
+
+        // 3. Shake on impact
+        sequence.Append(
+            sword.DOShakePosition(0.08f, 0.15f, 10, 90f, false, true)
+        );
+
+        // 4. Return to idle
+        sequence.Append(
+            sword.DOLocalRotate(swordIdleRotation, returnTime).SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword.DOLocalMove(swordIdlePosition, returnTime).SetEase(Ease.OutQuad)
+        );
+    }
+
+    public void ResetVisuals()
+    {
+        sword.DOKill();
+        tornadoPivot.DOKill();
+        sword.localPosition = swordIdlePosition;
+        sword.localEulerAngles = swordIdleRotation;
+        tornadoPivot.localRotation = tornadoPivotIdleRotation;
     }
 }
