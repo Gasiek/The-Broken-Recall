@@ -397,6 +397,7 @@ GameObject:
   - component: {fileID: 2031304770200489341}
   - component: {fileID: -196632083092022130}
   - component: {fileID: 798186275855912458}
+  - component: {fileID: 1989367088531153839}
   m_Layer: 6
   m_Name: Enemy
   m_TagString: Untagged
@@ -597,6 +598,8 @@ MonoBehaviour:
   hitVolume: 1
   blockSound: {fileID: 0}
   blockVolume: 1
+  healSound: {fileID: 0}
+  healVolume: 0.8
 --- !u!82 &798186275855912458
 AudioSource:
   m_ObjectHideFlags: 0
@@ -694,6 +697,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1989367088531153839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3603842340316313691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31d107d565e3d494f9fcdd976c916f9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HitVisuals
+  hitParticlePrefab: {fileID: 3999699402599864446, guid: dec6211596081439fb7d9889c59f582b, type: 3}
+  spawnOffset: {x: 0, y: 1, z: 0}
 --- !u!1 &5290805841508215483
 GameObject:
   m_ObjectHideFlags: 0
