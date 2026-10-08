@@ -42,7 +42,12 @@ public class TornadoAction : ActionDefinition
                 continue;
             }
 
-            damageable.TakeDamage(damage);
+            CombatResolver.ResolvePlayerAttackHit(
+                context.Player.gameObject,
+                damageable,
+                damage,
+                hit.transform.position
+            );
         }
     }
 }

@@ -54,7 +54,12 @@ public class PushAction : ActionDefinition
 
         if (damageable != null)
         {
-            damageable.TakeDamage(damage);
+            CombatResolver.ResolvePlayerAttackHit(
+                context.Player.gameObject,
+                damageable,
+                damage,
+                hit.point
+            );
         }
 
         IPushable pushable = hit.collider.GetComponentInParent<IPushable>();

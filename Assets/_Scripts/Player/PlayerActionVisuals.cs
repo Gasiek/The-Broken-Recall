@@ -6,6 +6,8 @@ public class PlayerActionVisuals : MonoBehaviour
     [SerializeField]
     private Transform sword;
 
+    public Transform Sword => sword;
+
     [SerializeField]
     private Transform tornadoPivot;
 
@@ -63,6 +65,13 @@ public class PlayerActionVisuals : MonoBehaviour
 
     [SerializeField]
     private Vector3 jumpSlamLandOffset = new Vector3(0f, -0.4f, 0.6f);
+
+    [Header("Lightning Charge")]
+    [SerializeField]
+    private Vector3 chargeRotation = new Vector3(-30f, 0f, 15f);
+
+    [SerializeField]
+    private Vector3 chargeOffset = new Vector3(0f, 0.4f, 0.3f);
 
     private Vector3 swordIdleRotation;
     private Vector3 swordIdlePosition;
@@ -218,6 +227,45 @@ public class PlayerActionVisuals : MonoBehaviour
         );
         sequence.Join(
             sword.DOLocalMove(swordIdlePosition, returnTime).SetEase(Ease.OutQuad)
+        );
+    }
+
+    public void ChargeSword(float duration)
+    {
+        sword.DOKill();
+
+        Sequence sequence = DOTween.Sequence();
+        float raiseTime = duration * 0.3f;
+        float holdTime = duration * 0.4f;
+        float returnTime = Mathf.Max(0.05f, duration - raiseTime - holdTime);
+
+        // 1. Podniesienie miecza przed klatkę piersiową
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation + chargeRotation, raiseTime)
+                .SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition + chargeOffset, raiseTime)
+                .SetEase(Ease.OutQuad)
+        );
+
+        // 2. Delikatne wibracje energii w naładowanym mieczu
+        sequence.Append(
+            sword.DOShakePosition(holdTime, 0.04f, 25, 90f, false, true)
+        );
+
+        // 3. Płynny powrót do pozycji idle
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation, returnTime)
+                .SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition, returnTime)
+                .SetEase(Ease.OutQuad)
         );
     }
 

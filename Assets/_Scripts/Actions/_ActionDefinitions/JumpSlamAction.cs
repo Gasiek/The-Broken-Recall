@@ -181,7 +181,12 @@ public class JumpSlamAction : ActionDefinition
             IDamageable damageable = hit.GetComponentInParent<IDamageable>();
             if (damageable != null && damagedEntities.Add(damageable))
             {
-                damageable.TakeDamage(damage);
+                CombatResolver.ResolvePlayerAttackHit(
+                    context.Player.gameObject,
+                    damageable,
+                    damage,
+                    impactPosition
+                );
             }
 
             IPushable pushable = hit.GetComponentInParent<IPushable>();

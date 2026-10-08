@@ -46,6 +46,11 @@ public class BasicHitAction : ActionDefinition
             return;
         }
 
-        damageable.TakeDamage(damage);
+        CombatResolver.ResolvePlayerAttackHit(
+            context.Player.gameObject,
+            damageable,
+            damage,
+            hit.point
+        );
     }
 }
