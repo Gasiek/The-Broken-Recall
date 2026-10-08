@@ -1,0 +1,6 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Button name="ActionButton" class="action-list-item" style="height: 60px; margin-bottom: 10px; padding-top: 20px; padding-bottom: 20px;">
+        <ui:Image name="Icon" class="action-list-item-icon"/>
+        <ui:Label name="Name" class="action-list-item-name"/>
+    </ui:Button>
+</ui:UXML>

@@ -1,0 +1,10 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/common-styles.uss?fileID=7433441132597879392&amp;guid=f5a483d70588545eeabe7eb35fd0f894&amp;type=3#common-styles"/>
+    <ui:VisualElement name="Backdrop" class="backdrop" style="flex-grow: 1; display: none;">
+        <ui:VisualElement name="Panel" class="panel" style="flex-grow: 1;">
+            <ui:Label text="Which action would you like to remove?" class="title"/>
+            <ui:ListView name="ListView" fixed-item-height="70" style="max-height: 400px; min-width: 250px; margin-bottom: 20px;"/>
+            <ui:Button name="CancelButton" text="Cancel" class="dialog-button button"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

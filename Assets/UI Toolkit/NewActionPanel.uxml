@@ -1,0 +1,16 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/common-styles.uss?fileID=7433441132597879392&amp;guid=f5a483d70588545eeabe7eb35fd0f894&amp;type=3#common-styles"/>
+    <ui:VisualElement name="Backdrop" class="backdrop" style="flex-grow: 1; display: none;">
+        <ui:VisualElement name="Panel" class="panel">
+            <ui:Label name="Question" text="Would you like to learn a new skill?" class="title"/>
+            <ui:VisualElement name="Action" style="flex-grow: 1; align-items: center;">
+                <ui:Image name="ActionIcon" class="action-icon" style="width: 100px; height: 100px;"/>
+                <ui:Label name="ActionName" text="Action name" class="action-name"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="Buttons" class="horizontal-buttons" style="flex-grow: 1; flex-direction: row;">
+                <ui:Button name="ButtonYes" text="Yes" class="dialog-button" style="background-color: rgb(134, 202, 85); margin-right: 40px;"/>
+                <ui:Button name="ButtonNo" text="No" class="dialog-button" style="background-color: rgb(190, 46, 57); margin-left: 40px;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
