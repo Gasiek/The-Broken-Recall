@@ -8,10 +8,15 @@ public class Health : MonoBehaviour, IDamageable
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
+
     public bool IsInvincible { get; private set; }
 
     public event Action HealthChanged;
     public event Action Died;
+
+    // Audio/presentation listeners can subscribe to these.
+    public event Action<int> DamageReceived;
+    public event Action DamageBlocked;
 
     public void Initialize(int maxHealth)
     {
@@ -21,21 +26,6 @@ public class Health : MonoBehaviour, IDamageable
 
         HealthChanged?.Invoke();
     }
-
-    [Header("Audio")]
-    [SerializeField]
-    private AudioClip hitSound;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    private float hitSoundVolume = 1f;
-
-    [SerializeField]
-    private AudioClip blockSound;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    private float blockSoundVolume = 1f;
 
     public void TakeDamage(int amount)
     {
@@ -47,10 +37,7 @@ public class Health : MonoBehaviour, IDamageable
 
         if (IsInvincible)
         {
-            if (blockSound != null)
-            {
-                AudioSource.PlayClipAtPoint(blockSound, transform.position, blockSoundVolume);
-            }
+            DamageBlocked?.Invoke();
             return;
         }
 
@@ -61,15 +48,13 @@ public class Health : MonoBehaviour, IDamageable
             $"{gameObject.name} took {amount} damage. " + $"Health: {currentHealth}/{maxHealth}"
         );
 
-        if (hitSound != null)
-        {
-            AudioSource.PlayClipAtPoint(hitSound, transform.position, hitSoundVolume);
-        }
-
+        DamageReceived?.Invoke(amount);
         HealthChanged?.Invoke();
 
         if (currentHealth <= 0)
+        {
             Die();
+        }
     }
 
     public void StartInvincibility()
@@ -85,6 +70,7 @@ public class Health : MonoBehaviour, IDamageable
     private void Die()
     {
         Debug.Log($"{gameObject.name} died.");
+
         Died?.Invoke();
     }
 }
