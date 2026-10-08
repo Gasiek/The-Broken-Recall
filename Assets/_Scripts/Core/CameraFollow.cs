@@ -55,6 +55,12 @@ public class CameraFollow : MonoBehaviour
             return;
         }
 
+        // Freeze camera movement and rotation when the game is paused
+        if (Time.timeScale == 0f || (PauseController.Instance != null && PauseController.Instance.IsPaused))
+        {
+            return;
+        }
+
         HandleMouseInput();
 
         // Target point (center of the player)
@@ -80,15 +86,6 @@ public class CameraFollow : MonoBehaviour
             currentYaw += mouseDelta.x * mouseSensitivity;
             currentPitch -= mouseDelta.y * mouseSensitivity;
             currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
-        }
-
-        // Toggle cursor lock with Escape
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked
-                ? CursorLockMode.None
-                : CursorLockMode.Locked;
-            Cursor.visible = Cursor.lockState != CursorLockMode.Locked;
         }
     }
 

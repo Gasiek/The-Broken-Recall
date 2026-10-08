@@ -36,13 +36,23 @@ public class PauseMenuUI : MonoBehaviour
 
     public void Show()
     {
-        pauseMenu.visible = true;
-        resumeButton.Focus();
+        Debug.Log("[PauseMenuUI] Showing pause menu");
+        if (pauseMenu != null)
+        {
+            pauseMenu.style.visibility = Visibility.Visible;
+            pauseMenu.visible = true;
+        }
+        resumeButton?.Focus();
     }
 
     public void Hide()
     {
-        pauseMenu.visible = false;
+        Debug.Log("[PauseMenuUI] Hiding pause menu");
+        if (pauseMenu != null)
+        {
+            pauseMenu.style.visibility = Visibility.Hidden;
+            pauseMenu.visible = false;
+        }
     }
 
     private void HandleResumeClicked()
