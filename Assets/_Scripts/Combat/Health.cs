@@ -57,6 +57,22 @@ public class Health : MonoBehaviour, IDamageable
         }
     }
 
+    public void Heal(int amount)
+    {
+        if (amount <= 0 || currentHealth <= 0)
+        {
+            return;
+        }
+
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+
+        Debug.Log(
+            $"{gameObject.name} healed for {amount}. Health: {currentHealth}/{maxHealth}"
+        );
+
+        HealthChanged?.Invoke();
+    }
+
     public void StartInvincibility()
     {
         IsInvincible = true;
