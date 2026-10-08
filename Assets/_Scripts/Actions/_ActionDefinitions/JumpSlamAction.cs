@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "JumpSlamAction", menuName = "RPG/Actions/Jump Slam")]
@@ -170,18 +171,21 @@ public class JumpSlamAction : ActionDefinition
             Destroy(vfx.gameObject, vfxLifetime);
         }
 
-        // Deal damage and knockback to all targets in radius
+        // Deal damage and knockback to all targets in radius (deduplicated per entity)
         Collider[] hits = Physics.OverlapSphere(impactPosition, slamRadius, targetLayer);
+        HashSet<IDamageable> damagedEntities = new HashSet<IDamageable>();
+        HashSet<IPushable> pushedEntities = new HashSet<IPushable>();
+
         foreach (Collider hit in hits)
         {
             IDamageable damageable = hit.GetComponentInParent<IDamageable>();
-            if (damageable != null)
+            if (damageable != null && damagedEntities.Add(damageable))
             {
                 damageable.TakeDamage(damage);
             }
 
             IPushable pushable = hit.GetComponentInParent<IPushable>();
-            if (pushable != null)
+            if (pushable != null && pushedEntities.Add(pushable))
             {
                 Vector3 pushDir = hit.transform.position - impactPosition;
                 pushDir.y = 0f;

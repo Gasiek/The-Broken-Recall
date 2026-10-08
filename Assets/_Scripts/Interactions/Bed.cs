@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Bed : MonoBehaviour, IInteractable
 {
+    [Header("References")]
+    [SerializeField]
     private Health playerHealth;
 
     [Header("Sleep Duration Settings")]
@@ -24,21 +26,9 @@ public class Bed : MonoBehaviour, IInteractable
 
     private bool isSleeping;
 
-    public bool CanInteract
-    {
-        get
-        {
-            EnsurePlayerReference();
-            return playerHealth != null && !isSleeping;
-        }
-    }
+    public bool CanInteract => !isSleeping;
 
     private void Awake()
-    {
-        EnsurePlayerReference();
-    }
-
-    private void EnsurePlayerReference()
     {
         if (playerHealth == null)
         {
@@ -52,21 +42,39 @@ public class Bed : MonoBehaviour, IInteractable
 
     public void Interact()
     {
-        EnsurePlayerReference();
-
-        if (playerHealth == null || isSleeping)
+        if (isSleeping)
         {
+            return;
+        }
+
+        if (playerHealth == null)
+        {
+            Player player = FindFirstObjectByType<Player>();
+            if (player != null)
+            {
+                playerHealth = player.GetComponent<Health>();
+            }
+        }
+
+        if (playerHealth == null)
+        {
+            Debug.LogWarning("[Bed] Cannot rest: Player Health component not found.");
             return;
         }
 
         if (ScreenFader.Instance != null)
         {
             isSleeping = true;
-            ScreenFader.Instance.SleepSequence(fadeOutDuration, sleepDuration, fadeInDuration, () =>
-            {
-                PerformRest();
-                isSleeping = false;
-            });
+            ScreenFader.Instance.SleepSequence(
+                fadeOutDuration,
+                sleepDuration,
+                fadeInDuration,
+                () =>
+                {
+                    PerformRest();
+                    isSleeping = false;
+                }
+            );
         }
         else
         {
@@ -78,23 +86,20 @@ public class Bed : MonoBehaviour, IInteractable
     private void PerformRest()
     {
         if (playerHealth == null)
+        {
             return;
+        }
 
         int missingHealth = playerHealth.MaxHealth - playerHealth.CurrentHealth;
         playerHealth.Heal(missingHealth);
 
-        Debug.Log($"[Bed] Player rested and restored 100% health! ({playerHealth.CurrentHealth}/{playerHealth.MaxHealth})");
+        Debug.Log(
+            $"[Bed] Player rested and restored 100% health! ({playerHealth.CurrentHealth}/{playerHealth.MaxHealth})"
+        );
 
         if (restSound != null)
         {
-            if (AudioManager.Instance != null)
-            {
-                AudioManager.Instance.PlaySFX(restSound, transform.position, restVolume);
-            }
-            else
-            {
-                AudioSource.PlayClipAtPoint(restSound, transform.position, restVolume);
-            }
+            AudioManager.Instance.PlaySFX(restSound, transform.position, restVolume);
         }
     }
 }
