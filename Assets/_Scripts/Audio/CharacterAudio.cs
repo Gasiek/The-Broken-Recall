@@ -20,6 +20,14 @@ public class CharacterAudio : MonoBehaviour
     [Range(0f, 1f)]
     private float blockVolume = 1f;
 
+    [Header("Healing")]
+    [SerializeField]
+    private AudioClip healSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float healVolume = 0.8f;
+
     private Health health;
     private AudioSource audioSource;
 
@@ -36,6 +44,7 @@ public class CharacterAudio : MonoBehaviour
 
         health.DamageReceived += OnDamageReceived;
         health.DamageBlocked += OnDamageBlocked;
+        health.HealthRestored += OnHealthRestored;
     }
 
     private void OnDisable()
@@ -45,6 +54,7 @@ public class CharacterAudio : MonoBehaviour
 
         health.DamageReceived -= OnDamageReceived;
         health.DamageBlocked -= OnDamageBlocked;
+        health.HealthRestored -= OnHealthRestored;
     }
 
     private void OnDamageReceived(int amount)
@@ -61,5 +71,13 @@ public class CharacterAudio : MonoBehaviour
             return;
 
         audioSource.PlayOneShot(blockSound, blockVolume);
+    }
+
+    private void OnHealthRestored(int amount)
+    {
+        if (healSound == null)
+            return;
+
+        audioSource.PlayOneShot(healSound, healVolume);
     }
 }

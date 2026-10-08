@@ -17,6 +17,7 @@ public class Health : MonoBehaviour, IDamageable
     // Audio/presentation listeners can subscribe to these.
     public event Action<int> DamageReceived;
     public event Action DamageBlocked;
+    public event Action<int> HealthRestored;
 
     public void Initialize(int maxHealth)
     {
@@ -70,6 +71,7 @@ public class Health : MonoBehaviour, IDamageable
             $"{gameObject.name} healed for {amount}. Health: {currentHealth}/{maxHealth}"
         );
 
+        HealthRestored?.Invoke(amount);
         HealthChanged?.Invoke();
     }
 
