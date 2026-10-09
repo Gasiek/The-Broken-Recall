@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: PlayerDefinition
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDefinition
   maxHealth: 100
-  moveSpeed: 8
+  moveSpeed: 6
   rotationSpeed: 15
   gravity: -20
-  dashDistance: 5
-  dashDuration: 0.2
+  dashDistance: 2
+  dashDuration: 0.15
   dashCooldown: 0.5
