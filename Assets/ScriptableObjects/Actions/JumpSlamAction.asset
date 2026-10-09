@@ -15,7 +15,7 @@ MonoBehaviour:
   id: jump_slam
   displayName: Jump Slam
   duration: 0.85
-  icon: {fileID: 2357318064495944178, guid: 1fb5a38c20f09416dab236da9835b355, type: 3}
+  icon: {fileID: -7803645356194029076, guid: 1fb5a38c20f09416dab236da9835b355, type: 3}
   damage: 25
   slamRadius: 3.5
   knockbackDistance: 3.5
@@ -24,7 +24,7 @@ MonoBehaviour:
     m_Bits: 64
   jumpHeight: 2.5
   forwardDistance: 2
-  jumpSound: {fileID: 0}
+  jumpSound: {fileID: 8300000, guid: 2319500d2e0e3458097c1c8834da06ad, type: 3}
   slamSound: {fileID: 8300000, guid: dd11a23aa62324675ae7f2db91c9b9ad, type: 3}
   soundVolume: 0.8
-  slamVfxPrefab: {fileID: 0}
+  slamVfxPrefab: {fileID: 4208126484273490533, guid: 2288590ec85824d6196955cf2f239093, type: 3}

@@ -15,7 +15,7 @@ MonoBehaviour:
   id: heal
   displayName: Heal
   duration: 0.5
-  icon: {fileID: -4362370926197488538, guid: abd12db238389491cacfdb28c1ac1552, type: 3}
+  icon: {fileID: -397088048600430730, guid: ee522672538e94df580aff45d885d184, type: 3}
   healAmount: 25
-  healSound: {fileID: 8300000, guid: c500ab15cb1914696b29144f4c8174de, type: 3}
-  healSoundVolume: 0.3
+  healVfxPrefab: {fileID: 2239275727143023703, guid: 33f1a7125942a4defad32c4c9eb34496, type: 3}
+  vfxOffset: {x: 0, y: 0, z: 0}

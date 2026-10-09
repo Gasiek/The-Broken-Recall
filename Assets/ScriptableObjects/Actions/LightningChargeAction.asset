@@ -15,10 +15,10 @@ MonoBehaviour:
   id: lightning_charge
   displayName: Lightning Charge
   duration: 0.6
-  icon: {fileID: 0}
+  icon: {fileID: -7028776058394270243, guid: 8c2fca88b1f4044d681cd1eeb368294d, type: 3}
   bonusDamage: 10
-  swordLightningVfxPrefab: {fileID: 0}
-  onHitDischargeVfxPrefab: {fileID: 0}
-  chargeSound: {fileID: 0}
+  swordLightningVfxPrefab: {fileID: 2178626084523266782, guid: a2cce6bc5c2864347ba65b541a974d96, type: 3}
+  onHitDischargeVfxPrefab: {fileID: 3999699402599864446, guid: dec6211596081439fb7d9889c59f582b, type: 3}
+  chargeSound: {fileID: 8300000, guid: 76f2a4b576d4844f2a4d0f0a729739de, type: 3}
   dischargeSound: {fileID: 0}
   soundVolume: 0.8
