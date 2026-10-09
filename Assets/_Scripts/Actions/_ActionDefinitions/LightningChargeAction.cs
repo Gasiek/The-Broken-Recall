@@ -1,10 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-[CreateAssetMenu(
-    fileName = "LightningChargeAction",
-    menuName = "RPG/Actions/Lightning Charge"
-)]
+[CreateAssetMenu(fileName = "LightningChargeAction", menuName = "RPG/Actions/Lightning Charge")]
 public class LightningChargeAction : ActionDefinition
 {
     [Header("Charge Combat")]
@@ -44,10 +41,14 @@ public class LightningChargeAction : ActionDefinition
             context.Visuals.ChargeSword(Duration);
         }
 
-        // 2. Play charge sound
+        // 2. Play charge sound at the player's position
         if (chargeSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlaySFX(chargeSound, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(
+                chargeSound,
+                context.Player.transform.position,
+                soundVolume
+            );
         }
 
         // 3. Apply lightning charge to player's weapon

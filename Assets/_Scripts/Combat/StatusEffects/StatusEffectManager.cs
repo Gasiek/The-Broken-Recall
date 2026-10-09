@@ -18,7 +18,8 @@ public class StatusEffectManager : MonoBehaviour
     private NavMeshAgent navAgent;
     private PlayerMovement playerMovement;
 
-    private readonly Dictionary<string, ActiveEffect> activeEffects = new Dictionary<string, ActiveEffect>();
+    private readonly Dictionary<string, ActiveEffect> activeEffects =
+        new Dictionary<string, ActiveEffect>();
     private float defaultNavSpeed;
     private bool hasRecordedDefaultNavSpeed;
 
@@ -65,7 +66,11 @@ public class StatusEffectManager : MonoBehaviour
         // Play apply audio
         if (definition.ApplySound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlaySFX(definition.ApplySound, transform.position, definition.SoundVolume);
+            AudioManager.Instance.PlayWorldSFX(
+                definition.ApplySound,
+                transform.position,
+                definition.SoundVolume
+            );
         }
 
         // Spawn VFX
@@ -81,7 +86,7 @@ public class StatusEffectManager : MonoBehaviour
         {
             Definition = definition,
             VfxInstance = vfxInstance,
-            RemainingTime = definition.Duration
+            RemainingTime = definition.Duration,
         };
 
         effect.Coroutine = StartCoroutine(ProcessEffectRoutine(effect, effectId));
@@ -103,7 +108,10 @@ public class StatusEffectManager : MonoBehaviour
             }
 
             // Damage Over Time tick
-            if (def.EffectType == StatusEffectType.Burn || def.EffectType == StatusEffectType.Poison)
+            if (
+                def.EffectType == StatusEffectType.Burn
+                || def.EffectType == StatusEffectType.Poison
+            )
             {
                 tickTimer += Time.deltaTime;
                 if (tickTimer >= def.TickInterval)
@@ -113,7 +121,11 @@ public class StatusEffectManager : MonoBehaviour
 
                     if (def.TickSound != null && AudioManager.Instance != null)
                     {
-                        AudioManager.Instance.PlaySFX(def.TickSound, transform.position, def.SoundVolume);
+                        AudioManager.Instance.PlayWorldSFX(
+                            def.TickSound,
+                            transform.position,
+                            def.SoundVolume
+                        );
                     }
                 }
             }
@@ -153,7 +165,11 @@ public class StatusEffectManager : MonoBehaviour
         foreach (var pair in activeEffects)
         {
             StatusEffectDefinition def = pair.Value.Definition;
-            if (def.EffectType == StatusEffectType.Slow || def.EffectType == StatusEffectType.Freeze || def.EffectType == StatusEffectType.Stun)
+            if (
+                def.EffectType == StatusEffectType.Slow
+                || def.EffectType == StatusEffectType.Freeze
+                || def.EffectType == StatusEffectType.Stun
+            )
             {
                 if (def.SpeedMultiplier < lowestSpeedMultiplier)
                 {

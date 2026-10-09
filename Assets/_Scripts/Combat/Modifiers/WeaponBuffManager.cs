@@ -41,7 +41,11 @@ public class WeaponBuffManager : MonoBehaviour
         // Play apply sound
         if (definition.ApplySound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlaySFX(definition.ApplySound, definition.SoundVolume);
+            AudioManager.Instance.PlayWorldSFX(
+                definition.ApplySound,
+                transform.position,
+                definition.SoundVolume
+            );
         }
 
         // Attach sword VFX
@@ -79,9 +83,8 @@ public class WeaponBuffManager : MonoBehaviour
             return;
         }
 
-        Transform swordTransform = visuals != null && visuals.Sword != null
-            ? visuals.Sword
-            : transform;
+        Transform swordTransform =
+            visuals != null && visuals.Sword != null ? visuals.Sword : transform;
 
         currentSwordVfx = Instantiate(prefab, swordTransform);
         currentSwordVfx.transform.localPosition = Vector3.zero;
@@ -106,12 +109,18 @@ public class WeaponBuffManager : MonoBehaviour
 
         if (activeBuff != null)
         {
-            totalDamage = Mathf.RoundToInt((baseDamage + activeBuff.FlatBonusDamage) * activeBuff.DamageMultiplier);
+            totalDamage = Mathf.RoundToInt(
+                (baseDamage + activeBuff.FlatBonusDamage) * activeBuff.DamageMultiplier
+            );
 
             // On-hit VFX
             if (activeBuff.OnHitVfxPrefab != null)
             {
-                ParticleSystem hitVfx = Instantiate(activeBuff.OnHitVfxPrefab, hitPoint, Quaternion.identity);
+                ParticleSystem hitVfx = Instantiate(
+                    activeBuff.OnHitVfxPrefab,
+                    hitPoint,
+                    Quaternion.identity
+                );
                 hitVfx.Play();
                 Destroy(hitVfx.gameObject, 2.0f);
             }
@@ -119,13 +128,20 @@ public class WeaponBuffManager : MonoBehaviour
             // On-hit SFX
             if (activeBuff.OnHitSound != null && AudioManager.Instance != null)
             {
-                AudioManager.Instance.PlaySFX(activeBuff.OnHitSound, hitPoint, activeBuff.SoundVolume);
+                AudioManager.Instance.PlayWorldSFX(
+                    activeBuff.OnHitSound,
+                    hitPoint,
+                    activeBuff.SoundVolume
+                );
             }
 
             // Lifesteal
             if (activeBuff.LifestealPercentage > 0f && playerHealth != null)
             {
-                int healAmount = Mathf.Max(1, Mathf.RoundToInt(totalDamage * activeBuff.LifestealPercentage));
+                int healAmount = Mathf.Max(
+                    1,
+                    Mathf.RoundToInt(totalDamage * activeBuff.LifestealPercentage)
+                );
                 playerHealth.Heal(healAmount);
             }
 
@@ -135,7 +151,8 @@ public class WeaponBuffManager : MonoBehaviour
                 Component targetComponent = targetDamageable as Component;
                 if (targetComponent != null)
                 {
-                    StatusEffectManager statusMgr = targetComponent.GetComponentInParent<StatusEffectManager>();
+                    StatusEffectManager statusMgr =
+                        targetComponent.GetComponentInParent<StatusEffectManager>();
                     if (statusMgr == null)
                     {
                         statusMgr = targetComponent.gameObject.AddComponent<StatusEffectManager>();
@@ -162,7 +179,7 @@ public class WeaponBuffManager : MonoBehaviour
 
             if (customOnHitSound != null && AudioManager.Instance != null)
             {
-                AudioManager.Instance.PlaySFX(customOnHitSound, hitPoint, customVolume);
+                AudioManager.Instance.PlayWorldSFX(customOnHitSound, hitPoint, customVolume);
             }
 
             ClearActiveBuff();

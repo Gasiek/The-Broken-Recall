@@ -58,7 +58,11 @@ public class JumpSlamAction : ActionDefinition
         // Optional jump sound
         if (jumpSound != null)
         {
-            AudioManager.Instance.PlaySFX(jumpSound, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(
+                jumpSound,
+                context.Player.transform.position,
+                soundVolume
+            );
         }
 
         // 2. Lock normal player movement and gravity
@@ -160,7 +164,7 @@ public class JumpSlamAction : ActionDefinition
         // Play Slam SFX
         if (slamSound != null)
         {
-            AudioManager.Instance.PlaySFX(slamSound, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(slamSound, impactPosition, soundVolume);
         }
 
         // Spawn slam VFX if available
