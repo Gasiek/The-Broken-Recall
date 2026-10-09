@@ -22,13 +22,46 @@ public class SkillRemoval : MonoBehaviour, IInteractable
             return;
         }
 
+        if (actionCollection == null)
+        {
+            Debug.LogWarning($"{name} has no ActionCollection assigned.");
+
+            return;
+        }
+
+        if (skillRemovalUI == null)
+        {
+            Debug.LogWarning($"{name} has no SkillRemovalUI assigned.");
+
+            return;
+        }
+
         skillRemovalUI.Show(this, actionCollection);
     }
 
     public void RemoveAction(ActionDefinition action)
     {
+        if (interactionCompleted)
+        {
+            return;
+        }
+
         if (action == null)
         {
+            return;
+        }
+
+        if (actionCollection == null)
+        {
+            Debug.LogWarning($"{name} has no ActionCollection assigned.");
+
+            return;
+        }
+
+        if (actionMemory == null)
+        {
+            Debug.LogWarning($"{name} has no ActionMemory assigned.");
+
             return;
         }
 

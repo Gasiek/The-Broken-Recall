@@ -49,6 +49,12 @@ public class TeacherNPC : MonoBehaviour, IInteractable
             return;
         }
 
+        if (skillLearnUI == null)
+        {
+            Debug.LogWarning($"{name} has no SkillLearnUI assigned.");
+            return;
+        }
+
         if (actionCollection.Contains(actionToTeach))
         {
             interactionCompleted = true;
@@ -67,11 +73,13 @@ public class TeacherNPC : MonoBehaviour, IInteractable
 
         if (actionToTeach == null)
         {
+            Debug.LogWarning($"{name} has no action assigned to teach.");
             return;
         }
 
         if (actionCollection == null)
         {
+            Debug.LogWarning($"{name} has no ActionCollection assigned.");
             return;
         }
 
