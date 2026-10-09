@@ -78,15 +78,11 @@ public class StatusEffectManager : MonoBehaviour
 
         PlaySound(definition.ApplySound, definition.SoundVolume);
 
-        ParticleSystem vfxInstance = null;
-
-        if (definition.VfxPrefab != null)
-        {
-            vfxInstance = Instantiate(definition.VfxPrefab, transform);
-            vfxInstance.transform.localPosition = Vector3.up * 0.8f;
-            vfxInstance.transform.localRotation = Quaternion.identity;
-            vfxInstance.Play();
-        }
+        ParticleSystem vfxInstance = VfxSpawner.SpawnAttached(
+            definition.VfxPrefab,
+            transform,
+            Vector3.up * 0.8f
+        );
 
         ActiveEffect effect = new ActiveEffect
         {
@@ -169,7 +165,7 @@ public class StatusEffectManager : MonoBehaviour
 
         if (effect.VfxInstance != null)
         {
-            Destroy(effect.VfxInstance.gameObject);
+            VfxSpawner.StopAndDestroy(effect.VfxInstance);
             effect.VfxInstance = null;
         }
 
@@ -227,7 +223,7 @@ public class StatusEffectManager : MonoBehaviour
                 StopCoroutine(effect.Coroutine);
 
             if (effect.VfxInstance != null)
-                Destroy(effect.VfxInstance.gameObject);
+                VfxSpawner.StopAndDestroy(effect.VfxInstance);
         }
 
         activeEffects.Clear();

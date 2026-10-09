@@ -4,6 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "HealAction", menuName = "RPG/Actions/Heal")]
 public class HealAction : ActionDefinition
 {
+    [Header("Healing")]
     [SerializeField]
     private int healAmount = 25;
 
@@ -16,6 +17,9 @@ public class HealAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
+        if (context == null)
+            yield break;
+
         if (context.Health != null)
         {
             context.Health.Heal(healAmount);
@@ -24,14 +28,13 @@ public class HealAction : ActionDefinition
         if (healVfxPrefab != null && context.Player != null)
         {
             Vector3 spawnPosition = context.Player.position + vfxOffset;
-            ParticleSystem vfx = Instantiate(
+
+            VfxSpawner.SpawnOneShot(
                 healVfxPrefab,
                 spawnPosition,
-                Quaternion.identity,
+                context.Player.rotation,
                 context.Player
             );
-            float lifetime = vfx.main.duration + vfx.main.startLifetime.constantMax;
-            Destroy(vfx.gameObject, lifetime);
         }
 
         yield return new WaitForSeconds(Duration);

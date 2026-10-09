@@ -7,14 +7,17 @@ public class WeaponBuffManager : MonoBehaviour
     private PlayerActionVisuals visuals;
     private Health playerHealth;
     private AudioManager audioManager;
+
     private WeaponBuffDefinition activeBuff;
     private ParticleSystem currentSwordVfx;
     private Coroutine durationCoroutine;
+
     private bool hasCustomBuff;
     private int customBonusDamage;
     private ParticleSystem customOnHitVfx;
     private AudioClip customOnHitSound;
     private float customVolume = 1f;
+
     public bool HasActiveBuff => activeBuff != null || hasCustomBuff;
 
     private void Awake()
@@ -32,9 +35,12 @@ public class WeaponBuffManager : MonoBehaviour
     {
         if (definition == null)
             return;
+
         ClearActiveBuff();
+
         activeBuff = definition;
         hasCustomBuff = false;
+
         if (definition.ApplySound != null && audioManager != null)
         {
             audioManager.PlayWorldSFX(
@@ -43,7 +49,9 @@ public class WeaponBuffManager : MonoBehaviour
                 definition.SoundVolume
             );
         }
+
         AttachSwordVfx(definition.SwordVfxPrefab);
+
         if (definition.Mode == WeaponBuffMode.Duration && definition.Duration > 0f)
         {
             durationCoroutine = StartCoroutine(DurationRoutine(definition.Duration));
@@ -59,11 +67,13 @@ public class WeaponBuffManager : MonoBehaviour
     )
     {
         ClearActiveBuff();
+
         hasCustomBuff = true;
         customBonusDamage = bonusDamage;
         customOnHitVfx = onHitVfxPrefab;
         customOnHitSound = dischargeSound;
         customVolume = Mathf.Clamp01(soundVolume);
+
         AttachSwordVfx(swordVfxPrefab);
     }
 
@@ -78,8 +88,10 @@ public class WeaponBuffManager : MonoBehaviour
                 )
             );
         }
+
         if (hasCustomBuff)
             return Mathf.Max(0, baseDamage + customBonusDamage);
+
         return Mathf.Max(0, baseDamage);
     }
 
@@ -91,9 +103,11 @@ public class WeaponBuffManager : MonoBehaviour
     {
         if (!HasActiveBuff || actualDamage <= 0)
             return;
+
         if (activeBuff != null)
         {
             ProcessDefinitionBuffHit(targetDamageable, hitPoint, actualDamage);
+
             if (activeBuff != null && activeBuff.Mode == WeaponBuffMode.SingleHit)
             {
                 ClearActiveBuff();
@@ -103,6 +117,7 @@ public class WeaponBuffManager : MonoBehaviour
         {
             PlayHitVfx(customOnHitVfx, hitPoint);
             PlayHitSound(customOnHitSound, hitPoint, customVolume);
+
             ClearActiveBuff();
         }
     }
@@ -115,17 +130,23 @@ public class WeaponBuffManager : MonoBehaviour
     {
         if (activeBuff == null)
             return;
+
         PlayHitVfx(activeBuff.OnHitVfxPrefab, hitPoint);
+
         PlayHitSound(activeBuff.OnHitSound, hitPoint, activeBuff.SoundVolume);
+
         if (activeBuff.LifestealPercentage > 0f && playerHealth != null)
         {
             int healAmount = Mathf.RoundToInt(actualDamage * activeBuff.LifestealPercentage);
+
             if (healAmount > 0)
                 playerHealth.Heal(healAmount);
         }
+
         if (activeBuff.StatusEffectOnHit != null && targetDamageable is Component targetComponent)
         {
             StatusEffectManager statusManager = targetComponent.GetComponent<StatusEffectManager>();
+
             if (statusManager != null)
             {
                 statusManager.ApplyStatus(activeBuff.StatusEffectOnHit);
@@ -135,17 +156,14 @@ public class WeaponBuffManager : MonoBehaviour
 
     private void PlayHitVfx(ParticleSystem prefab, Vector3 hitPoint)
     {
-        if (prefab == null)
-            return;
-        ParticleSystem vfx = Instantiate(prefab, hitPoint, Quaternion.identity);
-        vfx.Play();
-        Destroy(vfx.gameObject, 2f);
+        VfxSpawner.SpawnOneShot(prefab, hitPoint, Quaternion.identity);
     }
 
     private void PlayHitSound(AudioClip clip, Vector3 hitPoint, float volume)
     {
         if (clip == null || audioManager == null)
             return;
+
         audioManager.PlayWorldSFX(clip, hitPoint, volume);
     }
 
@@ -153,16 +171,16 @@ public class WeaponBuffManager : MonoBehaviour
     {
         if (prefab == null)
             return;
+
         Transform parent = visuals != null && visuals.Sword != null ? visuals.Sword : transform;
-        currentSwordVfx = Instantiate(prefab, parent);
-        currentSwordVfx.transform.localPosition = Vector3.zero;
-        currentSwordVfx.transform.localRotation = Quaternion.identity;
-        currentSwordVfx.Play();
+
+        currentSwordVfx = VfxSpawner.SpawnAttached(prefab, parent, Vector3.zero);
     }
 
     private IEnumerator DurationRoutine(float duration)
     {
         yield return new WaitForSeconds(duration);
+
         durationCoroutine = null;
         ClearActiveBuff();
     }
@@ -174,13 +192,15 @@ public class WeaponBuffManager : MonoBehaviour
             StopCoroutine(durationCoroutine);
             durationCoroutine = null;
         }
+
         if (currentSwordVfx != null)
         {
-            currentSwordVfx.Stop();
-            Destroy(currentSwordVfx.gameObject, 0.5f);
+            VfxSpawner.StopAndDestroy(currentSwordVfx, 0.5f);
             currentSwordVfx = null;
         }
+
         activeBuff = null;
+
         hasCustomBuff = false;
         customBonusDamage = 0;
         customOnHitVfx = null;

@@ -36,14 +36,10 @@ public class HitVisuals : MonoBehaviour
     private void OnDamageReceived(int damage)
     {
         if (hitParticlePrefab == null)
-        {
             return;
-        }
 
         Vector3 spawnPosition = transform.position + spawnOffset;
-        ParticleSystem vfx = Instantiate(hitParticlePrefab, spawnPosition, Quaternion.identity);
-        
-        float duration = vfx.main.duration + vfx.main.startLifetime.constantMax;
-        Destroy(vfx.gameObject, duration);
+
+        VfxSpawner.SpawnOneShot(hitParticlePrefab, spawnPosition, Quaternion.identity);
     }
 }
