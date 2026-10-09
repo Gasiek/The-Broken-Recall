@@ -1,13 +1,19 @@
 using UnityEngine;
+
 public class PlayerStateMachine : MonoBehaviour
 {
     public PlayerState CurrentState { get; private set; } = PlayerState.Normal;
 
-    public bool CanMove => CurrentState != PlayerState.Dashing && CurrentState != PlayerState.Dead;
+    public bool CanMove =>
+        CurrentState != PlayerState.Dashing
+        && CurrentState != PlayerState.Sleeping
+        && CurrentState != PlayerState.Dead;
 
     public bool CanAct => CurrentState == PlayerState.Normal;
 
     public bool CanDash => CurrentState == PlayerState.Normal;
+
+    public bool CanSleep => CurrentState == PlayerState.Normal;
 
     public void StartActing()
     {
@@ -42,6 +48,26 @@ public class PlayerStateMachine : MonoBehaviour
     public void FinishDashing()
     {
         if (CurrentState != PlayerState.Dashing)
+        {
+            return;
+        }
+
+        CurrentState = PlayerState.Normal;
+    }
+
+    public void StartSleeping()
+    {
+        if (!CanSleep)
+        {
+            return;
+        }
+
+        CurrentState = PlayerState.Sleeping;
+    }
+
+    public void FinishSleeping()
+    {
+        if (CurrentState != PlayerState.Sleeping)
         {
             return;
         }

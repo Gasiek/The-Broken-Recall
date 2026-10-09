@@ -2,98 +2,78 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
-    private static AudioManager instance;
+    public static AudioManager Instance { get; private set; }
 
-    public static AudioManager Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                instance = FindFirstObjectByType<AudioManager>();
-
-                if (instance == null)
-                {
-                    GameObject go = new GameObject("AudioManager");
-                    instance = go.AddComponent<AudioManager>();
-                    DontDestroyOnLoad(go);
-                }
-            }
-
-            return instance;
-        }
-    }
-
-    [Header("Music")]
+    [Header("Audio Sources")]
     [SerializeField]
     private AudioSource musicSource;
 
-    [Header("SFX")]
     [SerializeField]
     private AudioSource sfxSource;
 
     private void Awake()
     {
-        if (instance != null && instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        instance = this;
+        Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        EnsureAudioSources();
+        if (musicSource == null || sfxSource == null)
+        {
+            Debug.LogError(
+                "[AudioManager] Assign Music Source and SFX Source in the Inspector.",
+                this
+            );
+        }
     }
 
-    private void EnsureAudioSources()
+    private void OnDestroy()
     {
-        if (sfxSource == null)
-        {
-            sfxSource = gameObject.AddComponent<AudioSource>();
-            sfxSource.playOnAwake = false;
-        }
-
-        if (musicSource == null)
-        {
-            musicSource = gameObject.AddComponent<AudioSource>();
-            musicSource.playOnAwake = false;
-            musicSource.loop = true;
-        }
+        if (Instance == this)
+            Instance = null;
     }
 
-    public void PlaySFX(AudioClip clip, Vector3 position, float volume = 1f)
+    public void PlayUISFX(AudioClip clip, float volume = 1f)
+    {
+        PlayGlobalSFX(clip, volume);
+    }
+
+    public void PlayGlobalSFX(AudioClip clip, float volume = 1f)
+    {
+        if (clip == null || sfxSource == null)
+            return;
+
+        sfxSource.PlayOneShot(clip, Mathf.Clamp01(volume));
+    }
+
+    public void PlayWorldSFX(AudioClip clip, Vector3 position, float volume = 1f)
     {
         if (clip == null)
             return;
 
-        AudioSource.PlayClipAtPoint(clip, position, volume);
-    }
-
-    public void PlaySFX(AudioClip clip, float volume = 1f)
-    {
-        if (clip == null)
-            return;
-
-        EnsureAudioSources();
-        sfxSource.PlayOneShot(clip, volume);
+        AudioSource.PlayClipAtPoint(clip, position, Mathf.Clamp01(volume));
     }
 
     public void PlayMusic(AudioClip clip)
     {
-        if (clip == null)
+        if (clip == null || musicSource == null)
             return;
 
-        EnsureAudioSources();
+        if (musicSource.clip == clip && musicSource.isPlaying)
+            return;
+
         musicSource.clip = clip;
+        musicSource.loop = true;
         musicSource.Play();
     }
 
     public void StopMusic()
     {
-        if (musicSource == null)
-            return;
-
-        musicSource.Stop();
+        if (musicSource != null)
+            musicSource.Stop();
     }
 }

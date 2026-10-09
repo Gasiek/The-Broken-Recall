@@ -6,6 +6,8 @@ public class PlayerActionVisuals : MonoBehaviour
     [SerializeField]
     private Transform sword;
 
+    public Transform Sword => sword;
+
     [SerializeField]
     private Transform tornadoPivot;
 
@@ -63,6 +65,13 @@ public class PlayerActionVisuals : MonoBehaviour
 
     [SerializeField]
     private Vector3 jumpSlamLandOffset = new Vector3(0f, -0.4f, 0.6f);
+
+    [Header("Lightning Charge")]
+    [SerializeField]
+    private Vector3 chargeRotation = new Vector3(-30f, 0f, 15f);
+
+    [SerializeField]
+    private Vector3 chargeOffset = new Vector3(0f, 0.4f, 0.3f);
 
     private Vector3 swordIdleRotation;
     private Vector3 swordIdlePosition;
@@ -183,7 +192,7 @@ public class PlayerActionVisuals : MonoBehaviour
 
         Sequence sequence = DOTween.Sequence();
 
-        // 1. Rise & windup: raise sword overhead
+        // 1. Rise & windup: raise sword above head
         sequence.Append(
             sword
                 .DOLocalRotate(swordIdleRotation + jumpSlamPrepRotation, prepTime)
@@ -195,7 +204,7 @@ public class PlayerActionVisuals : MonoBehaviour
                 .SetEase(Ease.OutQuad)
         );
 
-        // 2. Drive sword down during descent
+        // 2. Drive sword down during the descent
         sequence.Append(
             sword
                 .DOLocalRotate(swordIdleRotation + jumpSlamLandRotation, slamTime)
@@ -207,17 +216,56 @@ public class PlayerActionVisuals : MonoBehaviour
                 .SetEase(Ease.InCubic)
         );
 
-        // 3. Shake on impact
+        // 3. Shake on impact when the sword hits the ground
         sequence.Append(
             sword.DOShakePosition(0.08f, 0.15f, 10, 90f, false, true)
         );
 
-        // 4. Return to idle
+        // 4. Return to idle position
         sequence.Append(
             sword.DOLocalRotate(swordIdleRotation, returnTime).SetEase(Ease.OutQuad)
         );
         sequence.Join(
             sword.DOLocalMove(swordIdlePosition, returnTime).SetEase(Ease.OutQuad)
+        );
+    }
+
+    public void ChargeSword(float duration)
+    {
+        sword.DOKill();
+
+        Sequence sequence = DOTween.Sequence();
+        float raiseTime = duration * 0.3f;
+        float holdTime = duration * 0.4f;
+        float returnTime = Mathf.Max(0.05f, duration - raiseTime - holdTime);
+
+        // 1. Raise sword before chest frame
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation + chargeRotation, raiseTime)
+                .SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition + chargeOffset, raiseTime)
+                .SetEase(Ease.OutQuad)
+        );
+
+        // 2. Gentle energy vibrations in the charged sword
+        sequence.Append(
+            sword.DOShakePosition(holdTime, 0.04f, 25, 90f, false, true)
+        );
+
+        // 3. Smooth return to idle position
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation, returnTime)
+                .SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition, returnTime)
+                .SetEase(Ease.OutQuad)
         );
     }
 

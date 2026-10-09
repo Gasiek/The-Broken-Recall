@@ -6,6 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(ActionMemory))]
 [RequireComponent(typeof(PlayerActionVisuals))]
+[RequireComponent(typeof(WeaponBuffManager))]
 public class ActionController : MonoBehaviour
 {
     [Header("Action Settings")]
@@ -17,7 +18,7 @@ public class ActionController : MonoBehaviour
     private ActionMemory actionMemory;
     private PlayerActionVisuals actionVisuals;
     private Health health;
-
+    private WeaponBuffManager weaponBuffs;
     public event Action<float> ActionStarted;
 
     private void Awake()
@@ -27,6 +28,7 @@ public class ActionController : MonoBehaviour
         actionMemory = GetComponent<ActionMemory>();
         actionVisuals = GetComponent<PlayerActionVisuals>();
         health = GetComponent<Health>();
+        weaponBuffs = GetComponent<WeaponBuffManager>();
     }
 
     public void ExecuteAction(int slot)
@@ -66,7 +68,8 @@ public class ActionController : MonoBehaviour
             playerMovement,
             health,
             actionVisuals,
-            action
+            action,
+            weaponBuffs
         );
 
         // Start the actual action independently.

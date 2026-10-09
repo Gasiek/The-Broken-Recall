@@ -46,6 +46,12 @@ public class BasicHitAction : ActionDefinition
             return;
         }
 
-        damageable.TakeDamage(damage);
+        CombatResolver.ResolveAttackHit(
+            context.Player.gameObject,
+            context.WeaponBuffs,
+            damageable,
+            damage,
+            hit.point
+        );
     }
 }

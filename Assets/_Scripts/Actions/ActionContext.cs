@@ -7,13 +7,15 @@ public class ActionContext
     public Health Health { get; }
     public PlayerActionVisuals Visuals { get; }
     public ActionDefinition Action { get; }
+    public WeaponBuffManager WeaponBuffs { get; }
 
     public ActionContext(
         Transform player,
         PlayerMovement movement,
         Health health,
         PlayerActionVisuals visuals,
-        ActionDefinition action
+        ActionDefinition action,
+        WeaponBuffManager weaponBuffs
     )
     {
         Player = player;
@@ -21,5 +23,6 @@ public class ActionContext
         Health = health;
         Visuals = visuals;
         Action = action;
+        WeaponBuffs = weaponBuffs;
     }
 }

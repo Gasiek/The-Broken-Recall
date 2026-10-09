@@ -2,7 +2,15 @@ using UnityEngine;
 
 public class Bed : MonoBehaviour, IInteractable
 {
+    [Header("References")]
+    [SerializeField]
     private Health playerHealth;
+
+    [SerializeField]
+    private PlayerStateMachine playerStateMachine;
+
+    [SerializeField]
+    private Transform playerTransform;
 
     [Header("Sleep Duration Settings")]
     [SerializeField]
@@ -16,85 +24,99 @@ public class Bed : MonoBehaviour, IInteractable
 
     [Header("Audio (Optional)")]
     [SerializeField]
-    private AudioClip restSound;
+    private AudioClip yawnSound;
 
-    [SerializeField]
-    [Range(0f, 1f)]
-    private float restVolume = 1f;
+    [SerializeField, Range(0f, 1f)]
+    private float yawnVolume = 1f;
 
-    private bool isSleeping;
+    private ScreenFader screenFader;
 
-    public bool CanInteract
-    {
-        get
-        {
-            EnsurePlayerReference();
-            return playerHealth != null && !isSleeping;
-        }
-    }
+    public bool CanInteract =>
+        playerHealth != null
+        && playerStateMachine != null
+        && playerTransform != null
+        && screenFader != null
+        && AudioManager.Instance != null
+        && playerStateMachine.CanSleep;
 
     private void Awake()
     {
-        EnsurePlayerReference();
+        if (playerHealth == null || playerStateMachine == null || playerTransform == null)
+        {
+            Debug.LogError(
+                "[Bed] Assign PlayerHealth, PlayerStateMachine, "
+                    + "and PlayerTransform in the Inspector.",
+                this
+            );
+        }
     }
 
-    private void EnsurePlayerReference()
+    private void Start()
     {
-        if (playerHealth == null)
+        screenFader = ScreenFader.Instance;
+
+        if (screenFader == null)
         {
-            Player player = FindFirstObjectByType<Player>();
-            if (player != null)
-            {
-                playerHealth = player.GetComponent<Health>();
-            }
+            Debug.LogError(
+                "[Bed] No ScreenFader was found. " + "Make sure one exists in the scene.",
+                this
+            );
         }
     }
 
     public void Interact()
     {
-        EnsurePlayerReference();
-
-        if (playerHealth == null || isSleeping)
+        if (!CanInteract)
         {
+            Debug.LogWarning(
+                "[Bed] Cannot rest. Check the required references, "
+                    + "AudioManager, and player state.",
+                this
+            );
+
             return;
         }
 
-        if (ScreenFader.Instance != null)
+        playerStateMachine.StartSleeping();
+
+        screenFader.SleepSequence(fadeOutDuration, sleepDuration, fadeInDuration, FinishRest);
+    }
+
+    private void FinishRest()
+    {
+        PlayYawnSound();
+        RestoreHealth();
+
+        if (playerStateMachine != null)
         {
-            isSleeping = true;
-            ScreenFader.Instance.SleepSequence(fadeOutDuration, sleepDuration, fadeInDuration, () =>
-            {
-                PerformRest();
-                isSleeping = false;
-            });
-        }
-        else
-        {
-            // Fallback if ScreenFader is not in scene
-            PerformRest();
+            playerStateMachine.FinishSleeping();
         }
     }
 
-    private void PerformRest()
+    private void PlayYawnSound()
+    {
+        if (yawnSound == null || AudioManager.Instance == null)
+            return;
+
+        AudioManager.Instance.PlayWorldSFX(yawnSound, playerTransform.position, yawnVolume);
+    }
+
+    private void RestoreHealth()
     {
         if (playerHealth == null)
             return;
 
         int missingHealth = playerHealth.MaxHealth - playerHealth.CurrentHealth;
+
+        if (missingHealth <= 0)
+            return;
+
         playerHealth.Heal(missingHealth);
 
-        Debug.Log($"[Bed] Player rested and restored 100% health! ({playerHealth.CurrentHealth}/{playerHealth.MaxHealth})");
-
-        if (restSound != null)
-        {
-            if (AudioManager.Instance != null)
-            {
-                AudioManager.Instance.PlaySFX(restSound, transform.position, restVolume);
-            }
-            else
-            {
-                AudioSource.PlayClipAtPoint(restSound, transform.position, restVolume);
-            }
-        }
+        Debug.Log(
+            $"[Bed] Player rested and restored health! "
+                + $"({playerHealth.CurrentHealth}/{playerHealth.MaxHealth})",
+            this
+        );
     }
 }

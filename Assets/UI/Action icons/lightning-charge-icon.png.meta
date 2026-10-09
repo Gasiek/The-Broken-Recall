@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: abd12db238389491cacfdb28c1ac1552
+guid: 8c2fca88b1f4044d681cd1eeb368294d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4362370926197488538
-    second: heal_icon_0
+      213: -7028776058394270243
+    second: lightning-charge-icon_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -102,7 +102,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: heal_icon_0
+      name: lightning-charge-icon_0
       rect:
         serializedVersion: 2
         x: 0
@@ -117,8 +117,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 664c18561ceb573c0800000000000000
-      internalID: -4362370926197488538
+      spriteID: dd5a3a93a65c47e90800000000000000
+      internalID: -7028776058394270243
       vertices: []
       indices: 
       edges: []
@@ -137,7 +137,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      heal_icon_0: -4362370926197488538
+      lightning-charge-icon_0: -7028776058394270243
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
