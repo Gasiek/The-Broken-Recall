@@ -14,18 +14,24 @@ public class StatusEffectManager : MonoBehaviour
         public float RemainingTime;
     }
 
+    private const float MinimumTickInterval = 0.05f;
+
     private Health health;
     private NavMeshAgent navAgent;
     private PlayerMovement playerMovement;
+    private AudioManager audioManager;
 
     private readonly Dictionary<string, ActiveEffect> activeEffects =
         new Dictionary<string, ActiveEffect>();
+
     private float defaultNavSpeed;
     private bool hasRecordedDefaultNavSpeed;
 
     private void Awake()
     {
         health = GetComponent<Health>();
+        health.Died += HandleDeath;
+
         navAgent = GetComponent<NavMeshAgent>();
         playerMovement = GetComponent<PlayerMovement>();
 
@@ -34,51 +40,51 @@ public class StatusEffectManager : MonoBehaviour
             defaultNavSpeed = navAgent.speed;
             hasRecordedDefaultNavSpeed = true;
         }
+    }
 
-        health.Died += HandleDeath;
+    private void Start()
+    {
+        audioManager = AudioManager.Instance;
+    }
+
+    private void OnDisable()
+    {
+        ClearAllEffects();
     }
 
     private void OnDestroy()
     {
-        if (health != null)
-        {
-            health.Died -= HandleDeath;
-        }
-        ClearAllEffects();
+        health.Died -= HandleDeath;
     }
 
     public void ApplyStatus(StatusEffectDefinition definition)
     {
-        if (definition == null || health == null || health.CurrentHealth <= 0)
-        {
+        if (definition == null || health.IsDead || !enabled)
             return;
-        }
 
-        string effectId = string.IsNullOrEmpty(definition.Id) ? definition.name : definition.Id;
+        if (definition.Duration <= 0f)
+            return;
 
-        // If effect already active, refresh duration
+        string effectId = string.IsNullOrWhiteSpace(definition.Id)
+            ? definition.name
+            : definition.Id;
+
+        // Refresh an existing effect without restarting its coroutine.
         if (activeEffects.TryGetValue(effectId, out ActiveEffect existing))
         {
             existing.RemainingTime = definition.Duration;
             return;
         }
 
-        // Play apply audio
-        if (definition.ApplySound != null && AudioManager.Instance != null)
-        {
-            AudioManager.Instance.PlayWorldSFX(
-                definition.ApplySound,
-                transform.position,
-                definition.SoundVolume
-            );
-        }
+        PlaySound(definition.ApplySound, definition.SoundVolume);
 
-        // Spawn VFX
         ParticleSystem vfxInstance = null;
+
         if (definition.VfxPrefab != null)
         {
             vfxInstance = Instantiate(definition.VfxPrefab, transform);
             vfxInstance.transform.localPosition = Vector3.up * 0.8f;
+            vfxInstance.transform.localRotation = Quaternion.identity;
             vfxInstance.Play();
         }
 
@@ -89,92 +95,103 @@ public class StatusEffectManager : MonoBehaviour
             RemainingTime = definition.Duration,
         };
 
-        effect.Coroutine = StartCoroutine(ProcessEffectRoutine(effect, effectId));
         activeEffects.Add(effectId, effect);
+
+        effect.Coroutine = StartCoroutine(ProcessEffectRoutine(effect, effectId));
 
         UpdateSpeedModifiers();
     }
 
     private IEnumerator ProcessEffectRoutine(ActiveEffect effect, string effectId)
     {
-        StatusEffectDefinition def = effect.Definition;
+        StatusEffectDefinition definition = effect.Definition;
+
+        float tickInterval = Mathf.Max(MinimumTickInterval, definition.TickInterval);
+
         float tickTimer = 0f;
 
         while (effect.RemainingTime > 0f)
         {
-            if (health == null || health.CurrentHealth <= 0)
-            {
+            if (health.IsDead)
                 break;
-            }
 
-            // Damage Over Time tick
-            if (
-                def.EffectType == StatusEffectType.Burn
-                || def.EffectType == StatusEffectType.Poison
-            )
+            if (IsDamageOverTime(definition.EffectType))
             {
                 tickTimer += Time.deltaTime;
-                if (tickTimer >= def.TickInterval)
-                {
-                    tickTimer -= def.TickInterval;
-                    health.TakeDamage(def.DamagePerTick);
 
-                    if (def.TickSound != null && AudioManager.Instance != null)
+                if (tickTimer >= tickInterval)
+                {
+                    tickTimer -= tickInterval;
+
+                    if (definition.DamagePerTick > 0)
                     {
-                        AudioManager.Instance.PlayWorldSFX(
-                            def.TickSound,
-                            transform.position,
-                            def.SoundVolume
-                        );
+                        health.TakeDamage(definition.DamagePerTick);
+
+                        // Damage may have killed the target.
+                        if (health.IsDead)
+                            break;
+
+                        PlaySound(definition.TickSound, definition.SoundVolume);
                     }
                 }
             }
 
             effect.RemainingTime -= Time.deltaTime;
+
             yield return null;
         }
 
         RemoveEffect(effectId);
     }
 
+    private static bool IsDamageOverTime(StatusEffectType effectType)
+    {
+        return effectType == StatusEffectType.Burn || effectType == StatusEffectType.Poison;
+    }
+
+    private static bool IsMovementEffect(StatusEffectType effectType)
+    {
+        return effectType == StatusEffectType.Slow
+            || effectType == StatusEffectType.Freeze
+            || effectType == StatusEffectType.Stun;
+    }
+
     private void RemoveEffect(string effectId)
     {
         if (!activeEffects.TryGetValue(effectId, out ActiveEffect effect))
-        {
             return;
-        }
 
         if (effect.Coroutine != null)
         {
             StopCoroutine(effect.Coroutine);
+            effect.Coroutine = null;
         }
 
         if (effect.VfxInstance != null)
         {
             Destroy(effect.VfxInstance.gameObject);
+            effect.VfxInstance = null;
         }
 
         activeEffects.Remove(effectId);
+
         UpdateSpeedModifiers();
     }
 
     private void UpdateSpeedModifiers()
     {
-        float lowestSpeedMultiplier = 1.0f;
+        float lowestSpeedMultiplier = 1f;
 
-        foreach (var pair in activeEffects)
+        foreach (ActiveEffect effect in activeEffects.Values)
         {
-            StatusEffectDefinition def = pair.Value.Definition;
-            if (
-                def.EffectType == StatusEffectType.Slow
-                || def.EffectType == StatusEffectType.Freeze
-                || def.EffectType == StatusEffectType.Stun
-            )
+            StatusEffectDefinition definition = effect.Definition;
+
+            if (IsMovementEffect(definition.EffectType))
             {
-                if (def.SpeedMultiplier < lowestSpeedMultiplier)
-                {
-                    lowestSpeedMultiplier = def.SpeedMultiplier;
-                }
+                lowestSpeedMultiplier = Mathf.Min(
+                    lowestSpeedMultiplier,
+                    definition.SpeedMultiplier
+                );
             }
         }
 
@@ -185,15 +202,16 @@ public class StatusEffectManager : MonoBehaviour
 
         if (playerMovement != null)
         {
-            if (Mathf.Approximately(lowestSpeedMultiplier, 1.0f))
-            {
-                playerMovement.ResetSpeedMultiplier();
-            }
-            else
-            {
-                playerMovement.SetSpeedMultiplier(lowestSpeedMultiplier);
-            }
+            playerMovement.SetSpeedMultiplier(lowestSpeedMultiplier);
         }
+    }
+
+    private void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip == null || audioManager == null)
+            return;
+
+        audioManager.PlayWorldSFX(clip, transform.position, volume);
     }
 
     private void HandleDeath()
@@ -203,18 +221,17 @@ public class StatusEffectManager : MonoBehaviour
 
     public void ClearAllEffects()
     {
-        foreach (var pair in activeEffects)
+        foreach (ActiveEffect effect in activeEffects.Values)
         {
-            if (pair.Value.Coroutine != null)
-            {
-                StopCoroutine(pair.Value.Coroutine);
-            }
-            if (pair.Value.VfxInstance != null)
-            {
-                Destroy(pair.Value.VfxInstance.gameObject);
-            }
+            if (effect.Coroutine != null)
+                StopCoroutine(effect.Coroutine);
+
+            if (effect.VfxInstance != null)
+                Destroy(effect.VfxInstance.gameObject);
         }
+
         activeEffects.Clear();
+
         UpdateSpeedModifiers();
     }
 }

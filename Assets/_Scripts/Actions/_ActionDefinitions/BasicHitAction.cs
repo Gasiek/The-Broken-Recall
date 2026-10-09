@@ -46,8 +46,9 @@ public class BasicHitAction : ActionDefinition
             return;
         }
 
-        CombatResolver.ResolvePlayerAttackHit(
+        CombatResolver.ResolveAttackHit(
             context.Player.gameObject,
+            context.WeaponBuffs,
             damageable,
             damage,
             hit.point

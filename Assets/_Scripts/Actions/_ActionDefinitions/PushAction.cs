@@ -54,8 +54,9 @@ public class PushAction : ActionDefinition
 
         if (damageable != null)
         {
-            CombatResolver.ResolvePlayerAttackHit(
+            CombatResolver.ResolveAttackHit(
                 context.Player.gameObject,
+                context.WeaponBuffs,
                 damageable,
                 damage,
                 hit.point

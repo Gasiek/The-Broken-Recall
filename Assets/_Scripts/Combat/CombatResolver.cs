@@ -2,29 +2,30 @@ using UnityEngine;
 
 public static class CombatResolver
 {
-    /// <summary>
-    /// Resolves an attack hit from the player against a damageable target.
-    /// Automatically applies active weapon buffs, damage bonuses, lifesteal,
-    /// on-hit VFX/SFX, and status effects without attack actions needing any custom code.
-    /// </summary>
-    public static int ResolvePlayerAttackHit(
+    public static int ResolveAttackHit(
         GameObject attacker,
+        WeaponBuffManager buffManager,
         IDamageable targetDamageable,
         int baseDamage,
         Vector3 hitPoint
     )
     {
-        if (targetDamageable == null)
-        {
+        if (attacker == null || targetDamageable == null)
             return 0;
-        }
 
-        if (attacker != null && attacker.TryGetComponent(out WeaponBuffManager buffManager) && buffManager.HasActiveBuff)
+        bool hadActiveBuff = buffManager != null && buffManager.HasActiveBuff;
+
+        int damageToApply = hadActiveBuff
+            ? buffManager.CalculateDamage(baseDamage)
+            : Mathf.Max(0, baseDamage);
+
+        int actualDamage = targetDamageable.TakeDamage(damageToApply);
+
+        if (actualDamage > 0 && hadActiveBuff)
         {
-            return buffManager.ProcessHit(targetDamageable, baseDamage, hitPoint, attacker);
+            buffManager.ProcessSuccessfulHit(targetDamageable, hitPoint, actualDamage);
         }
 
-        targetDamageable.TakeDamage(baseDamage);
-        return baseDamage;
+        return actualDamage;
     }
 }

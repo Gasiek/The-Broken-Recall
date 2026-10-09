@@ -119,7 +119,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void SetSpeedMultiplier(float multiplier)
     {
-        currentSpeedMultiplier = multiplier;
+        currentSpeedMultiplier = Mathf.Max(0f, multiplier);
     }
 
     public void ResetSpeedMultiplier()

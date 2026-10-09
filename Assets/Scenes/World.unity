@@ -4280,7 +4280,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 322473954596695095, guid: 718700972d60745d1b5eee40d49154ce, type: 3}
-  m_Type: 1
+  m_Type: 3
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
@@ -17630,6 +17630,8 @@ GameObject:
   - component: {fileID: 1194145317}
   - component: {fileID: 1194145316}
   - component: {fileID: 1194145318}
+  - component: {fileID: 1194145320}
+  - component: {fileID: 1194145319}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -17676,10 +17678,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ActionCollection
   actions:
   - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
-  - {fileID: 11400000, guid: 2653b44309e5e430ba12bb6e79ac85f7, type: 2}
-  - {fileID: 11400000, guid: 7d50f9d3108ca429b9d3c40196c6e008, type: 2}
   - {fileID: 11400000, guid: 59c8d1e2a34b4c7d8e9f0123456789ab, type: 2}
+  - {fileID: 11400000, guid: e7f8a9b0c1d234567890abcdef123456, type: 2}
+  - {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18265,6 +18266,30 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1194145319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194145296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08b9c0d1e2f345678901abcdef678901, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponBuffManager
+--- !u!114 &1194145320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194145296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3be2f3a4b5c678901234abcdef901234, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectManager
 --- !u!1 &1220000545
 GameObject:
   m_ObjectHideFlags: 0

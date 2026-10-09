@@ -185,8 +185,9 @@ public class JumpSlamAction : ActionDefinition
             IDamageable damageable = hit.GetComponentInParent<IDamageable>();
             if (damageable != null && damagedEntities.Add(damageable))
             {
-                CombatResolver.ResolvePlayerAttackHit(
+                CombatResolver.ResolveAttackHit(
                     context.Player.gameObject,
+                    context.WeaponBuffs,
                     damageable,
                     damage,
                     impactPosition
