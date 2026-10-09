@@ -192,7 +192,7 @@ public class PlayerActionVisuals : MonoBehaviour
 
         Sequence sequence = DOTween.Sequence();
 
-        // 1. Rise & windup: raise sword overhead
+        // 1. Rise & windup: raise sword above head
         sequence.Append(
             sword
                 .DOLocalRotate(swordIdleRotation + jumpSlamPrepRotation, prepTime)
@@ -204,7 +204,7 @@ public class PlayerActionVisuals : MonoBehaviour
                 .SetEase(Ease.OutQuad)
         );
 
-        // 2. Drive sword down during descent
+        // 2. Drive sword down during the descent
         sequence.Append(
             sword
                 .DOLocalRotate(swordIdleRotation + jumpSlamLandRotation, slamTime)
@@ -216,12 +216,12 @@ public class PlayerActionVisuals : MonoBehaviour
                 .SetEase(Ease.InCubic)
         );
 
-        // 3. Shake on impact
+        // 3. Shake on impact when the sword hits the ground
         sequence.Append(
             sword.DOShakePosition(0.08f, 0.15f, 10, 90f, false, true)
         );
 
-        // 4. Return to idle
+        // 4. Return to idle position
         sequence.Append(
             sword.DOLocalRotate(swordIdleRotation, returnTime).SetEase(Ease.OutQuad)
         );
@@ -239,7 +239,7 @@ public class PlayerActionVisuals : MonoBehaviour
         float holdTime = duration * 0.4f;
         float returnTime = Mathf.Max(0.05f, duration - raiseTime - holdTime);
 
-        // 1. Podniesienie miecza przed klatkę piersiową
+        // 1. Raise sword before chest frame
         sequence.Append(
             sword
                 .DOLocalRotate(swordIdleRotation + chargeRotation, raiseTime)
@@ -251,12 +251,12 @@ public class PlayerActionVisuals : MonoBehaviour
                 .SetEase(Ease.OutQuad)
         );
 
-        // 2. Delikatne wibracje energii w naładowanym mieczu
+        // 2. Gentle energy vibrations in the charged sword
         sequence.Append(
             sword.DOShakePosition(holdTime, 0.04f, 25, 90f, false, true)
         );
 
-        // 3. Płynny powrót do pozycji idle
+        // 3. Smooth return to idle position
         sequence.Append(
             sword
                 .DOLocalRotate(swordIdleRotation, returnTime)
