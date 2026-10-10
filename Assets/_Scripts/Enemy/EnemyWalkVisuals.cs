@@ -30,14 +30,14 @@ public class EnemyWalkVisuals : MonoBehaviour
     private float armSwingAngle = 35f;
 
     [SerializeField]
-    private Vector3 armSwingAxis = new Vector3(1f, 0f, 0f);
+    private Vector3 armSwingAxis = new Vector3(0f, 0f, 1f);
 
     [Header("Leg Swing")]
     [SerializeField]
     private float legSwingAngle = 20f;
 
     [SerializeField]
-    private Vector3 legSwingAxis = new Vector3(1f, 0f, 0f);
+    private Vector3 legSwingAxis = new Vector3(0f, 0f, 1f);
 
     [Header("Body Bobbing & Tilt")]
     [SerializeField]
@@ -141,7 +141,7 @@ public class EnemyWalkVisuals : MonoBehaviour
             {
                 float bob = Mathf.Abs(sin) * bobHeight;
                 bodyTorso.localPosition = torsoIdlePos + Vector3.up * bob;
-                bodyTorso.localRotation = torsoIdleRot * Quaternion.AngleAxis(cos * tiltAngle, Vector3.forward);
+                bodyTorso.localRotation = torsoIdleRot * Quaternion.AngleAxis(cos * tiltAngle, Vector3.right);
             }
         }
         else

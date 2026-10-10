@@ -9,6 +9,32 @@ public class EnemyAggro : MonoBehaviour
 
     public bool HasTarget => Target != null;
 
+    private void Start()
+    {
+        if (Target == null)
+        {
+            float detectRadius = 12f;
+            EnemyAggroTrigger[] triggers = GetComponentsInChildren<EnemyAggroTrigger>();
+            foreach (var t in triggers)
+            {
+                SphereCollider sc = t.GetComponent<SphereCollider>();
+                if (sc != null && sc.isTrigger && sc.radius > 0f)
+                {
+                    if (sc.radius < detectRadius)
+                    {
+                        detectRadius = sc.radius;
+                    }
+                }
+            }
+
+            Collider[] hits = Physics.OverlapSphere(transform.position, detectRadius, targetLayer);
+            if (hits.Length > 0)
+            {
+                Target = hits[0].transform;
+            }
+        }
+    }
+
     public void SetTarget(Transform target)
     {
         Target = target;

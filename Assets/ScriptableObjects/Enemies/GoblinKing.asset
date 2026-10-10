@@ -17,8 +17,8 @@ MonoBehaviour:
   patrolSpeed: 1.2
   attackDamage: 25
   attackCooldown: 2.5
-  attackRange: 2.2
-  attackRadius: 0.6
+  attackRange: 3.5
+  attackRadius: 1.0
   attackDelay: 0.35
   rangedAttackRange: 8
   projectilePrefab: {fileID: 0}

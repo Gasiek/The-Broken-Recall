@@ -117,9 +117,17 @@ public class EnemyStateMachine : MonoBehaviour
 
         if (meleeAttack != null)
         {
-            if (distanceToTarget <= meleeAttack.AttackRange && meleeAttack.CanAttack)
+            if (distanceToTarget <= meleeAttack.AttackRange)
             {
-                ChangeState(EnemyState.Attacking);
+                enemy.Agent.isStopped = true;
+
+                FaceTarget(target);
+
+                if (meleeAttack.CanAttack)
+                {
+                    ChangeState(EnemyState.Attacking);
+                }
+
                 return;
             }
         }
