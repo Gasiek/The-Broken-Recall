@@ -24,6 +24,11 @@ public class CardsCarousel
     private VisualElement middleCard;
     private Label middleCardTitle;
     private Image middleCardIcon;
+    private VisualElement middleCardFront;
+    private VisualElement middleCardBack;
+    private Label middleCardBackTitle;
+    private Label middleCardDescription;
+    private Button middleCardFlipButton;
 
     // Right Card
     private VisualElement rightCard;
@@ -32,7 +37,10 @@ public class CardsCarousel
 
     private int currentCardIndex = 0;
     private bool isAnimating = false;
+    private bool isFlipped = false;
+    private bool isFlipping = false;
     private Coroutine slideCoroutine;
+    private Coroutine flipCoroutine;
 
     public CardsCarousel(MonoBehaviour coroutineRunner)
     {
@@ -63,6 +71,16 @@ public class CardsCarousel
         {
             middleCardTitle = middleCard.Q<Label>("MiddleCardTitle");
             middleCardIcon = middleCard.Q<Image>("MiddleCardIcon");
+            middleCardFront = middleCard.Q<VisualElement>("MiddleCardFront");
+            middleCardBack = middleCard.Q<VisualElement>("MiddleCardBack");
+            middleCardBackTitle = middleCard.Q<Label>("MiddleCardBackTitle");
+            middleCardDescription = middleCard.Q<Label>("MiddleCardDescription");
+            middleCardFlipButton = middleCard.Q<Button>("MiddleCardFlipButton");
+
+            if (middleCardFlipButton != null)
+            {
+                middleCardFlipButton.clicked += Flip;
+            }
         }
 
         // Query Right Card
@@ -82,6 +100,7 @@ public class CardsCarousel
     {
         StopAnimation();
 
+        if (middleCardFlipButton != null) middleCardFlipButton.clicked -= Flip;
         if (prevCardButton != null) prevCardButton.clicked -= Previous;
         if (nextCardButton != null) nextCardButton.clicked -= Next;
     }
@@ -89,6 +108,88 @@ public class CardsCarousel
     public void ResetIndex()
     {
         currentCardIndex = 0;
+        ResetFlipState();
+    }
+
+    public void Flip()
+    {
+        if (isAnimating || isFlipping) return;
+        if (coroutineRunner != null)
+        {
+            flipCoroutine = coroutineRunner.StartCoroutine(AnimateCardFlip());
+        }
+        else
+        {
+            isFlipped = !isFlipped;
+            if (middleCardFront != null)
+                middleCardFront.style.display = isFlipped ? DisplayStyle.None : DisplayStyle.Flex;
+            if (middleCardBack != null)
+                middleCardBack.style.display = isFlipped ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+    }
+
+    private IEnumerator AnimateCardFlip()
+    {
+        isFlipping = true;
+        float halfDuration = 0.12f;
+        float elapsed = 0f;
+
+        // Phase 1: Horizontal shrink to simulate 3D rotation edge-on
+        while (elapsed < halfDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / halfDuration);
+            float scaleX = Mathf.Lerp(1.08f, 0f, t);
+            if (middleCard != null)
+            {
+                middleCard.style.scale = new StyleScale(new Scale(new Vector2(scaleX, 1.08f)));
+            }
+            yield return null;
+        }
+
+        // Swap face visibility
+        isFlipped = !isFlipped;
+        if (middleCardFront != null)
+            middleCardFront.style.display = isFlipped ? DisplayStyle.None : DisplayStyle.Flex;
+        if (middleCardBack != null)
+            middleCardBack.style.display = isFlipped ? DisplayStyle.Flex : DisplayStyle.None;
+
+        // Phase 2: Horizontal expand back to full scale
+        elapsed = 0f;
+        while (elapsed < halfDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / halfDuration);
+            float scaleX = Mathf.Lerp(0f, 1.08f, t);
+            if (middleCard != null)
+            {
+                middleCard.style.scale = new StyleScale(new Scale(new Vector2(scaleX, 1.08f)));
+            }
+            yield return null;
+        }
+
+        if (middleCard != null)
+        {
+            middleCard.style.scale = new StyleScale(new Scale(new Vector2(1.08f, 1.08f)));
+        }
+
+        isFlipping = false;
+        flipCoroutine = null;
+    }
+
+    private void ResetFlipState()
+    {
+        if (flipCoroutine != null && coroutineRunner != null)
+        {
+            coroutineRunner.StopCoroutine(flipCoroutine);
+            flipCoroutine = null;
+        }
+        isFlipping = false;
+        isFlipped = false;
+        if (middleCardFront != null)
+            middleCardFront.style.display = DisplayStyle.Flex;
+        if (middleCardBack != null)
+            middleCardBack.style.display = DisplayStyle.None;
     }
 
     public void Previous()
@@ -146,7 +247,22 @@ public class CardsCarousel
         {
             middleCard.style.display = DisplayStyle.Flex;
             middleCard.style.visibility = Visibility.Visible;
-            PopulateCard(middleCardTitle, middleCardIcon, actions[currentCardIndex]);
+            ActionDefinition currentAction = actions[currentCardIndex];
+            PopulateCard(middleCardTitle, middleCardIcon, currentAction);
+
+            string title = currentAction != null && !string.IsNullOrEmpty(currentAction.DisplayName)
+                ? currentAction.DisplayName
+                : (currentAction != null ? currentAction.name : string.Empty);
+
+            if (middleCardBackTitle != null)
+            {
+                middleCardBackTitle.text = title;
+            }
+
+            if (middleCardDescription != null)
+            {
+                middleCardDescription.text = currentAction != null ? currentAction.GetDescription() : string.Empty;
+            }
         }
 
         // Populate Left Card (Previous card in loop)
@@ -214,6 +330,7 @@ public class CardsCarousel
 
     private IEnumerator AnimateCardSlide(int direction)
     {
+        ResetFlipState();
         isAnimating = true;
 
         float elapsed = 0f;
@@ -336,6 +453,8 @@ public class CardsCarousel
 
     public void StopAnimation()
     {
+        ResetFlipState();
+
         if (slideCoroutine != null && coroutineRunner != null)
         {
             coroutineRunner.StopCoroutine(slideCoroutine);

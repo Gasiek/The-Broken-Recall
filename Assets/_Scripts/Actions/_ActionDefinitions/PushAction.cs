@@ -70,4 +70,7 @@ public class PushAction : ActionDefinition
             pushable.Push(direction, knockbackDistance);
         }
     }
+
+    public override string GetDescription() =>
+        $"Thrusts forward, dealing {damage} damage and pushing the target back {knockbackDistance:0.#}m.";
 }

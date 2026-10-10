@@ -233,6 +233,50 @@
     white-space: normal;
     text-overflow: ellipsis;
     max-height: 52px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.ability-card-face {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.card-flip-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background-color: rgb(200, 165, 112);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-width: 1px;
+    border-color: rgb(140, 110, 75);
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    cursor: link;
+    transition-property: scale, background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+.card-flip-button:hover {
+    scale: 1.12 1.12;
+    background-color: rgb(225, 190, 130);
+}
+
+.card-flip-button-icon {
+    width: 20px;
+    height: 20px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("project://database/Assets/UI/Menu%20icons/turn_back_icon.png?fileID=3094156382794091256&guid=fb1b5c9bf594a4101a6ac835d65be173&type=3#turn_back_icon_0");
 }
 
 .ability-card-art-frame {
@@ -255,6 +299,35 @@
     width: 110px;
     height: 110px;
     -unity-background-scale-mode: scale-to-fit;
+}
+
+.ability-card-back-frame {
+    width: 156px;
+    height: 165px;
+    background-color: rgb(28, 24, 24);
+    border-color: rgb(120, 100, 80);
+    border-width: 2px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.ability-card-description {
+    font-size: 14px;
+    color: rgb(240, 230, 215);
+    -unity-text-align: middle-center;
+    white-space: normal;
+    padding: 0;
+    margin: 0;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/LiberationSans.ttf?fileID=12800000&guid=e3265ab4bf004d28a9537516768c1c75&type=3#LiberationSans");
+    letter-spacing: 0.2px;
 }
 
 .carousel-nav-button {
