@@ -1,31 +1,30 @@
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(EnemyAttackVisuals))]
 [RequireComponent(typeof(EnemyController))]
 public class EnemyAttack : MonoBehaviour
 {
     [SerializeField]
     private LayerMask targetLayer;
 
-    private EnemyController enemy;
+    protected EnemyController enemy;
     private EnemyAttackVisuals visuals;
 
-    private float cooldownTimer;
+    protected float cooldownTimer;
 
     public float AttackRange => enemy.Definition.AttackRange;
 
     public bool CanAttack => cooldownTimer <= 0f && !IsAttacking;
 
-    public bool IsAttacking { get; private set; }
+    public bool IsAttacking { get; protected set; }
 
-    private void Awake()
+    protected virtual void Awake()
     {
         enemy = GetComponent<EnemyController>();
         visuals = GetComponent<EnemyAttackVisuals>();
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         if (cooldownTimer > 0f)
         {
@@ -33,7 +32,7 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    public bool TryAttack(Transform target)
+    public virtual bool TryAttack(Transform target)
     {
         if (!CanAttack || target == null)
         {
@@ -45,7 +44,7 @@ public class EnemyAttack : MonoBehaviour
         return true;
     }
 
-    private IEnumerator AttackRoutine(Transform target)
+    protected virtual IEnumerator AttackRoutine(Transform target)
     {
         IsAttacking = true;
 
@@ -58,17 +57,19 @@ public class EnemyAttack : MonoBehaviour
         // Wait for the attack wind-up.
         yield return new WaitForSeconds(enemy.Definition.AttackDelay);
 
-        // Play the attack animation/effect. TODO: when proper animations are implemented, we need to change the timing of when the damage id dealt
-        visuals.BasicAttack();
+        // Play the attack animation/effect.
+        if (visuals != null)
+        {
+            visuals.BasicAttack();
+        }
 
         // Check what is actually in front of the enemy NOW.
-        // We do not use the target Transform here.
         DealDamage();
 
         IsAttacking = false;
     }
 
-    private void FaceTarget(Transform target)
+    protected void FaceTarget(Transform target)
     {
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
@@ -81,7 +82,7 @@ public class EnemyAttack : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(direction);
     }
 
-    private void DealDamage()
+    protected void DealDamage()
     {
         Vector3 origin = transform.position + 0.5f * transform.up;
         Vector3 direction = transform.forward;
@@ -116,7 +117,7 @@ public class EnemyAttack : MonoBehaviour
         damageable.TakeDamage(enemy.Definition.AttackDamage);
     }
 
-    private void OnDrawGizmosSelected()
+    protected virtual void OnDrawGizmosSelected()
     {
         if (enemy == null || enemy.Definition == null)
         {
@@ -133,11 +134,8 @@ public class EnemyAttack : MonoBehaviour
         Gizmos.DrawWireSphere(end, radius);
 
         Gizmos.DrawLine(start + transform.right * radius, end + transform.right * radius);
-
         Gizmos.DrawLine(start - transform.right * radius, end - transform.right * radius);
-
         Gizmos.DrawLine(start + transform.up * radius, end + transform.up * radius);
-
         Gizmos.DrawLine(start - transform.up * radius, end - transform.up * radius);
     }
 }

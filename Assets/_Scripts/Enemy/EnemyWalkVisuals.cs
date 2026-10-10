@@ -54,6 +54,7 @@ public class EnemyWalkVisuals : MonoBehaviour
     private float returnSpeed = 8f;
 
     private NavMeshAgent agent;
+    private EnemyAttack enemyAttack;
     private Quaternion leftArmIdleRot;
     private Quaternion rightArmIdleRot;
     private Quaternion leftLegIdleRot;
@@ -66,6 +67,7 @@ public class EnemyWalkVisuals : MonoBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        enemyAttack = GetComponent<EnemyAttack>();
 
         AutoAssignLimbs();
         CacheIdleTransforms();
@@ -107,8 +109,9 @@ public class EnemyWalkVisuals : MonoBehaviour
         }
 
         bool isMoving = speed > 0.15f;
+        bool isAttacking = enemyAttack != null && enemyAttack.IsAttacking;
 
-        if (isMoving)
+        if (isMoving && !isAttacking)
         {
             float speedFactor = Mathf.Clamp(speed / (agent.speed > 0 ? agent.speed : 1f), 0.5f, 1.8f);
             walkCycle += Time.deltaTime * swingFrequency * speedFactor;
@@ -153,10 +156,21 @@ public class EnemyWalkVisuals : MonoBehaviour
             {
                 leftArm.localRotation = Quaternion.Slerp(leftArm.localRotation, leftArmIdleRot, lerp);
             }
-            if (rightArm != null)
+
+            // Only lerp rightArm and torso back to idle if NOT attacking (attack visuals control them)
+            if (!isAttacking)
             {
-                rightArm.localRotation = Quaternion.Slerp(rightArm.localRotation, rightArmIdleRot, lerp);
+                if (rightArm != null)
+                {
+                    rightArm.localRotation = Quaternion.Slerp(rightArm.localRotation, rightArmIdleRot, lerp);
+                }
+                if (bodyTorso != null)
+                {
+                    bodyTorso.localPosition = Vector3.Lerp(bodyTorso.localPosition, torsoIdlePos, lerp);
+                    bodyTorso.localRotation = Quaternion.Slerp(bodyTorso.localRotation, torsoIdleRot, lerp);
+                }
             }
+
             if (leftLeg != null)
             {
                 leftLeg.localRotation = Quaternion.Slerp(leftLeg.localRotation, leftLegIdleRot, lerp);
@@ -164,11 +178,6 @@ public class EnemyWalkVisuals : MonoBehaviour
             if (rightLeg != null)
             {
                 rightLeg.localRotation = Quaternion.Slerp(rightLeg.localRotation, rightLegIdleRot, lerp);
-            }
-            if (bodyTorso != null)
-            {
-                bodyTorso.localPosition = Vector3.Lerp(bodyTorso.localPosition, torsoIdlePos, lerp);
-                bodyTorso.localRotation = Quaternion.Slerp(bodyTorso.localRotation, torsoIdleRot, lerp);
             }
         }
     }

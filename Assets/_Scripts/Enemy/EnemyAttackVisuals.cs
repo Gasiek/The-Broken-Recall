@@ -26,7 +26,7 @@ public class EnemyAttackVisuals : MonoBehaviour
         weaponIdleRotation = weapon.localEulerAngles;
     }
 
-    public void BasicAttack()
+    public virtual void BasicAttack()
     {
         if (weapon == null)
         {
