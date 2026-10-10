@@ -104,40 +104,32 @@ public class ActionMemory : MonoBehaviour
         }
 
         List<ActionDefinition> availableActions = new();
-
-        foreach (ActionDefinition action in actionCollection.Actions)
+        availableActions.AddRange(actionCollection.Actions);
+        for (int i = 0; i < SlotCount; i++)
         {
-            if (action == null)
-            {
-                continue;
-            }
-
-            if (!IsInMemory(action))
-            {
-                availableActions.Add(action);
-            }
+            availableActions.Remove(actions[i]);
         }
 
         if (availableActions.Count == 0)
         {
-            return null;
+            Debug.LogWarning("No more available actions.");
         }
 
         int index = UnityEngine.Random.Range(0, availableActions.Count);
 
-        return availableActions[index];
-    }
-
-    private bool IsInMemory(ActionDefinition action)
-    {
-        for (int i = 0; i < SlotCount; i++)
+        ActionDefinition chosenAction = availableActions[index];
+        int count = 0;
+        int countAll = 0;
+        foreach (ActionDefinition a in availableActions)
         {
-            if (actions[i] == action)
+            countAll++;
+            if (a == chosenAction)
             {
-                return true;
+                count++;
             }
         }
+        Debug.LogWarning($"Chances of getting {chosenAction.name}: {count} / {countAll}");
 
-        return false;
+        return chosenAction;
     }
 }
