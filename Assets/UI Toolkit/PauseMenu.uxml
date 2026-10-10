@@ -3,7 +3,52 @@
     <ui:VisualElement name="PauseMenu" enabled="true" class="backdrop" style="flex-grow: 1; visibility: hidden;">
         <ui:VisualElement name="Buttons" class="buttons" style="flex-grow: 1;">
             <ui:Button text="Resume" name="ResumeButton" class="button"/>
+            <ui:Button text="Cards" name="CardsButton" class="button"/>
             <ui:Button text="Quit" name="QuitButton" class="button"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="CardsSection" class="panel cards-panel" style="display: none; min-width: 760px; min-height: 520px; position: absolute; align-items: center; justify-content: flex-start; padding: 20px 24px 20px 24px;">
+            <ui:Button name="CardsBackButton" class="back-button" style="position: absolute; top: 16px; left: 16px;">
+                <ui:VisualElement class="back-button-icon" picking-mode="Ignore"/>
+            </ui:Button>
+            <ui:Label text="CARDS" class="title" style="margin-top: 4px; margin-bottom: 12px; -unity-font-definition: url(&apos;project://database/Assets/TextMesh%20Pro/Examples%20&amp;%20Extras/Fonts/Bangers.ttf?fileID=12800000&amp;guid=5dd49b3eacc540408c98eee0de38e0f1&amp;type=3#Bangers&apos;); font-size: 50px; color: rgb(255, 255, 255); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(0, 0, 0); letter-spacing: 2px;"/>
+            
+            <ui:VisualElement name="CarouselArea" style="flex-direction: row; align-items: center; justify-content: center; width: 100%; flex-grow: 1;">
+                <ui:Button name="PrevCardButton" text="◀" class="carousel-nav-button"/>
+                
+                <ui:VisualElement name="CarouselStage" class="carousel-stage">
+                    <!-- Left Card (previous card in loop, tucked behind middle card) -->
+                    <ui:VisualElement name="LeftCard" class="ability-card ability-card-side ability-card-left">
+                        <ui:Label name="LeftCardTitle" class="ability-card-title"/>
+                        <ui:VisualElement class="ability-card-art-frame">
+                            <ui:Image name="LeftCardIcon" class="ability-card-icon"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- Right Card (next card in loop, tucked behind middle card) -->
+                    <ui:VisualElement name="RightCard" class="ability-card ability-card-side ability-card-right">
+                        <ui:Label name="RightCardTitle" class="ability-card-title"/>
+                        <ui:VisualElement class="ability-card-art-frame">
+                            <ui:Image name="RightCardIcon" class="ability-card-icon"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- Middle Card (active card, ALWAYS in the center, rendered on top) -->
+                    <ui:VisualElement name="MiddleCard" class="ability-card ability-card-middle">
+                        <ui:Label name="MiddleCardTitle" class="ability-card-title"/>
+                        <ui:VisualElement class="ability-card-art-frame">
+                            <ui:Image name="MiddleCardIcon" class="ability-card-icon"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <!-- Empty state label -->
+                    <ui:Label name="NoCardsLabel" text="No cards available" class="action-name" style="position: absolute; display: none; color: rgb(255, 255, 255); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(0, 0, 0); font-size: 28px;"/>
+                </ui:VisualElement>
+
+                <ui:Button name="NextCardButton" text="▶" class="carousel-nav-button"/>
+            </ui:VisualElement>
+
+            <!-- Card Counter indicator -->
+            <ui:Label name="CardCounter" text="0 / 0" class="card-counter"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
