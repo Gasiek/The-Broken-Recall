@@ -17,11 +17,23 @@ public class EnemyAttackVisuals : MonoBehaviour
 
     private void Awake()
     {
+        if (weapon == null)
+        {
+            Debug.LogError($"[{nameof(EnemyAttackVisuals)}] 'weapon' transform is not assigned on '{gameObject.name}'!", this);
+            return;
+        }
+
         weaponIdleRotation = weapon.localEulerAngles;
     }
 
     public void BasicAttack()
     {
+        if (weapon == null)
+        {
+            Debug.LogError($"[{nameof(EnemyAttackVisuals)}] Cannot execute BasicAttack because 'weapon' is null on '{gameObject.name}'!", this);
+            return;
+        }
+
         weapon.DOKill();
 
         weapon
