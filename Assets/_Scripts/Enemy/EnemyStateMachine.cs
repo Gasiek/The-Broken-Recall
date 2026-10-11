@@ -10,6 +10,7 @@ public class EnemyStateMachine : MonoBehaviour
     private EnemyAttack meleeAttack;
     private RangedEnemyAttack rangedAttack;
     private EnemyPatrol patrol;
+    private StatusEffectManager statusEffects;
 
     public EnemyState CurrentState { get; private set; }
 
@@ -20,6 +21,7 @@ public class EnemyStateMachine : MonoBehaviour
         meleeAttack = GetComponent<EnemyAttack>();
         rangedAttack = GetComponent<RangedEnemyAttack>();
         patrol = GetComponent<EnemyPatrol>();
+        statusEffects = GetComponent<StatusEffectManager>();
 
         CurrentState = EnemyState.Idle;
     }
@@ -51,6 +53,15 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void Update()
     {
+        if (statusEffects != null && statusEffects.IsStunned)
+        {
+            if (enemy.Agent != null && !enemy.Agent.isStopped)
+            {
+                enemy.Agent.isStopped = true;
+            }
+            return;
+        }
+
         switch (CurrentState)
         {
             case EnemyState.Idle:

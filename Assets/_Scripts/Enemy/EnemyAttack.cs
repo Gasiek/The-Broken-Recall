@@ -13,9 +13,11 @@ public class EnemyAttack : MonoBehaviour
 
     private float cooldownTimer;
 
+    private StatusEffectManager statusEffects;
+
     public float AttackRange => enemy.Definition.AttackRange;
 
-    public bool CanAttack => cooldownTimer <= 0f && !IsAttacking;
+    public bool CanAttack => cooldownTimer <= 0f && !IsAttacking && (statusEffects == null || !statusEffects.IsStunned);
 
     public bool IsAttacking { get; private set; }
 
@@ -23,6 +25,7 @@ public class EnemyAttack : MonoBehaviour
     {
         enemy = GetComponent<EnemyController>();
         visuals = GetComponent<EnemyAttackVisuals>();
+        statusEffects = GetComponent<StatusEffectManager>();
     }
 
     private void Update()

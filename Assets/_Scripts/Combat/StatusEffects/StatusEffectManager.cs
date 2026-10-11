@@ -27,6 +27,9 @@ public class StatusEffectManager : MonoBehaviour
     private float defaultNavSpeed;
     private bool hasRecordedDefaultNavSpeed;
 
+    public bool IsStunned { get; private set; }
+    public event System.Action<bool> StunStateChanged;
+
     private void Awake()
     {
         health = GetComponent<Health>();
@@ -177,10 +180,16 @@ public class StatusEffectManager : MonoBehaviour
     private void UpdateSpeedModifiers()
     {
         float lowestSpeedMultiplier = 1f;
+        bool currentlyStunned = false;
 
         foreach (ActiveEffect effect in activeEffects.Values)
         {
             StatusEffectDefinition definition = effect.Definition;
+
+            if (definition.EffectType == StatusEffectType.Stun || definition.EffectType == StatusEffectType.Freeze)
+            {
+                currentlyStunned = true;
+            }
 
             if (IsMovementEffect(definition.EffectType))
             {
@@ -191,9 +200,23 @@ public class StatusEffectManager : MonoBehaviour
             }
         }
 
+        if (IsStunned != currentlyStunned)
+        {
+            IsStunned = currentlyStunned;
+            StunStateChanged?.Invoke(IsStunned);
+        }
+
         if (navAgent != null && hasRecordedDefaultNavSpeed)
         {
             navAgent.speed = defaultNavSpeed * lowestSpeedMultiplier;
+            if (IsStunned)
+            {
+                navAgent.isStopped = true;
+            }
+            else if (navAgent.isStopped && lowestSpeedMultiplier > 0f)
+            {
+                navAgent.isStopped = false;
+            }
         }
 
         if (playerMovement != null)
