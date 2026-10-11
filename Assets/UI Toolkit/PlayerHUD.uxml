@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/common-styles.uss?fileID=7433441132597879392&amp;guid=f5a483d70588545eeabe7eb35fd0f894&amp;type=3#common-styles"/>
+    <ui:VisualElement name="HUD" class="hud-root" style="align-items: center;">
+        <ui:VisualElement name="HealthBar" class="health-bar">
+            <ui:VisualElement name="HealthFill" class="health-fill"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="ActionBar" class="action-bar" style="position: absolute;">
+            <ui:VisualElement name="ActionSlot0" class="action-slot">
+                <ui:VisualElement name="ActionIcon" class="action-icon"/>
+                <ui:Label name="ActionName" text="basic hit" class="action-name"/>
+                <RadialCooldownElement name="CooldownOverlay" class="cooldown-overlay"/>
+            </ui:VisualElement>
+            <ui:VisualElement name="ActionSlot1" class="action-slot">
+                <ui:VisualElement name="ActionIcon" class="action-icon"/>
+                <ui:Label name="ActionName" text="electric charge" class="action-name"/>
+                <RadialCooldownElement name="CooldownOverlay" class="cooldown-overlay"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="InteractionPrompt" class="interaction-prompt" style="flex-grow: 1; display: none;">
+            <ui:Label text="njfjenifeqqn" name="InteractionPromptText"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
