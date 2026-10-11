@@ -1344,7 +1344,7 @@ PanelRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   serializedVersion: 1
   m_PanelSettings: {fileID: 11400000, guid: 4df2611bf2f944f1b97540753916589f, type: 2}
@@ -3076,7 +3076,7 @@ PanelRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   serializedVersion: 1
   m_PanelSettings: {fileID: 11400000, guid: 4df2611bf2f944f1b97540753916589f, type: 2}
@@ -16172,7 +16172,7 @@ PanelRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_MaskInteraction: 0
   serializedVersion: 1
   m_PanelSettings: {fileID: 11400000, guid: 4df2611bf2f944f1b97540753916589f, type: 2}
@@ -16305,15 +16305,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
-  - {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
-  - {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
   - {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
-  - {fileID: 11400000, guid: 59c8d1e2a34b4c7d8e9f0123456789ab, type: 2}
-  - {fileID: 11400000, guid: e7f8a9b0c1d234567890abcdef123456, type: 2}
-  - {fileID: 11400000, guid: 2653b44309e5e430ba12bb6e79ac85f7, type: 2}
-  - {fileID: 11400000, guid: 7d50f9d3108ca429b9d3c40196c6e008, type: 2}
+  - {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16662,6 +16655,14 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: cb723b9a-285d-4be3-b9ae-ea6b4e6aa066
     m_ActionName: UI/Previous
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 9bdbc263-9266-47d5-8a40-0df95102dd0e
+    m_ActionName: 'UI/ScrollWheel[/Mouse/scroll]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 00f27c4f-8ed1-471a-a089-83d658e3f6f8
+    m_ActionName: 'UI/MiddleClick[/Mouse/middleButton]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -20536,7 +20537,7 @@ PanelRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_MaskInteraction: 0
   serializedVersion: 1
   m_PanelSettings: {fileID: 11400000, guid: 4df2611bf2f944f1b97540753916589f, type: 2}

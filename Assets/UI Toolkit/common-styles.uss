@@ -485,3 +485,19 @@
     -unity-text-outline-width: 3px;
     -unity-font-style: bold;
 }
+
+.draw-pile {
+    width: 100px;
+    height: 100px;
+    background-color: rgb(219, 177, 53);
+    right: 688px;
+    bottom: 0;
+    position: absolute;
+    top: auto;
+    left: auto;
+    font-size: 60px;
+    -unity-text-align: middle-center;
+    justify-content: center;
+    align-items: center;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Bangers.ttf?fileID=12800000&guid=5dd49b3eacc540408c98eee0de38e0f1&type=3#Bangers");
+}

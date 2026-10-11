@@ -14,6 +14,7 @@ public class ActionMemory : MonoBehaviour
     private readonly List<ActionDefinition> drawPile = new();
 
     public IReadOnlyList<ActionDefinition> Actions => actions;
+    public int DrawPileCount => drawPile.Count;
 
     public event Action MemoryChanged;
 
@@ -84,26 +85,32 @@ public class ActionMemory : MonoBehaviour
     {
         if (action == null)
         {
+            Debug.LogWarning("[ActionMemory] Removal aborted: action is NULL.");
             return false;
         }
 
-        // Remove one copy from the player's collection.
+        int slot = FindSlot(action);
+
         if (!actionCollection.Remove(action))
         {
+            Debug.LogWarning("[ActionMemory] Collection removal FAILED.");
             return false;
         }
 
-        // Remove one matching copy from the current draw pile.
-        drawPile.Remove(action);
-
-        // Replace the action if it is currently assigned to a button.
-        int slot = FindSlot(action);
 
         if (slot >= 0)
         {
+            actions[slot] = null;
+
             actions[slot] = DrawAction(slot);
-            MemoryChanged?.Invoke();
+
         }
+        else
+        {
+            drawPile.Remove(action);
+        }
+
+        MemoryChanged?.Invoke();
 
         return true;
     }
@@ -123,19 +130,16 @@ public class ActionMemory : MonoBehaviour
 
     private ActionDefinition DrawAction(int slotBeingReplaced)
     {
-        // Rebuild only when a draw is requested and the pile is empty.
         if (drawPile.Count == 0)
         {
             RebuildDrawPile(slotBeingReplaced);
         }
 
-        // The collection may be empty, or all cards may be assigned.
         if (drawPile.Count == 0)
         {
             return null;
         }
 
-        // Draw and remove the last card from the pile.
         int lastIndex = drawPile.Count - 1;
         ActionDefinition drawnAction = drawPile[lastIndex];
 
@@ -149,16 +153,16 @@ public class ActionMemory : MonoBehaviour
         drawPile.Clear();
         drawPile.AddRange(actionCollection.Actions);
 
-        // Exclude actions assigned to the other button.
+        // Exclude actions assigned to every other slot.
         for (int i = 0; i < SlotCount; i++)
         {
             if (i == slotBeingReplaced)
-            {
                 continue;
-            }
 
-            // Remove only one matching copy.
-            drawPile.Remove(actions[i]);
+            ActionDefinition assignedAction = actions[i];
+
+            if (assignedAction != null)
+                drawPile.Remove(assignedAction);
         }
 
         ShuffleDrawPile();

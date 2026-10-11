@@ -18,6 +18,7 @@ public class ActionBarUI : MonoBehaviour
     private VisualElement[] iconElements;
     private RadialCooldownElement[] cooldownElements;
     private Label[] actionNameLabels;
+    private Label drawPileLabel;
 
     private Coroutine cooldownRoutine;
 
@@ -76,9 +77,11 @@ public class ActionBarUI : MonoBehaviour
             cooldownElements[i] = slotElements[i].Q<RadialCooldownElement>("CooldownOverlay");
             actionNameLabels[i] = slotElements[i].Q<Label>("ActionName");
         }
+        drawPileLabel = root.Q<Label>("DrawPileText");
 
         RefreshSlots();
         RefreshCooldown(0f);
+        RefreshDrawPileCount();
     }
 
     private void RefreshSlots()
@@ -121,6 +124,16 @@ public class ActionBarUI : MonoBehaviour
             if (actionNameLabels[i] != null)
                 actionNameLabels[i].text = action.DisplayName;
         }
+
+        RefreshDrawPileCount();
+    }
+
+    private void RefreshDrawPileCount()
+    {
+        if (drawPileLabel == null || actionMemory == null)
+            return;
+
+        drawPileLabel.text = actionMemory.DrawPileCount.ToString();
     }
 
     private void StartCooldown(float duration)
@@ -170,5 +183,6 @@ public class ActionBarUI : MonoBehaviour
         iconElements = null;
         cooldownElements = null;
         actionNameLabels = null;
+        drawPileLabel = null;
     }
 }

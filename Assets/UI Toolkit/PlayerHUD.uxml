@@ -16,6 +16,9 @@
                 <RadialCooldownElement name="CooldownOverlay" class="cooldown-overlay"/>
             </ui:VisualElement>
         </ui:VisualElement>
+        <ui:VisualElement name="DrawPile" class="draw-pile" style="flex-grow: 1;">
+            <ui:Label text="28" name="DrawPileText"/>
+        </ui:VisualElement>
         <ui:VisualElement name="InteractionPrompt" class="interaction-prompt" style="flex-grow: 1; display: none;">
             <ui:Label text="njfjenifeqqn" name="InteractionPromptText"/>
         </ui:VisualElement>
