@@ -73,6 +73,13 @@ public class PlayerActionVisuals : MonoBehaviour
     [SerializeField]
     private Vector3 chargeOffset = new Vector3(0f, 0.4f, 0.3f);
 
+    [Header("Sword Charge (Szarża)")]
+    [SerializeField]
+    private Vector3 swordChargeRotation = new Vector3(90f, 0f, 0f);
+
+    [SerializeField]
+    private Vector3 swordChargeOffset = new Vector3(0f, 0.1f, 0.65f);
+
     private Vector3 swordIdleRotation;
     private Vector3 swordIdlePosition;
 
@@ -257,6 +264,49 @@ public class PlayerActionVisuals : MonoBehaviour
         );
 
         // 3. Smooth return to idle position
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation, returnTime)
+                .SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition, returnTime)
+                .SetEase(Ease.OutQuad)
+        );
+    }
+
+    public void SwordCharge(float prepTime, float holdTime, float dashTime, float returnTime)
+    {
+        sword.DOKill();
+
+        Sequence sequence = DOTween.Sequence();
+
+        // 1. Extend sword forward ("Player wyciaga miecz przed siebie")
+        sequence.Append(
+            sword
+                .DOLocalRotate(swordIdleRotation + swordChargeRotation, prepTime)
+                .SetEase(Ease.OutQuad)
+        );
+        sequence.Join(
+            sword
+                .DOLocalMove(swordIdlePosition + swordChargeOffset, prepTime)
+                .SetEase(Ease.OutQuad)
+        );
+
+        // 2. Hold sword ready before the burst ("trzyma go tak")
+        if (holdTime > 0f)
+        {
+            sequence.AppendInterval(holdTime);
+        }
+
+        // 3. Maintain thrust steadily during the rapid dash forward ("i nagle szybko w 1 sek porusza sie do przodu")
+        if (dashTime > 0f)
+        {
+            sequence.AppendInterval(dashTime);
+        }
+
+        // 4. Smooth recovery back to idle stance
         sequence.Append(
             sword
                 .DOLocalRotate(swordIdleRotation, returnTime)
