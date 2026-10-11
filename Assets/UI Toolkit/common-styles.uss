@@ -52,6 +52,39 @@
     transition-timing-function: ease-out;
 }
 
+.back-button {
+    width: 60px;
+    height: 60px;
+    background-color: rgb(200, 165, 112);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    align-items: center;
+    justify-content: center;
+    border-width: 0;
+    padding: 0;
+}
+
+.back-button:hover {
+    scale: 1.08 1.08;
+    background-color: rgb(221, 183, 124);
+    transition-property: scale;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+.back-button-icon {
+    width: 36px;
+    height: 36px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("project://database/Assets/UI/Menu%20icons/arrow_left_icon.png?fileID=-5180331782465216250&guid=8e33f61ec85074b0fb64697157cb5f18&type=3#arrow_left_icon_0");
+}
+
+.cards-panel {
+    background-color: rgb(156, 139, 139);
+}
+
 .panel {
     padding-top: 60px;
     padding-right: 60px;
@@ -125,4 +158,213 @@
 
 .action-list-item-name {
     font-size: 24px;
+}
+
+/* Ability Card Carousel Styles */
+.carousel-stage {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 330px;
+    width: 600px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ability-card {
+    width: 200px;
+    height: 290px;
+    background-color: rgb(52, 45, 45);
+    border-color: rgb(200, 165, 112);
+    border-width: 4px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    padding-top: 14px;
+    padding-bottom: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.ability-card-middle {
+    position: absolute;
+    top: 20px;
+    left: 200px;
+    scale: 1.08 1.08;
+    opacity: 1;
+    border-color: rgb(150, 125, 95);
+    border-width: 5px;
+    background-color: rgb(44, 38, 38);
+}
+
+.ability-card-side {
+    position: absolute;
+    top: 20px;
+    scale: 0.85 0.85;
+    opacity: 0.55;
+    border-color: rgb(150, 125, 95);
+    background-color: rgb(44, 38, 38);
+}
+
+.ability-card-side:hover {
+    opacity: 0.85;
+    scale: 0.88 0.88;
+}
+
+.ability-card-left {
+    left: 45px;
+}
+
+.ability-card-right {
+    right: 45px;
+}
+
+.ability-card-title {
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Bangers.ttf?fileID=12800000&guid=5dd49b3eacc540408c98eee0de38e0f1&type=3#Bangers");
+    font-size: 24px;
+    color: rgb(255, 255, 255);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    letter-spacing: 1px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    text-overflow: ellipsis;
+    max-height: 52px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.ability-card-face {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.card-flip-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background-color: rgb(200, 165, 112);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-width: 1px;
+    border-color: rgb(140, 110, 75);
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+    cursor: link;
+    transition-property: scale, background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+.card-flip-button:hover {
+    scale: 1.12 1.12;
+    background-color: rgb(225, 190, 130);
+}
+
+.card-flip-button-icon {
+    width: 20px;
+    height: 20px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-image: url("project://database/Assets/UI/Menu%20icons/turn_back_icon.png?fileID=3094156382794091256&guid=fb1b5c9bf594a4101a6ac835d65be173&type=3#turn_back_icon_0");
+}
+
+.ability-card-art-frame {
+    width: 140px;
+    height: 140px;
+    background-color: rgb(28, 24, 24);
+    border-color: rgb(120, 100, 80);
+    border-width: 2px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.ability-card-icon {
+    width: 110px;
+    height: 110px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.ability-card-back-frame {
+    width: 156px;
+    height: 165px;
+    background-color: rgb(28, 24, 24);
+    border-color: rgb(120, 100, 80);
+    border-width: 2px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.ability-card-description {
+    font-size: 14px;
+    color: rgb(240, 230, 215);
+    -unity-text-align: middle-center;
+    white-space: normal;
+    padding: 0;
+    margin: 0;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/LiberationSans.ttf?fileID=12800000&guid=e3265ab4bf004d28a9537516768c1c75&type=3#LiberationSans");
+    letter-spacing: 0.2px;
+}
+
+.carousel-nav-button {
+    font-size: 32px;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/LiberationSans.ttf?fileID=12800000&guid=e3265ab4bf004d28a9537516768c1c75&type=3#LiberationSans");
+    color: rgb(255, 255, 255);
+    background-color: rgb(200, 165, 112);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    width: 50px;
+    height: 60px;
+    -unity-text-align: middle-center;
+    margin-left: 6px;
+    margin-right: 6px;
+}
+
+.carousel-nav-button:hover {
+    scale: 1.1 1.1;
+    background-color: rgb(221, 183, 124);
+    transition-property: scale;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+.carousel-nav-button:disabled {
+    opacity: 0.35;
+}
+
+.card-counter {
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Bangers.ttf?fileID=12800000&guid=5dd49b3eacc540408c98eee0de38e0f1&type=3#Bangers");
+    font-size: 36px;
+    color: rgb(255, 255, 255);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    letter-spacing: 2px;
+    margin-top: 14px;
+    -unity-text-align: middle-center;
 }

@@ -68,4 +68,7 @@ public class LightningChargeAction : ActionDefinition
 
         yield return new WaitForSeconds(Duration);
     }
+
+    public override string GetDescription() =>
+        $"Charges the weapon with lightning, adding +{bonusDamage} bonus damage to the next attack.";
 }

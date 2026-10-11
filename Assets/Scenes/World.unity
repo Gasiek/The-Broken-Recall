@@ -16804,6 +16804,7 @@ GameObject:
   - component: {fileID: 1174493898}
   - component: {fileID: 1174493897}
   - component: {fileID: 1174493899}
+  - component: {fileID: 1174493900}
   m_Layer: 5
   m_Name: PauseMenu
   m_TagString: Untagged
@@ -16897,6 +16898,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseMenuUI
   pauseController: {fileID: 532564898}
+--- !u!114 &1174493900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1174493896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d94327a81f684152a8e8450b7a91b28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CardsMenuUI
+  actionCollection: {fileID: 1194145299}
 --- !u!1 &1194145296
 GameObject:
   m_ObjectHideFlags: 0
@@ -17297,6 +17311,38 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 1eaed690-8367-40d1-ad3a-6c3568e6af48
     m_ActionName: 'Player/Pause[/Keyboard/escape]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1174493900}
+        m_TargetAssemblyTypeName: CardsMenuUI, Assembly-CSharp
+        m_MethodName: OnNextCard
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 64d231a6-0ab7-4899-bf42-c1e5708d1bfa
+    m_ActionName: UI/Next
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1174493900}
+        m_TargetAssemblyTypeName: CardsMenuUI, Assembly-CSharp
+        m_MethodName: OnPreviousCard
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: cb723b9a-285d-4be3-b9ae-ea6b4e6aa066
+    m_ActionName: UI/Previous
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

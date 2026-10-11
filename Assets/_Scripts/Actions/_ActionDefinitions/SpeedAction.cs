@@ -17,4 +17,7 @@ public class SpeedAction : ActionDefinition
 
         context.Movement.ResetSpeedMultiplier();
     }
+
+    public override string GetDescription() =>
+        $"Increases movement speed by {Mathf.RoundToInt((speedMultiplier - 1f) * 100)}% for {Duration:0.#}s.";
 }

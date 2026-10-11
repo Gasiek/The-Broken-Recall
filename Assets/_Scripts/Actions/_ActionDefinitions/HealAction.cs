@@ -39,4 +39,6 @@ public class HealAction : ActionDefinition
 
         yield return new WaitForSeconds(Duration);
     }
+
+    public override string GetDescription() => $"Restores {healAmount} health instantly.";
 }

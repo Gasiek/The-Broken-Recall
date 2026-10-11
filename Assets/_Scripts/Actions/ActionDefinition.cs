@@ -13,4 +13,5 @@ public abstract class ActionDefinition : ScriptableObject
     public float Duration => duration;
     public Sprite Icon => icon;
     public abstract IEnumerator Execute(ActionContext context);
+    public virtual string GetDescription() => string.Empty;
 }

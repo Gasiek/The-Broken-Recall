@@ -48,4 +48,7 @@ public class TornadoAction : ActionDefinition
             );
         }
     }
+
+    public override string GetDescription() =>
+        $"Spins rapidly, dealing {damage} damage to all enemies within a {radius:0.#}m radius.";
 }
