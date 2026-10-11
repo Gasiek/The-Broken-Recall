@@ -6,8 +6,12 @@ public class CardsCarousel
 {
     private const float SlideDuration = 0.22f;
     private const float CardSlideDistance = 155f;
+    private const float FlipHalfDuration = 0.12f;
+    private const float ActiveCardScale = 1.08f;
+    private const float SideCardScale = 0.85f;
 
     private readonly MonoBehaviour coroutineRunner;
+
     private ActionCollection actionCollection;
 
     private Button prevCardButton;
@@ -15,12 +19,12 @@ public class CardsCarousel
     private Label cardCounter;
     private Label noCardsLabel;
 
-    // Left Card
+    // Left card
     private VisualElement leftCard;
     private Label leftCardTitle;
     private Image leftCardIcon;
 
-    // Middle Card
+    // Middle card
     private VisualElement middleCard;
     private Label middleCardTitle;
     private Image middleCardIcon;
@@ -30,15 +34,16 @@ public class CardsCarousel
     private Label middleCardDescription;
     private Button middleCardFlipButton;
 
-    // Right Card
+    // Right card
     private VisualElement rightCard;
     private Label rightCardTitle;
     private Image rightCardIcon;
 
-    private int currentCardIndex = 0;
-    private bool isAnimating = false;
-    private bool isFlipped = false;
-    private bool isFlipping = false;
+    private int currentCardIndex;
+    private bool isAnimating;
+    private bool isFlipped;
+    private bool isFlipping;
+
     private Coroutine slideCoroutine;
     private Coroutine flipCoroutine;
 
@@ -47,26 +52,39 @@ public class CardsCarousel
         this.coroutineRunner = coroutineRunner;
     }
 
-    public void Initialize(VisualElement root, ActionCollection actionCollection)
+    public void Initialize(VisualElement root, ActionCollection collection)
     {
-        this.actionCollection = actionCollection;
+        StopAnimation();
+        UnbindUI();
+
+        actionCollection = collection;
+
+        if (root == null)
+        {
+            Debug.LogError("CardsCarousel.Initialize received a null root.");
+
+            return;
+        }
 
         prevCardButton = root.Q<Button>("PrevCardButton");
         nextCardButton = root.Q<Button>("NextCardButton");
         cardCounter = root.Q<Label>("CardCounter");
         noCardsLabel = root.Q<Label>("NoCardsLabel");
 
-        // Query Left Card
+        // Left card
         leftCard = root.Q<VisualElement>("LeftCard");
+
         if (leftCard != null)
         {
             leftCardTitle = leftCard.Q<Label>("LeftCardTitle");
             leftCardIcon = leftCard.Q<Image>("LeftCardIcon");
-            leftCard.RegisterCallback<ClickEvent>(evt => Previous());
+
+            leftCard.RegisterCallback<ClickEvent>(HandleLeftCardClicked);
         }
 
-        // Query Middle Card
+        // Middle card
         middleCard = root.Q<VisualElement>("MiddleCard");
+
         if (middleCard != null)
         {
             middleCardTitle = middleCard.Q<Label>("MiddleCardTitle");
@@ -83,26 +101,99 @@ public class CardsCarousel
             }
         }
 
-        // Query Right Card
+        // Right card
         rightCard = root.Q<VisualElement>("RightCard");
+
         if (rightCard != null)
         {
             rightCardTitle = rightCard.Q<Label>("RightCardTitle");
             rightCardIcon = rightCard.Q<Image>("RightCardIcon");
-            rightCard.RegisterCallback<ClickEvent>(evt => Next());
+
+            rightCard.RegisterCallback<ClickEvent>(HandleRightCardClicked);
         }
 
-        if (prevCardButton != null) prevCardButton.clicked += Previous;
-        if (nextCardButton != null) nextCardButton.clicked += Next;
+        if (prevCardButton != null)
+        {
+            prevCardButton.clicked += Previous;
+        }
+
+        if (nextCardButton != null)
+        {
+            nextCardButton.clicked += Next;
+        }
+
+        ResetFlipVisuals();
+        ResetCardTransformStyles();
+        Refresh();
     }
 
     public void Cleanup()
     {
         StopAnimation();
+        UnbindUI();
 
-        if (middleCardFlipButton != null) middleCardFlipButton.clicked -= Flip;
-        if (prevCardButton != null) prevCardButton.clicked -= Previous;
-        if (nextCardButton != null) nextCardButton.clicked -= Next;
+        actionCollection = null;
+
+        leftCard = null;
+        middleCard = null;
+        rightCard = null;
+    }
+
+    private void UnbindUI()
+    {
+        if (leftCard != null)
+        {
+            leftCard.UnregisterCallback<ClickEvent>(HandleLeftCardClicked);
+        }
+
+        if (rightCard != null)
+        {
+            rightCard.UnregisterCallback<ClickEvent>(HandleRightCardClicked);
+        }
+
+        if (middleCardFlipButton != null)
+        {
+            middleCardFlipButton.clicked -= Flip;
+        }
+
+        if (prevCardButton != null)
+        {
+            prevCardButton.clicked -= Previous;
+        }
+
+        if (nextCardButton != null)
+        {
+            nextCardButton.clicked -= Next;
+        }
+
+        prevCardButton = null;
+        nextCardButton = null;
+        cardCounter = null;
+        noCardsLabel = null;
+
+        leftCardTitle = null;
+        leftCardIcon = null;
+
+        middleCardTitle = null;
+        middleCardIcon = null;
+        middleCardFront = null;
+        middleCardBack = null;
+        middleCardBackTitle = null;
+        middleCardDescription = null;
+        middleCardFlipButton = null;
+
+        rightCardTitle = null;
+        rightCardIcon = null;
+    }
+
+    private void HandleLeftCardClicked(ClickEvent evt)
+    {
+        Previous();
+    }
+
+    private void HandleRightCardClicked(ClickEvent evt)
+    {
+        Next();
     }
 
     public void ResetIndex()
@@ -113,64 +204,73 @@ public class CardsCarousel
 
     public void Flip()
     {
-        if (isAnimating || isFlipping) return;
-        if (coroutineRunner != null)
+        if (isAnimating || isFlipping || middleCard == null)
         {
-            flipCoroutine = coroutineRunner.StartCoroutine(AnimateCardFlip());
+            return;
         }
-        else
+
+        if (coroutineRunner == null)
         {
             isFlipped = !isFlipped;
-            if (middleCardFront != null)
-                middleCardFront.style.display = isFlipped ? DisplayStyle.None : DisplayStyle.Flex;
-            if (middleCardBack != null)
-                middleCardBack.style.display = isFlipped ? DisplayStyle.Flex : DisplayStyle.None;
+            UpdateFlipVisuals();
+            return;
         }
+
+        flipCoroutine = coroutineRunner.StartCoroutine(AnimateCardFlip());
     }
 
     private IEnumerator AnimateCardFlip()
     {
         isFlipping = true;
-        float halfDuration = 0.12f;
+
         float elapsed = 0f;
 
-        // Phase 1: Horizontal shrink to simulate 3D rotation edge-on
-        while (elapsed < halfDuration)
+        // Shrink horizontally to simulate turning the card.
+        while (elapsed < FlipHalfDuration)
         {
             elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / halfDuration);
-            float scaleX = Mathf.Lerp(1.08f, 0f, t);
+
+            float t = Mathf.Clamp01(elapsed / FlipHalfDuration);
+            float scaleX = Mathf.Lerp(ActiveCardScale, 0f, t);
+
             if (middleCard != null)
             {
-                middleCard.style.scale = new StyleScale(new Scale(new Vector2(scaleX, 1.08f)));
+                middleCard.style.scale = new StyleScale(
+                    new Scale(new Vector2(scaleX, ActiveCardScale))
+                );
             }
+
             yield return null;
         }
 
-        // Swap face visibility
         isFlipped = !isFlipped;
-        if (middleCardFront != null)
-            middleCardFront.style.display = isFlipped ? DisplayStyle.None : DisplayStyle.Flex;
-        if (middleCardBack != null)
-            middleCardBack.style.display = isFlipped ? DisplayStyle.Flex : DisplayStyle.None;
+        UpdateFlipVisuals();
 
-        // Phase 2: Horizontal expand back to full scale
+        // Expand the card again.
         elapsed = 0f;
-        while (elapsed < halfDuration)
+
+        while (elapsed < FlipHalfDuration)
         {
             elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / halfDuration);
-            float scaleX = Mathf.Lerp(0f, 1.08f, t);
+
+            float t = Mathf.Clamp01(elapsed / FlipHalfDuration);
+            float scaleX = Mathf.Lerp(0f, ActiveCardScale, t);
+
             if (middleCard != null)
             {
-                middleCard.style.scale = new StyleScale(new Scale(new Vector2(scaleX, 1.08f)));
+                middleCard.style.scale = new StyleScale(
+                    new Scale(new Vector2(scaleX, ActiveCardScale))
+                );
             }
+
             yield return null;
         }
 
         if (middleCard != null)
         {
-            middleCard.style.scale = new StyleScale(new Scale(new Vector2(1.08f, 1.08f)));
+            middleCard.style.scale = new StyleScale(
+                new Scale(new Vector2(ActiveCardScale, ActiveCardScale))
+            );
         }
 
         isFlipping = false;
@@ -184,18 +284,46 @@ public class CardsCarousel
             coroutineRunner.StopCoroutine(flipCoroutine);
             flipCoroutine = null;
         }
-        isFlipping = false;
+
+        ResetFlipVisuals();
+    }
+
+    private void ResetFlipVisuals()
+    {
         isFlipped = false;
+        isFlipping = false;
+        UpdateFlipVisuals();
+    }
+
+    private void UpdateFlipVisuals()
+    {
         if (middleCardFront != null)
-            middleCardFront.style.display = DisplayStyle.Flex;
+        {
+            middleCardFront.style.display = isFlipped ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
         if (middleCardBack != null)
-            middleCardBack.style.display = DisplayStyle.None;
+        {
+            middleCardBack.style.display = isFlipped ? DisplayStyle.Flex : DisplayStyle.None;
+        }
     }
 
     public void Previous()
     {
-        if (isAnimating) return;
-        if (actionCollection == null || actionCollection.Actions.Count <= 1) return;
+        if (isAnimating || isFlipping)
+        {
+            return;
+        }
+
+        if (
+            actionCollection == null
+            || actionCollection.Actions == null
+            || actionCollection.Actions.Count <= 1
+        )
+        {
+            return;
+        }
+
         if (coroutineRunner != null)
         {
             slideCoroutine = coroutineRunner.StartCoroutine(AnimateCardSlide(1));
@@ -204,8 +332,20 @@ public class CardsCarousel
 
     public void Next()
     {
-        if (isAnimating) return;
-        if (actionCollection == null || actionCollection.Actions.Count <= 1) return;
+        if (isAnimating || isFlipping)
+        {
+            return;
+        }
+
+        if (
+            actionCollection == null
+            || actionCollection.Actions == null
+            || actionCollection.Actions.Count <= 1
+        )
+        {
+            return;
+        }
+
         if (coroutineRunner != null)
         {
             slideCoroutine = coroutineRunner.StartCoroutine(AnimateCardSlide(-1));
@@ -215,21 +355,40 @@ public class CardsCarousel
     public void Refresh()
     {
         var actions = actionCollection != null ? actionCollection.Actions : null;
+
         int count = actions != null ? actions.Count : 0;
 
         if (count == 0)
         {
-            if (leftCard != null) leftCard.style.display = DisplayStyle.None;
-            if (middleCard != null) middleCard.style.display = DisplayStyle.None;
-            if (rightCard != null) rightCard.style.display = DisplayStyle.None;
-            if (noCardsLabel != null) noCardsLabel.style.display = DisplayStyle.Flex;
-            if (cardCounter != null) cardCounter.text = "0 / 0";
-            if (prevCardButton != null) prevCardButton.SetEnabled(false);
-            if (nextCardButton != null) nextCardButton.SetEnabled(false);
+            ResetFlipState();
+            ResetCardTransformStyles();
+
+            if (leftCard != null)
+                leftCard.style.display = DisplayStyle.None;
+
+            if (middleCard != null)
+                middleCard.style.display = DisplayStyle.None;
+
+            if (rightCard != null)
+                rightCard.style.display = DisplayStyle.None;
+
+            if (noCardsLabel != null)
+                noCardsLabel.style.display = DisplayStyle.Flex;
+
+            if (cardCounter != null)
+                cardCounter.text = "0 / 0";
+
+            if (prevCardButton != null)
+                prevCardButton.SetEnabled(false);
+
+            if (nextCardButton != null)
+                nextCardButton.SetEnabled(false);
+
             return;
         }
 
-        if (noCardsLabel != null) noCardsLabel.style.display = DisplayStyle.None;
+        if (noCardsLabel != null)
+            noCardsLabel.style.display = DisplayStyle.None;
 
         currentCardIndex = ((currentCardIndex % count) + count) % count;
 
@@ -239,41 +398,46 @@ public class CardsCarousel
         }
 
         bool canNavigate = count > 1;
-        if (prevCardButton != null) prevCardButton.SetEnabled(canNavigate);
-        if (nextCardButton != null) nextCardButton.SetEnabled(canNavigate);
 
-        // Populate Middle Card (Active card, ALWAYS in the center)
+        if (prevCardButton != null)
+            prevCardButton.SetEnabled(canNavigate);
+
+        if (nextCardButton != null)
+            nextCardButton.SetEnabled(canNavigate);
+
+        // Middle card
         if (middleCard != null)
         {
             middleCard.style.display = DisplayStyle.Flex;
             middleCard.style.visibility = Visibility.Visible;
+
             ActionDefinition currentAction = actions[currentCardIndex];
+
             PopulateCard(middleCardTitle, middleCardIcon, currentAction);
 
-            string title = currentAction != null && !string.IsNullOrEmpty(currentAction.DisplayName)
-                ? currentAction.DisplayName
-                : (currentAction != null ? currentAction.name : string.Empty);
+            string title = GetActionTitle(currentAction);
 
             if (middleCardBackTitle != null)
-            {
                 middleCardBackTitle.text = title;
-            }
 
             if (middleCardDescription != null)
             {
-                middleCardDescription.text = currentAction != null ? currentAction.GetDescription() : string.Empty;
+                middleCardDescription.text =
+                    currentAction != null ? currentAction.GetDescription() : string.Empty;
             }
         }
 
-        // Populate Left Card (Previous card in loop)
+        // Left card
         if (leftCard != null)
         {
             if (count >= 2)
             {
                 leftCard.style.display = DisplayStyle.Flex;
                 leftCard.style.visibility = Visibility.Visible;
-                int prevIndex = (currentCardIndex - 1 + count) % count;
-                PopulateCard(leftCardTitle, leftCardIcon, actions[prevIndex]);
+
+                int previousIndex = (currentCardIndex - 1 + count) % count;
+
+                PopulateCard(leftCardTitle, leftCardIcon, actions[previousIndex]);
             }
             else
             {
@@ -281,14 +445,16 @@ public class CardsCarousel
             }
         }
 
-        // Populate Right Card (Next card in loop)
+        // Right card
         if (rightCard != null)
         {
             if (count >= 2)
             {
                 rightCard.style.display = DisplayStyle.Flex;
                 rightCard.style.visibility = Visibility.Visible;
+
                 int nextIndex = (currentCardIndex + 1) % count;
+
                 PopulateCard(rightCardTitle, rightCardIcon, actions[nextIndex]);
             }
             else
@@ -297,35 +463,32 @@ public class CardsCarousel
             }
         }
 
-        // Resting state: middle card is on top
-        if (middleCard != null)
-        {
-            middleCard.BringToFront();
-        }
+        middleCard?.BringToFront();
+        UpdateFlipVisuals();
+    }
+
+    private static string GetActionTitle(ActionDefinition action)
+    {
+        if (action == null)
+            return string.Empty;
+
+        return !string.IsNullOrEmpty(action.DisplayName) ? action.DisplayName : action.name;
     }
 
     private void PopulateCard(Label titleLabel, Image iconImage, ActionDefinition action)
     {
-        if (action == null) return;
-
         if (titleLabel != null)
         {
-            titleLabel.text = !string.IsNullOrEmpty(action.DisplayName) ? action.DisplayName : action.name;
+            titleLabel.text = GetActionTitle(action);
         }
 
-        if (iconImage != null)
-        {
-            if (action.Icon != null)
-            {
-                iconImage.sprite = action.Icon;
-                iconImage.style.display = DisplayStyle.Flex;
-            }
-            else
-            {
-                iconImage.sprite = null;
-                iconImage.style.display = DisplayStyle.None;
-            }
-        }
+        if (iconImage == null)
+            return;
+
+        Sprite icon = action != null ? action.Icon : null;
+
+        iconImage.sprite = icon;
+        iconImage.style.display = icon != null ? DisplayStyle.Flex : DisplayStyle.None;
     }
 
     private IEnumerator AnimateCardSlide(int direction)
@@ -339,24 +502,18 @@ public class CardsCarousel
 
         VisualElement incomingCard = direction < 0 ? rightCard : leftCard;
 
-        if (middleCard != null)
-        {
-            middleCard.BringToFront();
-        }
+        middleCard?.BringToFront();
 
         while (elapsed < SlideDuration)
         {
             elapsed += Time.unscaledDeltaTime;
+
             float t = Mathf.Clamp01(elapsed / SlideDuration);
 
-            // In second half (t >= 0.5), incoming card takes the foreground over the exiting card
             if (!swappedLayers && t >= 0.5f)
             {
                 swappedLayers = true;
-                if (incomingCard != null)
-                {
-                    incomingCard.BringToFront();
-                }
+                incomingCard?.BringToFront();
             }
 
             float ease = Mathf.SmoothStep(0f, 1f, t);
@@ -364,42 +521,78 @@ public class CardsCarousel
 
             if (middleCard != null)
             {
-                middleCard.style.translate = new StyleTranslate(new Translate(new Length(currentOffset, LengthUnit.Pixel), new Length(0, LengthUnit.Pixel)));
-                float middleScale = Mathf.Lerp(1.08f, 0.85f, ease);
-                middleCard.style.scale = new StyleScale(new Scale(new Vector2(middleScale, middleScale)));
-                middleCard.style.opacity = Mathf.Lerp(1.0f, 0.65f, ease);
+                middleCard.style.translate = new StyleTranslate(
+                    new Translate(
+                        new Length(currentOffset, LengthUnit.Pixel),
+                        new Length(0, LengthUnit.Pixel)
+                    )
+                );
+
+                float scale = Mathf.Lerp(ActiveCardScale, SideCardScale, ease);
+
+                middleCard.style.scale = new StyleScale(new Scale(new Vector2(scale, scale)));
+
+                middleCard.style.opacity = Mathf.Lerp(1f, 0.65f, ease);
             }
 
-            if (direction < 0) // Next card (cards slide left)
+            if (direction < 0)
             {
                 if (rightCard != null)
                 {
-                    rightCard.style.translate = new StyleTranslate(new Translate(new Length(currentOffset, LengthUnit.Pixel), new Length(0, LengthUnit.Pixel)));
-                    float rightScale = Mathf.Lerp(0.85f, 1.08f, ease);
-                    rightCard.style.scale = new StyleScale(new Scale(new Vector2(rightScale, rightScale)));
-                    rightCard.style.opacity = Mathf.Lerp(0.65f, 1.0f, ease);
+                    rightCard.style.translate = new StyleTranslate(
+                        new Translate(
+                            new Length(currentOffset, LengthUnit.Pixel),
+                            new Length(0, LengthUnit.Pixel)
+                        )
+                    );
+
+                    float scale = Mathf.Lerp(SideCardScale, ActiveCardScale, ease);
+
+                    rightCard.style.scale = new StyleScale(new Scale(new Vector2(scale, scale)));
+
+                    rightCard.style.opacity = Mathf.Lerp(0.65f, 1f, ease);
                 }
 
                 if (leftCard != null)
                 {
-                    leftCard.style.translate = new StyleTranslate(new Translate(new Length(currentOffset, LengthUnit.Pixel), new Length(0, LengthUnit.Pixel)));
-                    leftCard.style.opacity = Mathf.Lerp(0.65f, 0.0f, ease);
+                    leftCard.style.translate = new StyleTranslate(
+                        new Translate(
+                            new Length(currentOffset, LengthUnit.Pixel),
+                            new Length(0, LengthUnit.Pixel)
+                        )
+                    );
+
+                    leftCard.style.opacity = Mathf.Lerp(0.65f, 0f, ease);
                 }
             }
-            else // Prev card (cards slide right)
+            else
             {
                 if (leftCard != null)
                 {
-                    leftCard.style.translate = new StyleTranslate(new Translate(new Length(currentOffset, LengthUnit.Pixel), new Length(0, LengthUnit.Pixel)));
-                    float leftScale = Mathf.Lerp(0.85f, 1.08f, ease);
-                    leftCard.style.scale = new StyleScale(new Scale(new Vector2(leftScale, leftScale)));
-                    leftCard.style.opacity = Mathf.Lerp(0.65f, 1.0f, ease);
+                    leftCard.style.translate = new StyleTranslate(
+                        new Translate(
+                            new Length(currentOffset, LengthUnit.Pixel),
+                            new Length(0, LengthUnit.Pixel)
+                        )
+                    );
+
+                    float scale = Mathf.Lerp(SideCardScale, ActiveCardScale, ease);
+
+                    leftCard.style.scale = new StyleScale(new Scale(new Vector2(scale, scale)));
+
+                    leftCard.style.opacity = Mathf.Lerp(0.65f, 1f, ease);
                 }
 
                 if (rightCard != null)
                 {
-                    rightCard.style.translate = new StyleTranslate(new Translate(new Length(currentOffset, LengthUnit.Pixel), new Length(0, LengthUnit.Pixel)));
-                    rightCard.style.opacity = Mathf.Lerp(0.65f, 0.0f, ease);
+                    rightCard.style.translate = new StyleTranslate(
+                        new Translate(
+                            new Length(currentOffset, LengthUnit.Pixel),
+                            new Length(0, LengthUnit.Pixel)
+                        )
+                    );
+
+                    rightCard.style.opacity = Mathf.Lerp(0.65f, 0f, ease);
                 }
             }
 
@@ -408,64 +601,60 @@ public class CardsCarousel
 
         ResetCardTransformStyles();
 
-        int count = actionCollection != null ? actionCollection.Actions.Count : 0;
+        int count =
+            actionCollection != null && actionCollection.Actions != null
+                ? actionCollection.Actions.Count
+                : 0;
+
         if (count > 0)
         {
-            if (direction < 0)
-            {
-                currentCardIndex = (currentCardIndex + 1) % count;
-            }
-            else
-            {
-                currentCardIndex = (currentCardIndex - 1 + count) % count;
-            }
+            currentCardIndex =
+                direction < 0
+                    ? (currentCardIndex + 1) % count
+                    : (currentCardIndex - 1 + count) % count;
         }
-
-        Refresh();
 
         isAnimating = false;
         slideCoroutine = null;
+
+        Refresh();
     }
 
     private void ResetCardTransformStyles()
     {
-        if (middleCard != null)
-        {
-            middleCard.style.translate = StyleKeyword.Null;
-            middleCard.style.scale = StyleKeyword.Null;
-            middleCard.style.opacity = StyleKeyword.Null;
-        }
+        ResetCardTransform(middleCard);
+        ResetCardTransform(leftCard);
+        ResetCardTransform(rightCard);
+    }
 
-        if (leftCard != null)
-        {
-            leftCard.style.translate = StyleKeyword.Null;
-            leftCard.style.scale = StyleKeyword.Null;
-            leftCard.style.opacity = StyleKeyword.Null;
-        }
+    private static void ResetCardTransform(VisualElement card)
+    {
+        if (card == null)
+            return;
 
-        if (rightCard != null)
-        {
-            rightCard.style.translate = StyleKeyword.Null;
-            rightCard.style.scale = StyleKeyword.Null;
-            rightCard.style.opacity = StyleKeyword.Null;
-        }
+        card.style.translate = StyleKeyword.Null;
+        card.style.scale = StyleKeyword.Null;
+        card.style.opacity = StyleKeyword.Null;
     }
 
     public void StopAnimation()
     {
-        ResetFlipState();
-
         if (slideCoroutine != null && coroutineRunner != null)
         {
             coroutineRunner.StopCoroutine(slideCoroutine);
             slideCoroutine = null;
         }
+
+        if (flipCoroutine != null && coroutineRunner != null)
+        {
+            coroutineRunner.StopCoroutine(flipCoroutine);
+            flipCoroutine = null;
+        }
+
         isAnimating = false;
+        ResetFlipVisuals();
         ResetCardTransformStyles();
 
-        if (middleCard != null)
-        {
-            middleCard.BringToFront();
-        }
+        middleCard?.BringToFront();
     }
 }

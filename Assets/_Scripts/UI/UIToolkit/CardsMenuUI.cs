@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 public class CardsMenuUI : MonoBehaviour
@@ -8,19 +10,14 @@ public class CardsMenuUI : MonoBehaviour
 
     private VisualElement cardsSection;
     private Button cardsBackButton;
-    private System.Action backCallback;
+    private Action backCallback;
     private CardsCarousel carousel;
+    private bool isVisible;
 
     public CardsCarousel Carousel => carousel;
 
-    private void Awake()
-    {
-        FindDependencies();
-    }
-
     private void OnEnable()
     {
-        FindDependencies();
         if (actionCollection != null)
         {
             actionCollection.Changed += HandleActionCollectionChanged;
@@ -29,38 +26,38 @@ public class CardsMenuUI : MonoBehaviour
 
     private void OnDisable()
     {
-        if (carousel != null)
-        {
-            carousel.StopAnimation();
-        }
+        isVisible = false;
 
         if (actionCollection != null)
         {
             actionCollection.Changed -= HandleActionCollectionChanged;
         }
+
+        UnbindUI();
+
+        carousel?.StopAnimation();
     }
 
-    private void FindDependencies()
-    {
-        if (actionCollection == null)
-        {
-            actionCollection = FindFirstObjectByType<ActionCollection>();
-        }
-    }
-
-    private void HandleActionCollectionChanged()
+    private void OnDestroy()
     {
         if (carousel != null)
         {
-            carousel.StopAnimation();
-            carousel.Refresh();
+            carousel.Cleanup();
+            carousel = null;
         }
     }
 
-    public void Initialize(VisualElement root, System.Action onBackClicked)
+    public void Initialize(VisualElement root, Action onBackClicked)
     {
-        FindDependencies();
+        UnbindUI();
+
         backCallback = onBackClicked;
+
+        if (root == null)
+        {
+            Debug.LogError("CardsMenuUI.Initialize received a null root.", this);
+            return;
+        }
 
         cardsSection = root.Q<VisualElement>("CardsSection");
         cardsBackButton = root.Q<Button>("CardsBackButton");
@@ -69,33 +66,71 @@ public class CardsMenuUI : MonoBehaviour
         {
             cardsBackButton.clicked += HandleBackClicked;
         }
+        else
+        {
+            Debug.LogWarning("CardsBackButton was not found in the UI.", this);
+        }
+
+        if (cardsSection == null)
+        {
+            Debug.LogWarning("CardsSection was not found in the UI.", this);
+        }
 
         if (carousel == null)
         {
             carousel = new CardsCarousel(this);
         }
-        carousel.Initialize(root, actionCollection);
 
-        if (cardsSection != null)
+        carousel.Initialize(root, actionCollection);
+    }
+
+    private void UnbindUI()
+    {
+        if (cardsBackButton != null)
         {
-            cardsSection.RegisterCallback<KeyDownEvent>(evt =>
-            {
-                if (evt.keyCode == KeyCode.LeftArrow || evt.keyCode == KeyCode.A)
-                {
-                    carousel?.Previous();
-                    evt.StopPropagation();
-                }
-                else if (evt.keyCode == KeyCode.RightArrow || evt.keyCode == KeyCode.D)
-                {
-                    carousel?.Next();
-                    evt.StopPropagation();
-                }
-            });
+            cardsBackButton.clicked -= HandleBackClicked;
         }
+
+        cardsBackButton = null;
+        cardsSection = null;
+        backCallback = null;
+    }
+
+    public void OnPreviousCard(InputAction.CallbackContext context)
+    {
+        if (!context.performed || !isVisible || carousel == null)
+        {
+            return;
+        }
+
+        carousel.Previous();
+    }
+
+    public void OnNextCard(InputAction.CallbackContext context)
+    {
+        if (!context.performed || !isVisible || carousel == null)
+        {
+            return;
+        }
+
+        carousel.Next();
+    }
+
+    private void HandleActionCollectionChanged()
+    {
+        if (carousel == null)
+        {
+            return;
+        }
+
+        carousel.StopAnimation();
+        carousel.Refresh();
     }
 
     public void Show()
     {
+        isVisible = true;
+
         if (cardsSection != null)
         {
             cardsSection.style.display = DisplayStyle.Flex;
@@ -108,18 +143,14 @@ public class CardsMenuUI : MonoBehaviour
             carousel.Refresh();
         }
 
-        if (cardsBackButton != null)
-        {
-            cardsBackButton.Focus();
-        }
+        cardsBackButton?.Focus();
     }
 
     public void Hide()
     {
-        if (carousel != null)
-        {
-            carousel.StopAnimation();
-        }
+        isVisible = false;
+
+        carousel?.StopAnimation();
 
         if (cardsSection != null)
         {
@@ -131,18 +162,5 @@ public class CardsMenuUI : MonoBehaviour
     {
         Hide();
         backCallback?.Invoke();
-    }
-
-    private void OnDestroy()
-    {
-        if (cardsBackButton != null)
-        {
-            cardsBackButton.clicked -= HandleBackClicked;
-        }
-
-        if (carousel != null)
-        {
-            carousel.Cleanup();
-        }
     }
 }
