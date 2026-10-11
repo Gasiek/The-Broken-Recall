@@ -54,25 +54,21 @@ public class SkillRemoval : MonoBehaviour, IInteractable
         if (actionCollection == null)
         {
             Debug.LogWarning($"{name} has no ActionCollection assigned.");
-
             return;
         }
 
         if (actionMemory == null)
         {
             Debug.LogWarning($"{name} has no ActionMemory assigned.");
-
             return;
         }
 
-        bool removed = actionCollection.Remove(action);
+        bool removed = actionMemory.RemoveAction(action);
 
         if (!removed)
         {
             return;
         }
-
-        actionMemory.RemoveAndReplace(action);
 
         interactionCompleted = true;
     }
