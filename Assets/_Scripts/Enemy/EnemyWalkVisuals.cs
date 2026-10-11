@@ -55,6 +55,7 @@ public class EnemyWalkVisuals : MonoBehaviour
 
     private NavMeshAgent agent;
     private EnemyAttack enemyAttack;
+    private BossAttackVisuals bossVisuals;
     private Quaternion leftArmIdleRot;
     private Quaternion rightArmIdleRot;
     private Quaternion leftLegIdleRot;
@@ -68,6 +69,7 @@ public class EnemyWalkVisuals : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         enemyAttack = GetComponent<EnemyAttack>();
+        bossVisuals = GetComponent<BossAttackVisuals>();
 
         AutoAssignLimbs();
         CacheIdleTransforms();
@@ -109,7 +111,8 @@ public class EnemyWalkVisuals : MonoBehaviour
         }
 
         bool isMoving = speed > 0.15f;
-        bool isAttacking = enemyAttack != null && enemyAttack.IsAttacking;
+        bool isAttacking = (enemyAttack != null && enemyAttack.IsAttacking) ||
+                           (bossVisuals != null && bossVisuals.IsPerformingVisual);
 
         if (isMoving && !isAttacking)
         {

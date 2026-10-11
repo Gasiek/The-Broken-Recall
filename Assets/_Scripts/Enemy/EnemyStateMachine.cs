@@ -345,6 +345,15 @@ public class EnemyStateMachine : MonoBehaviour
             return;
         }
 
-        transform.rotation = Quaternion.LookRotation(direction);
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        float turnSpeed = (enemy != null && enemy.Agent != null && enemy.Agent.angularSpeed > 0f)
+            ? enemy.Agent.angularSpeed
+            : 360f;
+
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            turnSpeed * Time.deltaTime
+        );
     }
 }

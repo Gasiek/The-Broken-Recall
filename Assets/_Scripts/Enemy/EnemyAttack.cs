@@ -5,7 +5,7 @@ using UnityEngine;
 public class EnemyAttack : MonoBehaviour
 {
     [SerializeField]
-    private LayerMask targetLayer;
+    protected LayerMask targetLayer;
 
     protected EnemyController enemy;
     private EnemyAttackVisuals visuals;
@@ -69,7 +69,7 @@ public class EnemyAttack : MonoBehaviour
         IsAttacking = false;
     }
 
-    protected void FaceTarget(Transform target)
+    protected virtual void FaceTarget(Transform target)
     {
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
