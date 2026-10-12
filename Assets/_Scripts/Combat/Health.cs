@@ -6,9 +6,6 @@ public class Health : MonoBehaviour, IDamageable
     private int maxHealth;
     private int currentHealth;
     private bool isInitialized;
-    private EnemyAttack meleeAttack;
-    private RangedEnemyAttack rangedAttack;
-    private EnemyAnimation enemyAnimation;
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
@@ -21,22 +18,6 @@ public class Health : MonoBehaviour, IDamageable
     public event Action<int> DamageReceived;
     public event Action DamageBlocked;
     public event Action<int> HealthRestored;
-
-    private void Awake()
-    {
-        if (GetComponent<EnemyAttack>() != null)
-        {
-            meleeAttack = GetComponent<EnemyAttack>();
-        }
-        if (GetComponent<RangedEnemyAttack>() != null)
-        {
-            rangedAttack = GetComponent<RangedEnemyAttack>();
-        }
-        if (GetComponent<EnemyAnimation>() != null)
-        {
-            enemyAnimation = GetComponent<EnemyAnimation>();
-        }
-    }
 
     public void Initialize(int newMaxHealth)
     {
@@ -82,12 +63,6 @@ public class Health : MonoBehaviour, IDamageable
         if (IsDead)
         {
             Die();
-        }
-        else
-        {
-            meleeAttack?.CancelAttack();
-            rangedAttack?.CancelAttack();
-            enemyAnimation?.PlayGetHit();
         }
 
         return actualDamage;

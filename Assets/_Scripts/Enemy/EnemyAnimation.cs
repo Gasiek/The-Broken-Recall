@@ -6,8 +6,6 @@ public class EnemyAnimation : MonoBehaviour
 
     private static readonly int AttackHash = Animator.StringToHash("Attack");
 
-    private static readonly int GetHitHash = Animator.StringToHash("GetHit");
-
     private static readonly int DieHash = Animator.StringToHash("Die");
 
     [SerializeField]
@@ -36,12 +34,6 @@ public class EnemyAnimation : MonoBehaviour
     {
         if (animator != null)
             animator.SetTrigger(AttackHash);
-    }
-
-    public void PlayGetHit()
-    {
-        if (animator != null)
-            animator.SetTrigger(GetHitHash);
     }
 
     public void PlayDie()
