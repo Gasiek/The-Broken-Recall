@@ -16481,11 +16481,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionCollection
   actions:
-  - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
-  - {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
+  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
+  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
+  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
+  - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25636,8 +25635,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35040e34839394419ae7aa06871aef7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillRemoval
-  actionCollection: {fileID: 1194145299}
-  actionMemory: {fileID: 1194145298}
   skillRemovalUI: {fileID: 752132352}
 --- !u!65 &2121750036
 BoxCollider:
@@ -32337,7 +32334,7 @@ PrefabInstance:
       objectReference: {fileID: 942271939}
     - target: {fileID: 129298730968545314, guid: b7f7d0c768884450babc58a9fd5afc72, type: 3}
       propertyPath: m_VersionIndex
-      value: 595
+      value: 601
       objectReference: {fileID: 0}
     - target: {fileID: 1805509435418258778, guid: b7f7d0c768884450babc58a9fd5afc72, type: 3}
       propertyPath: playerHealth
@@ -32401,7 +32398,7 @@ PrefabInstance:
       objectReference: {fileID: 1382814207}
     - target: {fileID: 3730123128911364645, guid: b7f7d0c768884450babc58a9fd5afc72, type: 3}
       propertyPath: m_VersionIndex
-      value: 2307
+      value: 2313
       objectReference: {fileID: 0}
     - target: {fileID: 3730123128911364645, guid: b7f7d0c768884450babc58a9fd5afc72, type: 3}
       propertyPath: m_SelectedEdges.Array.size

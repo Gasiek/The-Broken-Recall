@@ -15,21 +15,24 @@ public class SkillRemovalUI : MonoBehaviour
     private VisualTreeAsset actionListItemTemplate;
 
     private PanelRenderer panelRenderer;
-
     private VisualElement backdrop;
     private ListView listView;
     private Button cancelButton;
 
     private SkillRemoval currentSkillRemoval;
 
-    private readonly List<ActionDefinition> actions = new();
+    private readonly List<ActionCardInstance> cards = new();
 
     private bool isOpen;
 
     private void OnEnable()
     {
         panelRenderer = GetComponent<PanelRenderer>();
-        panelRenderer.RegisterUIReloadCallback(OnUIReload);
+
+        if (panelRenderer != null)
+        {
+            panelRenderer.RegisterUIReloadCallback(OnUIReload);
+        }
     }
 
     private void OnDisable()
@@ -40,11 +43,17 @@ public class SkillRemovalUI : MonoBehaviour
         }
     }
 
-    private void OnUIReload(PanelRenderer panelRenderer, VisualElement root, int version)
+    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
         backdrop = root.Q<VisualElement>("Backdrop");
         listView = root.Q<ListView>("ListView");
         cancelButton = root.Q<Button>("CancelButton");
+
+        if (listView == null || cancelButton == null)
+        {
+            Debug.LogWarning("SkillRemovalUI is missing ListView or CancelButton.");
+            return;
+        }
 
         SetupListView();
 
@@ -67,27 +76,17 @@ public class SkillRemovalUI : MonoBehaviour
             return;
         }
 
-        if (skillRemoval == null)
+        if (skillRemoval == null || actionCollection == null)
         {
-            Debug.LogWarning("Cannot show SkillRemovalUI without a SkillRemoval.");
+            Debug.LogWarning(
+                "Cannot show SkillRemovalUI without a SkillRemoval " + "and ActionCollection."
+            );
             return;
         }
 
-        if (actionCollection == null)
+        if (cameraFollow == null || playerInput == null)
         {
-            Debug.LogWarning("Cannot show SkillRemovalUI without an ActionCollection.");
-            return;
-        }
-
-        if (cameraFollow == null)
-        {
-            Debug.LogWarning("SkillRemovalUI has no CameraFollow assigned.");
-            return;
-        }
-
-        if (playerInput == null)
-        {
-            Debug.LogWarning("SkillRemovalUI has no PlayerInput assigned.");
+            Debug.LogWarning("SkillRemovalUI is missing CameraFollow or PlayerInput.");
             return;
         }
 
@@ -97,25 +96,30 @@ public class SkillRemovalUI : MonoBehaviour
             return;
         }
 
+        if (backdrop == null || listView == null)
+        {
+            Debug.LogWarning("SkillRemovalUI has not initialized its UI elements.");
+            return;
+        }
+
         currentSkillRemoval = skillRemoval;
 
-        actions.Clear();
+        cards.Clear();
 
-        foreach (ActionDefinition action in actionCollection.Actions)
+        foreach (ActionCardInstance card in actionCollection.Actions)
         {
-            if (action == null)
+            if (card == null || card.Definition == null)
             {
                 continue;
             }
 
-            actions.Add(action);
+            cards.Add(card);
         }
 
-        listView.itemsSource = actions;
+        listView.itemsSource = cards;
         listView.Rebuild();
 
         isOpen = true;
-
         Time.timeScale = 0f;
 
         playerInput.SwitchCurrentActionMap("UI");
@@ -133,11 +137,19 @@ public class SkillRemovalUI : MonoBehaviour
 
         Button button = element.Q<Button>("ActionButton");
 
+        if (button == null)
+        {
+            Debug.LogWarning("Action list item template has no ActionButton.");
+            return element;
+        }
+
+        // Register once per created visual element.
+        // BindItem updates userData when ListView recycles the row.
         button.clicked += () =>
         {
-            if (button.userData is ActionDefinition action)
+            if (button.userData is ActionCardInstance card)
             {
-                OnActionSelected(action);
+                OnActionSelected(card);
             }
         };
 
@@ -146,39 +158,76 @@ public class SkillRemovalUI : MonoBehaviour
 
     private void BindItem(VisualElement element, int index)
     {
-        if (index < 0 || index >= actions.Count)
-        {
-            return;
-        }
-
-        ActionDefinition action = actions[index];
-
         Button button = element.Q<Button>("ActionButton");
         Image icon = element.Q<Image>("Icon");
         Label name = element.Q<Label>("Name");
 
-        button.userData = action;
-
-        name.text = action.DisplayName;
-
-        if (action.Icon != null)
-        {
-            icon.image = action.Icon.texture;
-        }
-        else
-        {
-            icon.image = null;
-        }
-    }
-
-    private void OnActionSelected(ActionDefinition action)
-    {
-        if (currentSkillRemoval == null)
+        if (button == null)
         {
             return;
         }
 
-        currentSkillRemoval.RemoveAction(action);
+        if (index < 0 || index >= cards.Count)
+        {
+            button.userData = null;
+            button.SetEnabled(false);
+
+            if (name != null)
+            {
+                name.text = string.Empty;
+            }
+
+            if (icon != null)
+            {
+                icon.image = null;
+            }
+
+            return;
+        }
+
+        ActionCardInstance card = cards[index];
+        ActionDefinition definition = card?.Definition;
+
+        if (definition == null)
+        {
+            button.userData = null;
+            button.SetEnabled(false);
+
+            if (name != null)
+            {
+                name.text = string.Empty;
+            }
+
+            if (icon != null)
+            {
+                icon.image = null;
+            }
+
+            return;
+        }
+
+        button.userData = card;
+        button.SetEnabled(true);
+
+        if (name != null)
+        {
+            name.text = definition.DisplayName;
+        }
+
+        if (icon != null)
+        {
+            icon.image = definition.Icon != null ? definition.Icon.texture : null;
+        }
+    }
+
+    private void OnActionSelected(ActionCardInstance card)
+    {
+        if (currentSkillRemoval == null || card == null)
+        {
+            return;
+        }
+
+        currentSkillRemoval.RemoveAction(card);
 
         Close();
     }
@@ -204,10 +253,15 @@ public class SkillRemovalUI : MonoBehaviour
         Hide();
 
         currentSkillRemoval = null;
-        actions.Clear();
+        cards.Clear();
+
+        if (listView != null)
+        {
+            listView.itemsSource = cards;
+            listView.Rebuild();
+        }
 
         isOpen = false;
-
         Time.timeScale = 1f;
 
         if (playerInput != null)

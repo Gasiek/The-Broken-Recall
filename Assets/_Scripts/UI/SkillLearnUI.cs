@@ -11,7 +11,6 @@ public class SkillLearnUI : MonoBehaviour
     private PlayerInput playerInput;
 
     private PanelRenderer panelRenderer;
-
     private VisualElement backdrop;
     private Button yesButton;
     private Button noButton;
@@ -19,13 +18,16 @@ public class SkillLearnUI : MonoBehaviour
     private Label actionName;
 
     private TeacherNPC currentTeacher;
-
     private bool isOpen;
 
     private void OnEnable()
     {
         panelRenderer = GetComponent<PanelRenderer>();
-        panelRenderer.RegisterUIReloadCallback(OnUIReload);
+
+        if (panelRenderer != null)
+        {
+            panelRenderer.RegisterUIReloadCallback(OnUIReload);
+        }
     }
 
     private void OnDisable()
@@ -36,7 +38,7 @@ public class SkillLearnUI : MonoBehaviour
         }
     }
 
-    private void OnUIReload(PanelRenderer panelRenderer, VisualElement root, int version)
+    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
         backdrop = root.Q<VisualElement>("Backdrop");
         yesButton = root.Q<Button>("ButtonYes");
@@ -44,8 +46,15 @@ public class SkillLearnUI : MonoBehaviour
         actionIcon = root.Q<Image>("ActionIcon");
         actionName = root.Q<Label>("ActionName");
 
-        yesButton.clicked += HandleYesClicked;
-        noButton.clicked += HandleNoClicked;
+        if (yesButton != null)
+        {
+            yesButton.clicked += HandleYesClicked;
+        }
+
+        if (noButton != null)
+        {
+            noButton.clicked += HandleNoClicked;
+        }
 
         Hide();
     }
@@ -57,46 +66,38 @@ public class SkillLearnUI : MonoBehaviour
             return;
         }
 
-        if (teacher == null)
+        if (teacher == null || action == null)
         {
-            Debug.LogWarning("Cannot show SkillLearnUI without a teacher.");
+            Debug.LogWarning("Cannot show SkillLearnUI without a teacher and action.");
             return;
         }
 
-        if (action == null)
+        if (cameraFollow == null || playerInput == null)
         {
-            Debug.LogWarning("Cannot show SkillLearnUI without an action.");
+            Debug.LogWarning("SkillLearnUI is missing CameraFollow or PlayerInput.");
             return;
         }
 
-        if (cameraFollow == null)
+        if (
+            backdrop == null
+            || yesButton == null
+            || noButton == null
+            || actionIcon == null
+            || actionName == null
+        )
         {
-            Debug.LogWarning("SkillLearnUI has no CameraFollow assigned.");
-            return;
-        }
-
-        if (playerInput == null)
-        {
-            Debug.LogWarning("SkillLearnUI has no PlayerInput assigned.");
+            Debug.LogWarning("SkillLearnUI has not initialized its UI elements.");
             return;
         }
 
         currentTeacher = teacher;
 
         actionName.text = action.DisplayName;
-
-        if (action.Icon != null)
-        {
-            actionIcon.image = action.Icon.texture;
-        }
-        else
-        {
-            actionIcon.image = null;
-        }
+        actionIcon.image = action.Icon != null ? action.Icon.texture : null;
 
         isOpen = true;
-
         Time.timeScale = 0f;
+
         playerInput.SwitchCurrentActionMap("UI");
         cameraFollow.OnPause();
 
@@ -125,7 +126,6 @@ public class SkillLearnUI : MonoBehaviour
         }
 
         currentTeacher.LearnAction();
-
         Close();
     }
 
@@ -142,8 +142,16 @@ public class SkillLearnUI : MonoBehaviour
         isOpen = false;
 
         Time.timeScale = 1f;
-        playerInput.SwitchCurrentActionMap("Player");
-        cameraFollow.OnResume();
+
+        if (playerInput != null)
+        {
+            playerInput.SwitchCurrentActionMap("Player");
+        }
+
+        if (cameraFollow != null)
+        {
+            cameraFollow.OnResume();
+        }
     }
 
     private void OnDestroy()
@@ -158,8 +166,6 @@ public class SkillLearnUI : MonoBehaviour
             noButton.clicked -= HandleNoClicked;
         }
 
-        // Make sure the game doesn't remain paused
-        // if this UI object is destroyed while the popup is open.
         if (isOpen)
         {
             Time.timeScale = 1f;
