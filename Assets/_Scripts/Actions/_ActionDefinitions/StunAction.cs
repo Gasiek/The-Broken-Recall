@@ -38,25 +38,13 @@ public class StunAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
-        if (context == null || context.Player == null)
-        {
-            yield break;
-        }
+        context.Visuals.BasicHit();
 
-        // 1. Play basic sword swing animation ("Animacja jak zwykly atak mieczem")
-        if (context.Visuals != null)
-        {
-            context.Visuals.BasicHit();
-        }
-
-        // Wait until sword swing reaches contact point
         float halfDuration = Duration * 0.5f;
         yield return new WaitForSeconds(halfDuration);
 
-        // 2. Perform hit detection in front of the player
         PerformStunStrike(context);
 
-        // 3. Complete the rest of the swing
         yield return new WaitForSeconds(halfDuration);
     }
 

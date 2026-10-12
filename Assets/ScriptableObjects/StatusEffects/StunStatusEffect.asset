@@ -20,6 +20,9 @@ MonoBehaviour:
   damagePerTick: 0
   speedMultiplier: 0
   vfxPrefab: {fileID: 0}
+  visualPrefab: {fileID: 919132149155446097, guid: 32d90269c8b96433fb212d1b34f5c36e, type: 3}
+  visualAnimatorController: {fileID: 9100000, guid: 8f7c6b5a4d3e210987654321fedcba98, type: 2}
+  visualAnimationClip: {fileID: -623603649343465320, guid: 32d90269c8b96433fb212d1b34f5c36e, type: 3}
   applySound: {fileID: 0}
   tickSound: {fileID: 0}
   soundVolume: 0.8

@@ -11,6 +11,8 @@ public class StatusEffectManager : MonoBehaviour
         public StatusEffectDefinition Definition;
         public Coroutine Coroutine;
         public ParticleSystem VfxInstance;
+        public GameObject VisualInstance;
+        public UnityEngine.Playables.PlayableGraph PlayableGraph;
         public float RemainingTime;
     }
 
@@ -87,10 +89,19 @@ public class StatusEffectManager : MonoBehaviour
             Vector3.up * 0.8f
         );
 
+        GameObject visualInstance = SpawnVisualAboveHead(
+            definition.VisualPrefab,
+            definition.VisualAnimatorController,
+            definition.VisualAnimationClip,
+            out UnityEngine.Playables.PlayableGraph playableGraph
+        );
+
         ActiveEffect effect = new ActiveEffect
         {
             Definition = definition,
             VfxInstance = vfxInstance,
+            VisualInstance = visualInstance,
+            PlayableGraph = playableGraph,
             RemainingTime = definition.Duration,
         };
 
@@ -172,6 +183,16 @@ public class StatusEffectManager : MonoBehaviour
             effect.VfxInstance = null;
         }
 
+        if (effect.VisualInstance != null)
+        {
+            if (effect.PlayableGraph.IsValid())
+            {
+                effect.PlayableGraph.Destroy();
+            }
+            Destroy(effect.VisualInstance);
+            effect.VisualInstance = null;
+        }
+
         activeEffects.Remove(effectId);
 
         UpdateSpeedModifiers();
@@ -206,7 +227,7 @@ public class StatusEffectManager : MonoBehaviour
             StunStateChanged?.Invoke(IsStunned);
         }
 
-        if (navAgent != null && hasRecordedDefaultNavSpeed)
+        if (navAgent != null && hasRecordedDefaultNavSpeed && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
         {
             navAgent.speed = defaultNavSpeed * lowestSpeedMultiplier;
             if (IsStunned)
@@ -247,10 +268,107 @@ public class StatusEffectManager : MonoBehaviour
 
             if (effect.VfxInstance != null)
                 VfxSpawner.StopAndDestroy(effect.VfxInstance);
+
+            if (effect.VisualInstance != null)
+            {
+                if (effect.PlayableGraph.IsValid())
+                {
+                    effect.PlayableGraph.Destroy();
+                }
+                Destroy(effect.VisualInstance);
+            }
         }
 
         activeEffects.Clear();
 
         UpdateSpeedModifiers();
+    }
+
+    private GameObject SpawnVisualAboveHead(
+        GameObject prefab,
+        RuntimeAnimatorController controller,
+        AnimationClip clip,
+        out UnityEngine.Playables.PlayableGraph playableGraph)
+    {
+        playableGraph = default;
+
+        if (prefab == null)
+            return null;
+
+        GameObject instance = Instantiate(prefab, transform);
+        instance.transform.localPosition = CalculateHeadOffset();
+        instance.transform.localRotation = Quaternion.identity;
+
+        Animator animator = instance.GetComponentInChildren<Animator>();
+        if (animator == null)
+        {
+            animator = instance.AddComponent<Animator>();
+        }
+
+        if (controller != null)
+        {
+            animator.runtimeAnimatorController = controller;
+            animator.enabled = true;
+            animator.Play(0, 0, 0f);
+        }
+        else if (clip != null)
+        {
+            UnityEngine.Playables.AnimationPlayableUtilities.PlayClip(animator, clip, out playableGraph);
+        }
+
+        return instance;
+    }
+
+    private Vector3 CalculateHeadOffset()
+    {
+        Transform head = FindChildByName(transform, "Head");
+        if (head != null)
+        {
+            Vector3 worldPos = head.position + Vector3.up * 0.4f;
+            return transform.InverseTransformPoint(worldPos);
+        }
+
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        Collider bestCollider = null;
+
+        foreach (Collider col in colliders)
+        {
+            if (col.isTrigger)
+                continue;
+
+            if (col is CapsuleCollider)
+            {
+                bestCollider = col;
+                break;
+            }
+
+            if (bestCollider == null)
+            {
+                bestCollider = col;
+            }
+        }
+
+        if (bestCollider != null)
+        {
+            Vector3 worldTop = bestCollider.bounds.center + Vector3.up * (bestCollider.bounds.extents.y + 0.3f);
+            return transform.InverseTransformPoint(worldTop);
+        }
+
+        return Vector3.up * 2.2f;
+    }
+
+    private static Transform FindChildByName(Transform parent, string name)
+    {
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child.name.Equals(name, System.StringComparison.OrdinalIgnoreCase))
+                return child;
+
+            Transform found = FindChildByName(child, name);
+            if (found != null)
+                return found;
+        }
+        return null;
     }
 }
