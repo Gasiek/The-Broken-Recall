@@ -25,7 +25,7 @@ public class StunAction : ActionDefinition
     private float soundVolume = 0.9f;
 
     public float AttackRange => attackRange;
-    public float StunDuration => stunStatusEffect;
+    public float StunDuration => stunStatusEffect.duration;
 
     public override IEnumerator Execute(ActionContext context)
     {

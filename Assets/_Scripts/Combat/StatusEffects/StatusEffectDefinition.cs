@@ -10,7 +10,7 @@ public class StatusEffectDefinition : ScriptableObject
     [SerializeField] private string id = "status.effect";
     [SerializeField] private string displayName = "Status Effect";
     [SerializeField] private StatusEffectType effectType = StatusEffectType.Burn;
-    [SerializeField] private float duration = 3.0f;
+    [SerializeField] public float duration = 3.0f;
 
     [Header("Damage Over Time (Burn / Poison)")]
     [Tooltip("How often damage is dealt in seconds.")]
