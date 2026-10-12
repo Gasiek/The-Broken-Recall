@@ -73,7 +73,7 @@ public class PlayerActionVisuals : MonoBehaviour
     [SerializeField]
     private Vector3 chargeOffset = new Vector3(0f, 0.4f, 0.3f);
 
-    [Header("Sword Charge (Szarża)")]
+    [Header("Sword Charge")]
     [SerializeField]
     private Vector3 swordChargeRotation = new Vector3(90f, 0f, 0f);
 

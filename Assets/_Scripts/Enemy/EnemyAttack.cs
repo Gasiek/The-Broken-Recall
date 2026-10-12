@@ -3,6 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(EnemyAttackVisuals))]
 [RequireComponent(typeof(EnemyController))]
+[RequireComponent(typeof(StatusEffectManager))]
 public class EnemyAttack : MonoBehaviour
 {
     [SerializeField]

@@ -54,15 +54,9 @@ public class SwordChargeAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
-        PlayerMovement movement = context.Movement;
-        CharacterController cc = movement != null
-            ? movement.CharacterController
-            : context.Player.GetComponent<CharacterController>();
+        CharacterController cc = context.Movement.CharacterController;
 
-        if (movement != null)
-        {
-            movement.SetMovementOverridden(true);
-        }
+        context.Movement.SetMovementOverridden(true);
 
         try
         {
@@ -88,10 +82,7 @@ public class SwordChargeAction : ActionDefinition
         }
         finally
         {
-            if (movement != null)
-            {
-                movement.SetMovementOverridden(false);
-            }
+            context.Movement.SetMovementOverridden(false);
         }
     }
 
@@ -154,7 +145,7 @@ public class SwordChargeAction : ActionDefinition
         for (int i = 0; i < hits.Length; i++)
         {
             Collider hitCol = hits[i];
-            IDamageable damageable = hitCol.GetComponentInParent<IDamageable>();
+            IDamageable damageable = hitCol.GetComponent<IDamageable>();
 
             if (damageable != null && damagedTargets.Add(damageable))
             {

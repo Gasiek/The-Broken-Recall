@@ -25,12 +25,6 @@ public class StatusEffectDefinition : ScriptableObject
     [Header("Visual & Audio")]
     [Tooltip("VFX prefab spawned as a child of the victim while effect is active.")]
     [SerializeField] private ParticleSystem vfxPrefab;
-    [Tooltip("Custom 3D visual prefab (e.g. animated Stun Stars) spawned above the victim's head while effect is active.")]
-    [SerializeField] private GameObject visualPrefab;
-    [Tooltip("Optional Animator Controller for the visual prefab.")]
-    [SerializeField] private RuntimeAnimatorController visualAnimatorController;
-    [Tooltip("Optional Animation Clip for the visual prefab.")]
-    [SerializeField] private AnimationClip visualAnimationClip;
     [SerializeField] private AudioClip applySound;
     [SerializeField] private AudioClip tickSound;
     [Range(0f, 1f)]
@@ -44,9 +38,6 @@ public class StatusEffectDefinition : ScriptableObject
     public int DamagePerTick => damagePerTick;
     public float SpeedMultiplier => speedMultiplier;
     public ParticleSystem VfxPrefab => vfxPrefab;
-    public GameObject VisualPrefab => visualPrefab;
-    public RuntimeAnimatorController VisualAnimatorController => visualAnimatorController;
-    public AnimationClip VisualAnimationClip => visualAnimationClip;
     public AudioClip ApplySound => applySound;
     public AudioClip TickSound => tickSound;
     public float SoundVolume => soundVolume;

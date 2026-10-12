@@ -3,6 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(EnemyController))]
 [RequireComponent(typeof(EnemyAggro))]
 [RequireComponent(typeof(EnemyPatrol))]
+[RequireComponent(typeof(StatusEffectManager))]
 public class EnemyStateMachine : MonoBehaviour
 {
     private EnemyController enemy;
@@ -53,7 +54,7 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void Update()
     {
-        if (statusEffects != null && statusEffects.IsStunned)
+        if (statusEffects.IsStunned)
         {
             if (enemy.Agent != null && !enemy.Agent.isStopped)
             {

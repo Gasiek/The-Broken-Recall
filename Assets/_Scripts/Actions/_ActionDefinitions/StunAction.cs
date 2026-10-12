@@ -20,21 +20,12 @@ public class StunAction : ActionDefinition
     [SerializeField]
     private StatusEffectDefinition stunStatusEffect;
 
-    [Tooltip("Fallback duration in seconds that the enemy is stunned (cannot move or attack).")]
-    [SerializeField]
-    private float stunDuration = 2.0f;
-
-    [Header("Audio")]
-    [Tooltip("Sound played on the enemy when they become stunned.")]
-    [SerializeField]
-    private AudioClip stunSound;
-
     [Range(0f, 1f)]
     [SerializeField]
     private float soundVolume = 0.9f;
 
     public float AttackRange => attackRange;
-    public float StunDuration => stunStatusEffect != null ? stunStatusEffect.Duration : stunDuration;
+    public float StunDuration => stunStatusEffect;
 
     public override IEnumerator Execute(ActionContext context)
     {
@@ -76,18 +67,7 @@ public class StunAction : ActionDefinition
             return;
         }
 
-        StatusEffectManager statusManager = targetObj.GetComponentInParent<StatusEffectManager>();
-
-        // Ensure target has a StatusEffectManager component
-        if (statusManager == null)
-        {
-            Health targetHealth = targetObj.GetComponentInParent<Health>();
-            if (targetHealth != null)
-            {
-                statusManager = targetHealth.gameObject.AddComponent<StatusEffectManager>();
-            }
-        }
-
+        StatusEffectManager statusManager = targetObj.GetComponent<StatusEffectManager>();
         if (statusManager == null)
         {
             return;
@@ -99,17 +79,11 @@ public class StunAction : ActionDefinition
         }
         else
         {
-            // Fallback runtime status effect definition (2s duration, speedMultiplier = 0)
-            StatusEffectDefinition runtimeStun = ScriptableObject.CreateInstance<StatusEffectDefinition>();
-            // Note: runtime instance applied with 2s duration
-            statusManager.ApplyStatus(runtimeStun);
+            Debug.LogWarning("No stun status effect applied.");
         }
 
         // Play Stunned sound on the stunned enemy
-        AudioClip clipToPlay = stunSound != null
-            ? stunSound
-            : (stunStatusEffect != null ? stunStatusEffect.ApplySound : null);
-
+        AudioClip clipToPlay = stunStatusEffect != null ? stunStatusEffect.ApplySound : null;
         if (clipToPlay != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayWorldSFX(clipToPlay, targetObj.transform.position, soundVolume);
