@@ -1,7 +1,6 @@
-using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(EnemyAttackVisuals))]
+[RequireComponent(typeof(EnemyAnimation))]
 [RequireComponent(typeof(EnemyController))]
 public class EnemyAttack : MonoBehaviour
 {
@@ -9,9 +8,10 @@ public class EnemyAttack : MonoBehaviour
     private LayerMask targetLayer;
 
     private EnemyController enemy;
-    private EnemyAttackVisuals visuals;
+    private EnemyAnimation enemyAnimation;
 
     private float cooldownTimer;
+    private bool hasAppliedDamage;
 
     public float AttackRange => enemy.Definition.AttackRange;
 
@@ -22,7 +22,7 @@ public class EnemyAttack : MonoBehaviour
     private void Awake()
     {
         enemy = GetComponent<EnemyController>();
-        visuals = GetComponent<EnemyAttackVisuals>();
+        enemyAnimation = GetComponent<EnemyAnimation>();
     }
 
     private void Update()
@@ -36,36 +36,40 @@ public class EnemyAttack : MonoBehaviour
     public bool TryAttack(Transform target)
     {
         if (!CanAttack || target == null)
-        {
             return false;
-        }
 
-        StartCoroutine(AttackRoutine(target));
+        IsAttacking = true;
+        hasAppliedDamage = false;
+
+        cooldownTimer = enemy.Definition.AttackCooldown;
+
+        FaceTarget(target);
+
+        enemyAnimation.PlayAttack();
 
         return true;
     }
 
-    private IEnumerator AttackRoutine(Transform target)
+    // Called by the AttackImpact Animation Event.
+    public void AnimationAttackImpact()
     {
-        IsAttacking = true;
+        if (!IsAttacking || hasAppliedDamage)
+            return;
 
-        // Start the cooldown immediately when the attack is committed.
-        cooldownTimer = enemy.Definition.AttackCooldown;
-
-        // Lock the attack direction at the moment the attack starts.
-        FaceTarget(target);
-
-        // Wait for the attack wind-up.
-        yield return new WaitForSeconds(enemy.Definition.AttackDelay);
-
-        // Play the attack animation/effect. TODO: when proper animations are implemented, we need to change the timing of when the damage id dealt
-        visuals.BasicAttack();
-
-        // Check what is actually in front of the enemy NOW.
-        // We do not use the target Transform here.
+        hasAppliedDamage = true;
         DealDamage();
+    }
 
+    // Called by the AttackFinished Animation Event.
+    public void AnimationAttackFinished()
+    {
         IsAttacking = false;
+    }
+
+    public void CancelAttack()
+    {
+        IsAttacking = false;
+        hasAppliedDamage = false;
     }
 
     private void FaceTarget(Transform target)
@@ -74,9 +78,7 @@ public class EnemyAttack : MonoBehaviour
         direction.y = 0f;
 
         if (direction.sqrMagnitude <= 0.001f)
-        {
             return;
-        }
 
         transform.rotation = Quaternion.LookRotation(direction);
     }
@@ -87,9 +89,7 @@ public class EnemyAttack : MonoBehaviour
         Vector3 direction = transform.forward;
 
         if (direction.sqrMagnitude <= 0.001f)
-        {
             return;
-        }
 
         if (
             !Physics.SphereCast(
@@ -109,9 +109,7 @@ public class EnemyAttack : MonoBehaviour
         IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
 
         if (damageable == null)
-        {
             return;
-        }
 
         damageable.TakeDamage(enemy.Definition.AttackDamage);
     }
@@ -119,9 +117,7 @@ public class EnemyAttack : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         if (enemy == null || enemy.Definition == null)
-        {
             return;
-        }
 
         float radius = enemy.Definition.AttackRadius;
         float distance = enemy.Definition.AttackRange;

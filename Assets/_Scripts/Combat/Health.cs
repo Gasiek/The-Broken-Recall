@@ -5,35 +5,56 @@ public class Health : MonoBehaviour, IDamageable
 {
     private int maxHealth;
     private int currentHealth;
+    private bool isInitialized;
+    private EnemyAttack meleeAttack;
+    private RangedEnemyAttack rangedAttack;
+    private EnemyAnimation enemyAnimation;
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
+
     public bool IsInvincible { get; private set; }
-    public bool IsDead => currentHealth <= 0;
+    public bool IsDead => isInitialized && currentHealth <= 0;
 
     public event Action HealthChanged;
     public event Action Died;
-
     public event Action<int> DamageReceived;
     public event Action DamageBlocked;
     public event Action<int> HealthRestored;
+
+    private void Awake()
+    {
+        if (GetComponent<EnemyAttack>() != null)
+        {
+            meleeAttack = GetComponent<EnemyAttack>();
+        }
+        if (GetComponent<RangedEnemyAttack>() != null)
+        {
+            rangedAttack = GetComponent<RangedEnemyAttack>();
+        }
+        if (GetComponent<EnemyAnimation>() != null)
+        {
+            enemyAnimation = GetComponent<EnemyAnimation>();
+        }
+    }
 
     public void Initialize(int newMaxHealth)
     {
         maxHealth = Mathf.Max(1, newMaxHealth);
         currentHealth = maxHealth;
         IsInvincible = false;
+        isInitialized = true;
 
         HealthChanged?.Invoke();
     }
 
     /// <summary>
-    /// Attempts to apply damage and returns the actual damage dealt.
+    /// Applies damage and returns the actual damage dealt.
     /// Returns zero if damage is invalid, blocked, or the target is dead.
     /// </summary>
     public int TakeDamage(int amount)
     {
-        if (amount <= 0 || IsDead)
+        if (!isInitialized || amount <= 0 || IsDead)
             return 0;
 
         if (IsInvincible)
@@ -43,7 +64,6 @@ public class Health : MonoBehaviour, IDamageable
         }
 
         int previousHealth = currentHealth;
-
         currentHealth = Mathf.Max(0, currentHealth - amount);
 
         int actualDamage = previousHealth - currentHealth;
@@ -60,18 +80,25 @@ public class Health : MonoBehaviour, IDamageable
         HealthChanged?.Invoke();
 
         if (IsDead)
+        {
             Die();
+        }
+        else
+        {
+            meleeAttack?.CancelAttack();
+            rangedAttack?.CancelAttack();
+            enemyAnimation?.PlayGetHit();
+        }
 
         return actualDamage;
     }
 
     public void Heal(int amount)
     {
-        if (amount <= 0 || IsDead)
+        if (!isInitialized || amount <= 0 || IsDead)
             return;
 
         int previousHealth = currentHealth;
-
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
 
         int actualHealing = currentHealth - previousHealth;

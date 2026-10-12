@@ -10,6 +10,9 @@ public class EnemyStateMachine : MonoBehaviour
     private EnemyAttack meleeAttack;
     private RangedEnemyAttack rangedAttack;
     private EnemyPatrol patrol;
+    private EnemyAnimation enemyAnimation;
+
+    private float destroyDelay = 10f;
 
     public EnemyState CurrentState { get; private set; }
 
@@ -20,25 +23,17 @@ public class EnemyStateMachine : MonoBehaviour
         meleeAttack = GetComponent<EnemyAttack>();
         rangedAttack = GetComponent<RangedEnemyAttack>();
         patrol = GetComponent<EnemyPatrol>();
+        enemyAnimation = GetComponent<EnemyAnimation>();
 
         CurrentState = EnemyState.Idle;
     }
 
-    private void Start()
-    {
-        ChangeState(EnemyState.Patrolling);
-    }
-
-    public void Initialize(Transform target)
-    {
-        aggro.SetTarget(target);
-
-        ChangeState(EnemyState.Chasing);
-    }
-
     private void OnEnable()
     {
-        enemy.Died += HandleDeath;
+        if (enemy != null)
+        {
+            enemy.Died += HandleDeath;
+        }
     }
 
     private void OnDisable()
@@ -47,6 +42,23 @@ public class EnemyStateMachine : MonoBehaviour
         {
             enemy.Died -= HandleDeath;
         }
+    }
+
+    private void Start()
+    {
+        if (CurrentState == EnemyState.Idle && !aggro.HasTarget)
+        {
+            ChangeState(EnemyState.Patrolling);
+        }
+    }
+
+    public void Initialize(Transform target)
+    {
+        if (target == null || CurrentState == EnemyState.Dead)
+            return;
+
+        aggro.SetTarget(target);
+        ChangeState(EnemyState.Chasing);
     }
 
     private void Update()
@@ -98,35 +110,40 @@ public class EnemyStateMachine : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        if (rangedAttack != null)
+        if (rangedAttack != null && distanceToTarget <= rangedAttack.AttackRange)
         {
-            if (distanceToTarget <= rangedAttack.AttackRange)
-            {
-                enemy.Agent.isStopped = true;
+            enemy.Agent.isStopped = true;
+            enemyAnimation?.SetLocomotion(0f);
+            FaceTarget(target);
 
-                FaceTarget(target);
-
-                if (rangedAttack.CanAttack)
-                {
-                    ChangeState(EnemyState.Attacking);
-                }
-
-                return;
-            }
-        }
-
-        if (meleeAttack != null)
-        {
-            if (distanceToTarget <= meleeAttack.AttackRange && meleeAttack.CanAttack)
+            if (rangedAttack.CanAttack)
             {
                 ChangeState(EnemyState.Attacking);
-                return;
             }
+
+            return;
         }
 
-        enemy.Agent.isStopped = false;
+        if (meleeAttack != null && distanceToTarget <= meleeAttack.AttackRange)
+        {
+            enemy.Agent.isStopped = true;
+            enemyAnimation?.SetLocomotion(0f);
+            FaceTarget(target);
 
+            if (meleeAttack.CanAttack)
+            {
+                ChangeState(EnemyState.Attacking);
+            }
+
+            return;
+        }
+
+        enemy.Agent.speed = enemy.Definition.MoveSpeed;
+        enemy.Agent.isStopped = false;
         enemy.Agent.SetDestination(target.position);
+
+        // Chasing uses Run.
+        enemyAnimation?.SetLocomotion(1f);
     }
 
     private void UpdateAttacking()
@@ -135,7 +152,7 @@ public class EnemyStateMachine : MonoBehaviour
         {
             if (!rangedAttack.IsAttacking)
             {
-                ChangeState(EnemyState.Chasing);
+                ChangeState(aggro.HasTarget ? EnemyState.Chasing : EnemyState.Returning);
             }
 
             return;
@@ -145,9 +162,14 @@ public class EnemyStateMachine : MonoBehaviour
         {
             if (!meleeAttack.IsAttacking)
             {
-                ChangeState(EnemyState.Chasing);
+                ChangeState(aggro.HasTarget ? EnemyState.Chasing : EnemyState.Returning);
             }
+
+            return;
         }
+
+        // No attack component was configured.
+        ChangeState(EnemyState.Chasing);
     }
 
     private void UpdateReturning()
@@ -158,15 +180,18 @@ public class EnemyStateMachine : MonoBehaviour
             return;
         }
 
-        if (HasReachedPatrolArea())
+        if (HasReachedHome())
         {
             ChangeState(EnemyState.Patrolling);
             return;
         }
 
+        enemy.Agent.speed = enemy.Definition.MoveSpeed;
         enemy.Agent.isStopped = false;
-
         enemy.Agent.SetDestination(enemy.HomePosition);
+
+        // Returning uses Walk.
+        enemyAnimation?.SetLocomotion(0.5f);
     }
 
     private void UpdatePatrolling()
@@ -179,6 +204,9 @@ public class EnemyStateMachine : MonoBehaviour
 
         if (patrol.IsWaiting)
         {
+            enemy.Agent.isStopped = true;
+            enemyAnimation?.SetLocomotion(0f);
+
             if (patrol.UpdateWait())
             {
                 SetNewPatrolTarget();
@@ -197,13 +225,20 @@ public class EnemyStateMachine : MonoBehaviour
         {
             enemy.Agent.isStopped = true;
 
+            enemyAnimation?.SetLocomotion(0f);
+
             patrol.StartWait();
 
             if (!patrol.IsWaiting)
             {
                 SetNewPatrolTarget();
             }
+
+            return;
         }
+
+        // Keep walking while moving to a patrol destination.
+        enemyAnimation?.SetLocomotion(0.5f);
     }
 
     private void SetNewPatrolTarget()
@@ -211,31 +246,42 @@ public class EnemyStateMachine : MonoBehaviour
         if (!patrol.TrySetNewPatrolTarget())
         {
             enemy.Agent.isStopped = true;
+            enemyAnimation?.SetLocomotion(0f);
             return;
         }
 
+        enemy.Agent.speed = enemy.Definition.PatrolSpeed;
         enemy.Agent.isStopped = false;
-
         enemy.Agent.SetDestination(patrol.PatrolTarget);
+
+        enemyAnimation?.SetLocomotion(0.5f);
     }
 
-    private bool HasReachedPatrolArea()
+    private bool HasReachedHome()
     {
-        float distanceToHome = Vector3.Distance(transform.position, enemy.HomePosition);
+        if (enemy.Agent.pathPending)
+            return false;
 
-        return distanceToHome <= patrol.PatrolRadius;
+        if (enemy.Agent.hasPath)
+        {
+            return enemy.Agent.remainingDistance <= enemy.Agent.stoppingDistance + 0.2f;
+        }
+
+        return Vector3.Distance(transform.position, enemy.HomePosition)
+            <= enemy.Agent.stoppingDistance + 0.2f;
     }
 
     private void ChangeState(EnemyState newState)
     {
         if (CurrentState == newState)
-        {
             return;
-        }
+
+        if (CurrentState == EnemyState.Dead)
+            return;
 
         CurrentState = newState;
 
-        switch (CurrentState)
+        switch (newState)
         {
             case EnemyState.Idle:
                 EnterIdle();
@@ -267,17 +313,22 @@ public class EnemyStateMachine : MonoBehaviour
     {
         enemy.Agent.isStopped = true;
         enemy.Agent.ResetPath();
+
+        enemyAnimation?.SetLocomotion(0f);
     }
 
     private void EnterChasing()
     {
         enemy.Agent.speed = enemy.Definition.MoveSpeed;
         enemy.Agent.isStopped = false;
+
+        enemyAnimation?.SetLocomotion(1f);
     }
 
     private void EnterAttacking()
     {
         enemy.Agent.isStopped = true;
+        enemyAnimation?.SetLocomotion(0f);
 
         Transform target = aggro.Target;
 
@@ -286,6 +337,8 @@ public class EnemyStateMachine : MonoBehaviour
             ChangeState(EnemyState.Returning);
             return;
         }
+
+        FaceTarget(target);
 
         if (rangedAttack != null)
         {
@@ -303,12 +356,16 @@ public class EnemyStateMachine : MonoBehaviour
     {
         enemy.Agent.speed = enemy.Definition.MoveSpeed;
         enemy.Agent.isStopped = false;
+
+        enemyAnimation?.SetLocomotion(0.5f);
     }
 
     private void EnterPatrolling()
     {
         enemy.Agent.speed = enemy.Definition.PatrolSpeed;
         enemy.Agent.isStopped = false;
+
+        enemyAnimation?.SetLocomotion(0.5f);
 
         SetNewPatrolTarget();
     }
@@ -317,25 +374,38 @@ public class EnemyStateMachine : MonoBehaviour
     {
         enemy.Agent.isStopped = true;
         enemy.Agent.ResetPath();
+
+        // Prevent any further gameplay movement.
+        if (meleeAttack != null)
+            meleeAttack.CancelAttack();
+
+        enemyAnimation?.PlayDie();
     }
 
     private void HandleDeath()
     {
         ChangeState(EnemyState.Dead);
+    }
 
-        Destroy(gameObject);
+    // Called by EnemyAnimationEvents at the end of the Die clip.
+    public void FinishDeath()
+    {
+        if (CurrentState != EnemyState.Dead)
+            return;
+
+        Destroy(gameObject, destroyDelay);
     }
 
     private void FaceTarget(Transform target)
     {
-        Vector3 direction = target.position - transform.position;
+        if (target == null)
+            return;
 
+        Vector3 direction = target.position - transform.position;
         direction.y = 0f;
 
         if (direction.sqrMagnitude <= 0.001f)
-        {
             return;
-        }
 
         transform.rotation = Quaternion.LookRotation(direction);
     }
