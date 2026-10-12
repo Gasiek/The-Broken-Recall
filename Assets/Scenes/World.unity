@@ -1866,6 +1866,7 @@ GameObject:
   - component: {fileID: 346385412}
   - component: {fileID: 346385411}
   - component: {fileID: 346385409}
+  - component: {fileID: 346385413}
   m_Layer: 5
   m_Name: PlayerHUD
   m_TagString: Untagged
@@ -1985,6 +1986,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealthUI
   health: {fileID: 1194145309}
+--- !u!114 &346385413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346385406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcef6bd00394649b84f136673c3fd22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealthUI
+  playerTransform: {fileID: 1194145306}
+  maxDistance: 8
+  viewAngle: 140
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  visibleDuration: 5
+  scanInterval: 0.1
 --- !u!43 &358085119
 Mesh:
   m_ObjectHideFlags: 0
@@ -16612,7 +16633,7 @@ Transform:
   m_GameObject: {fileID: 1194145296}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 18.4, y: 2, z: -90.2}
+  m_LocalPosition: {x: 37.1, y: 2, z: -62.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
