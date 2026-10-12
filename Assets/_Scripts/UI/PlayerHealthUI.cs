@@ -15,9 +15,6 @@ public class PlayerHealthUI : MonoBehaviour
     {
         if (health == null)
             Debug.LogError("PlayerHealthUI has no Health assigned.", this);
-
-        if (GetComponent<EnemyHealthUI>() == null)
-            gameObject.AddComponent<EnemyHealthUI>();
     }
 
     private void OnEnable()

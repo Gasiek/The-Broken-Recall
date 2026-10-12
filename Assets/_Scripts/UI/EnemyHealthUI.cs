@@ -12,34 +12,42 @@ public class EnemyHealthUI : MonoBehaviour
     private Transform playerTransform;
 
     [Tooltip("Maximum distance from player to enemy for the health bar to appear.")]
-    [SerializeField]
+    [SerializeField, Min(0.1f)]
     private float maxDistance = 5f;
 
-    [Tooltip("Total viewing cone angle in degrees in front of the player (e.g. 140 means +/- 70 degrees).")]
+    [Tooltip("Maximum angle between player forward direction and enemy direction for the health bar to appear.")]
     [SerializeField, Range(10f, 360f)]
     private float viewAngle = 140f;
 
-    [Tooltip("Layer mask used to find enemy colliders.")]
     [SerializeField]
     private LayerMask enemyLayer;
+
+    [Header("Visibility")]
+    [SerializeField, Min(0f)]
+    private float visibleDuration = 5f;
+
+    [SerializeField, Min(0.02f)]
+    private float scanInterval = 0.1f;
 
     private PanelRenderer panelRenderer;
     private VisualElement enemyHealthBar;
     private VisualElement enemyHealthFill;
 
     private Health currentTargetHealth;
+    private float visibleUntil;
+    private float nextScanTime;
+
+    private Collider[] scanResults = new Collider[16];
 
     public Health CurrentTargetHealth => currentTargetHealth;
 
     private void Awake()
     {
-        ResolvePlayer();
-        ResolveEnemyLayer();
+        panelRenderer = GetComponent<PanelRenderer>();
     }
 
     private void OnEnable()
     {
-        panelRenderer = GetComponent<PanelRenderer>();
         panelRenderer.RegisterUIReloadCallback(OnUIReload);
     }
 
@@ -48,26 +56,37 @@ public class EnemyHealthUI : MonoBehaviour
         if (panelRenderer != null)
             panelRenderer.UnregisterUIReloadCallback(OnUIReload);
 
-        SetTarget(null);
+        UnsubscribeFromTarget();
 
         enemyHealthBar = null;
         enemyHealthFill = null;
+        currentTargetHealth = null;
     }
 
     private void Update()
     {
         if (playerTransform == null)
+            return;
+
+        if (Time.time >= nextScanTime)
         {
-            ResolvePlayer();
-            if (playerTransform == null)
-                return;
+            nextScanTime = Time.time + scanInterval;
+
+            Health target = FindTargetEnemy();
+
+            if (target != null)
+            {
+                SetTarget(target);
+                visibleUntil = Time.time + visibleDuration;
+            }
         }
 
-        Health bestTarget = FindTargetEnemy();
-
-        if (bestTarget != currentTargetHealth)
+        if (
+            currentTargetHealth != null
+            && (currentTargetHealth.IsDead || Time.time >= visibleUntil)
+        )
         {
-            SetTarget(bestTarget);
+            SetTarget(null);
         }
     }
 
@@ -76,14 +95,13 @@ public class EnemyHealthUI : MonoBehaviour
         enemyHealthBar = root.Q<VisualElement>(EnemyHealthBarElementName);
         enemyHealthFill = root.Q<VisualElement>(EnemyHealthFillElementName);
 
-        if (enemyHealthBar == null)
+        if (enemyHealthBar == null || enemyHealthFill == null)
         {
-            Debug.LogError($"EnemyHealthUI could not find '{EnemyHealthBarElementName}' in HUD UXML.", this);
-        }
-
-        if (enemyHealthFill == null)
-        {
-            Debug.LogError($"EnemyHealthUI could not find '{EnemyHealthFillElementName}' in HUD UXML.", this);
+            Debug.LogError(
+                "EnemyHealthUI could not find its health bar elements in the UXML.",
+                this
+            );
+            return;
         }
 
         Refresh();
@@ -92,64 +110,69 @@ public class EnemyHealthUI : MonoBehaviour
 
     private Health FindTargetEnemy()
     {
-        Collider[] colliders = Physics.OverlapSphere(playerTransform.position, maxDistance, enemyLayer);
-        Health bestCandidate = null;
+        int count = Physics.OverlapSphereNonAlloc(
+            playerTransform.position,
+            maxDistance,
+            scanResults,
+            enemyLayer
+        );
+
+        Health bestTarget = null;
         float closestDistance = float.MaxValue;
 
-        Vector3 playerPos = playerTransform.position;
-        Vector3 playerForward = playerTransform.forward;
-        playerForward.y = 0f;
-        playerForward.Normalize();
+        Vector3 playerPosition = playerTransform.position;
+        Vector3 forward = playerTransform.forward;
+        forward.y = 0f;
 
-        float halfAngle = viewAngle * 0.5f;
+        if (forward.sqrMagnitude < 0.001f)
+            return null;
 
-        for (int i = 0; i < colliders.Length; i++)
+        forward.Normalize();
+
+        for (int i = 0; i < count; i++)
         {
-            Collider col = colliders[i];
+            Collider col = scanResults[i];
+
             if (col == null)
                 continue;
 
-            // Must have Health and not be dead
-            Health health = col.GetComponentInParent<Health>();
-            if (health == null || health.IsDead || health.transform == playerTransform)
+            // Assumes the collider and Health are on the same GameObject.
+            Health health = col.GetComponent<Health>();
+
+            if (health == null || health.IsDead)
                 continue;
 
-            // Must be an enemy
-            EnemyController enemy = col.GetComponentInParent<EnemyController>();
-            if (enemy == null)
+            Vector3 direction = health.transform.position - playerPosition;
+            direction.y = 0f;
+
+            float distance = direction.magnitude;
+
+            if (distance < 0.001f)
                 continue;
 
-            Vector3 toEnemy = health.transform.position - playerPos;
-            toEnemy.y = 0f;
-            float distance = toEnemy.magnitude;
-
-            if (distance > maxDistance || distance < 0.001f)
-                continue;
-
-            float angle = Vector3.Angle(playerForward, toEnemy);
-            if (angle > halfAngle)
+            if (Vector3.Angle(forward, direction) > viewAngle * 0.5f)
                 continue;
 
             if (distance < closestDistance)
             {
                 closestDistance = distance;
-                bestCandidate = health;
+                bestTarget = health;
             }
         }
 
-        return bestCandidate;
+        return bestTarget;
     }
 
     private void SetTarget(Health newTarget)
     {
         if (currentTargetHealth == newTarget)
-            return;
-
-        if (currentTargetHealth != null)
         {
-            currentTargetHealth.HealthChanged -= OnTargetHealthChanged;
-            currentTargetHealth.Died -= OnTargetDied;
+            Refresh();
+            UpdateVisibility();
+            return;
         }
+
+        UnsubscribeFromTarget();
 
         currentTargetHealth = newTarget;
 
@@ -161,6 +184,15 @@ public class EnemyHealthUI : MonoBehaviour
 
         Refresh();
         UpdateVisibility();
+    }
+
+    private void UnsubscribeFromTarget()
+    {
+        if (currentTargetHealth == null)
+            return;
+
+        currentTargetHealth.HealthChanged -= OnTargetHealthChanged;
+        currentTargetHealth.Died -= OnTargetDied;
     }
 
     private void OnTargetHealthChanged()
@@ -178,13 +210,15 @@ public class EnemyHealthUI : MonoBehaviour
         if (enemyHealthFill == null)
             return;
 
-        if (currentTargetHealth == null || currentTargetHealth.MaxHealth <= 0)
+        float ratio = 0f;
+
+        if (currentTargetHealth != null && currentTargetHealth.MaxHealth > 0)
         {
-            enemyHealthFill.style.width = Length.Percent(0f);
-            return;
+            ratio = Mathf.Clamp01(
+                (float)currentTargetHealth.CurrentHealth / currentTargetHealth.MaxHealth
+            );
         }
 
-        float ratio = Mathf.Clamp01((float)currentTargetHealth.CurrentHealth / currentTargetHealth.MaxHealth);
         enemyHealthFill.style.width = Length.Percent(ratio * 100f);
     }
 
@@ -193,55 +227,9 @@ public class EnemyHealthUI : MonoBehaviour
         if (enemyHealthBar == null)
             return;
 
-        bool isVisible = currentTargetHealth != null && !currentTargetHealth.IsDead;
-        enemyHealthBar.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
-    }
+        bool visible =
+            currentTargetHealth != null && !currentTargetHealth.IsDead && Time.time < visibleUntil;
 
-    private void ResolvePlayer()
-    {
-        if (playerTransform != null)
-            return;
-
-        Player player = FindFirstObjectByType<Player>();
-        if (player != null)
-        {
-            playerTransform = player.transform;
-        }
-    }
-
-    private void ResolveEnemyLayer()
-    {
-        if (enemyLayer.value == 0)
-        {
-            int layer = LayerMask.NameToLayer("Enemy");
-            if (layer >= 0)
-            {
-                enemyLayer = 1 << layer;
-            }
-            else
-            {
-                enemyLayer = ~0;
-            }
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (playerTransform == null)
-            return;
-
-        Gizmos.color = new Color(1f, 0f, 0f, 0.25f);
-        Gizmos.DrawWireSphere(playerTransform.position, maxDistance);
-
-        Vector3 forward = playerTransform.forward;
-        forward.y = 0f;
-        forward.Normalize();
-
-        Vector3 leftDir = Quaternion.Euler(0f, -viewAngle * 0.5f, 0f) * forward;
-        Vector3 rightDir = Quaternion.Euler(0f, viewAngle * 0.5f, 0f) * forward;
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(playerTransform.position, playerTransform.position + leftDir * maxDistance);
-        Gizmos.DrawLine(playerTransform.position, playerTransform.position + rightDir * maxDistance);
+        enemyHealthBar.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
 }
