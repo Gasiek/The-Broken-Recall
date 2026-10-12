@@ -13,14 +13,15 @@ public class SkillRemoval : MonoBehaviour, IInteractable
 
     private bool interactionCompleted;
 
-    public bool CanInteract => !interactionCompleted;
-
-    public void Interact()
+    public bool CanInteract(Player player)
     {
-        if (interactionCompleted)
-        {
+        return player != null && !interactionCompleted;
+    }
+
+    public void Interact(Player player)
+    {
+        if (!CanInteract(player))
             return;
-        }
 
         if (actionCollection == null)
         {
@@ -42,33 +43,29 @@ public class SkillRemoval : MonoBehaviour, IInteractable
     public void RemoveAction(ActionDefinition action)
     {
         if (interactionCompleted)
-        {
             return;
-        }
 
         if (action == null)
-        {
             return;
-        }
 
         if (actionCollection == null)
         {
             Debug.LogWarning($"{name} has no ActionCollection assigned.");
+
             return;
         }
 
         if (actionMemory == null)
         {
             Debug.LogWarning($"{name} has no ActionMemory assigned.");
+
             return;
         }
 
         bool removed = actionMemory.RemoveAction(action);
 
         if (!removed)
-        {
             return;
-        }
 
         interactionCompleted = true;
     }

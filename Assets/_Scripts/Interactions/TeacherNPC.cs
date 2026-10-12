@@ -4,8 +4,6 @@ public class TeacherNPC : MonoBehaviour, IInteractable
 {
     [SerializeField]
     private ActionDefinition actionToTeach;
-
-    [SerializeField]
     private ActionCollection actionCollection;
 
     [SerializeField]
@@ -16,21 +14,22 @@ public class TeacherNPC : MonoBehaviour, IInteractable
 
     private bool interactionCompleted;
 
-    public bool CanInteract
+    public bool CanInteract(Player player)
     {
-        get
-        {
-            if (!interactionCompleted)
-            {
-                return true;
-            }
+        if (player == null || player.ActionCollection == null)
+            return false;
 
-            return completedInteractionTexts != null && completedInteractionTexts.Length > 0;
-        }
+        if (!interactionCompleted)
+            return true;
+
+        return completedInteractionTexts != null && completedInteractionTexts.Length > 0;
     }
 
-    public void Interact()
+    public void Interact(Player player)
     {
+        if (!CanInteract(player))
+            return;
+
         if (interactionCompleted)
         {
             InteractAfterCompletion();
@@ -43,17 +42,12 @@ public class TeacherNPC : MonoBehaviour, IInteractable
             return;
         }
 
-        if (actionCollection == null)
-        {
-            Debug.LogWarning($"{name} has no ActionCollection assigned.");
-            return;
-        }
-
         if (skillLearnUI == null)
         {
             Debug.LogWarning($"{name} has no SkillLearnUI assigned.");
             return;
         }
+        actionCollection = player.ActionCollection;
 
         if (actionCollection.Contains(actionToTeach))
         {
@@ -67,19 +61,11 @@ public class TeacherNPC : MonoBehaviour, IInteractable
     public void LearnAction()
     {
         if (interactionCompleted)
-        {
             return;
-        }
 
         if (actionToTeach == null)
         {
             Debug.LogWarning($"{name} has no action assigned to teach.");
-            return;
-        }
-
-        if (actionCollection == null)
-        {
-            Debug.LogWarning($"{name} has no ActionCollection assigned.");
             return;
         }
 
@@ -90,7 +76,6 @@ public class TeacherNPC : MonoBehaviour, IInteractable
         }
 
         actionCollection.Add(actionToTeach);
-
         interactionCompleted = true;
     }
 

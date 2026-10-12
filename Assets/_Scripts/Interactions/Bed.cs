@@ -2,16 +2,6 @@ using UnityEngine;
 
 public class Bed : MonoBehaviour, IInteractable
 {
-    [Header("References")]
-    [SerializeField]
-    private Health playerHealth;
-
-    [SerializeField]
-    private PlayerStateMachine playerStateMachine;
-
-    [SerializeField]
-    private Transform playerTransform;
-
     [Header("Sleep Duration Settings")]
     [SerializeField]
     private float fadeOutDuration = 0.8f;
@@ -31,26 +21,6 @@ public class Bed : MonoBehaviour, IInteractable
 
     private ScreenFader screenFader;
 
-    public bool CanInteract =>
-        playerHealth != null
-        && playerStateMachine != null
-        && playerTransform != null
-        && screenFader != null
-        && AudioManager.Instance != null
-        && playerStateMachine.CanSleep;
-
-    private void Awake()
-    {
-        if (playerHealth == null || playerStateMachine == null || playerTransform == null)
-        {
-            Debug.LogError(
-                "[Bed] Assign PlayerHealth, PlayerStateMachine, "
-                    + "and PlayerTransform in the Inspector.",
-                this
-            );
-        }
-    }
-
     private void Start()
     {
         screenFader = ScreenFader.Instance;
@@ -64,58 +34,76 @@ public class Bed : MonoBehaviour, IInteractable
         }
     }
 
-    public void Interact()
+    public bool CanInteract(Player player)
     {
-        if (!CanInteract)
+        return player != null
+            && player.Health != null
+            && player.StateMachine != null
+            && screenFader != null
+            && AudioManager.Instance != null
+            && player.StateMachine.CanSleep;
+    }
+
+    public void Interact(Player player)
+    {
+        if (!CanInteract(player))
         {
             Debug.LogWarning(
                 "[Bed] Cannot rest. Check the required references, "
-                    + "AudioManager, and player state.",
+                    + "AudioManager, ScreenFader, and player state.",
                 this
             );
 
             return;
         }
 
-        playerStateMachine.StartSleeping();
+        player.StateMachine.StartSleeping();
 
-        screenFader.SleepSequence(fadeOutDuration, sleepDuration, fadeInDuration, FinishRest);
+        screenFader.SleepSequence(
+            fadeOutDuration,
+            sleepDuration,
+            fadeInDuration,
+            () => FinishRest(player)
+        );
     }
 
-    private void FinishRest()
+    private void FinishRest(Player player)
     {
-        PlayYawnSound();
-        RestoreHealth();
+        if (player == null)
+            return;
 
-        if (playerStateMachine != null)
+        PlayYawnSound(player);
+        RestoreHealth(player);
+
+        if (player.StateMachine != null)
         {
-            playerStateMachine.FinishSleeping();
+            player.StateMachine.FinishSleeping();
         }
     }
 
-    private void PlayYawnSound()
+    private void PlayYawnSound(Player player)
     {
         if (yawnSound == null || AudioManager.Instance == null)
             return;
 
-        AudioManager.Instance.PlayWorldSFX(yawnSound, playerTransform.position, yawnVolume);
+        AudioManager.Instance.PlayWorldSFX(yawnSound, player.transform.position, yawnVolume);
     }
 
-    private void RestoreHealth()
+    private void RestoreHealth(Player player)
     {
-        if (playerHealth == null)
+        if (player.Health == null)
             return;
 
-        int missingHealth = playerHealth.MaxHealth - playerHealth.CurrentHealth;
+        int missingHealth = player.Health.MaxHealth - player.Health.CurrentHealth;
 
         if (missingHealth <= 0)
             return;
 
-        playerHealth.Heal(missingHealth);
+        player.Health.Heal(missingHealth);
 
         Debug.Log(
             $"[Bed] Player rested and restored health! "
-                + $"({playerHealth.CurrentHealth}/{playerHealth.MaxHealth})",
+                + $"({player.Health.CurrentHealth}/{player.Health.MaxHealth})",
             this
         );
     }
