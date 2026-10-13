@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -10,12 +11,13 @@ public class SkillLearnUI : MonoBehaviour
     [SerializeField]
     private PlayerInput playerInput;
 
+    [SerializeField]
+    private VisualTreeAsset cardTemplate;
+
     private PanelRenderer panelRenderer;
     private VisualElement backdrop;
-    private Button yesButton;
-    private Button noButton;
-    private Image actionIcon;
-    private Label actionName;
+    private VisualElement cardContainer;
+    private Button cancelButton;
 
     private TeacherNPC currentTeacher;
     private bool isOpen;
@@ -41,34 +43,27 @@ public class SkillLearnUI : MonoBehaviour
     private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
         backdrop = root.Q<VisualElement>("Backdrop");
-        yesButton = root.Q<Button>("ButtonYes");
-        noButton = root.Q<Button>("ButtonNo");
-        actionIcon = root.Q<Image>("ActionIcon");
-        actionName = root.Q<Label>("ActionName");
+        cardContainer = root.Q<VisualElement>("CardContainer");
+        cancelButton = root.Q<Button>("CancelButton");
 
-        if (yesButton != null)
+        if (cancelButton != null)
         {
-            yesButton.clicked += HandleYesClicked;
-        }
-
-        if (noButton != null)
-        {
-            noButton.clicked += HandleNoClicked;
+            cancelButton.clicked += HandleCancelClicked;
         }
 
         Hide();
     }
 
-    public void Show(TeacherNPC teacher, ActionDefinition action)
+    public void Show(TeacherNPC teacher, List<ActionDefinition> choices)
     {
         if (isOpen)
         {
             return;
         }
 
-        if (teacher == null || action == null)
+        if (teacher == null || choices == null || choices.Count == 0)
         {
-            Debug.LogWarning("Cannot show SkillLearnUI without a teacher and action.");
+            Debug.LogWarning("Cannot show SkillLearnUI without a teacher and action choices.");
             return;
         }
 
@@ -78,13 +73,13 @@ public class SkillLearnUI : MonoBehaviour
             return;
         }
 
-        if (
-            backdrop == null
-            || yesButton == null
-            || noButton == null
-            || actionIcon == null
-            || actionName == null
-        )
+        if (cardTemplate == null)
+        {
+            Debug.LogWarning("SkillLearnUI is missing cardTemplate reference.");
+            return;
+        }
+
+        if (backdrop == null || cardContainer == null || cancelButton == null)
         {
             Debug.LogWarning("SkillLearnUI has not initialized its UI elements.");
             return;
@@ -92,8 +87,8 @@ public class SkillLearnUI : MonoBehaviour
 
         currentTeacher = teacher;
 
-        actionName.text = action.DisplayName;
-        actionIcon.image = action.Icon != null ? action.Icon.texture : null;
+        // Populate the 3 action cards
+        PopulateCards(choices);
 
         isOpen = true;
         Time.timeScale = 0f;
@@ -104,7 +99,63 @@ public class SkillLearnUI : MonoBehaviour
         backdrop.style.display = DisplayStyle.Flex;
         backdrop.style.visibility = Visibility.Visible;
 
-        yesButton.Focus();
+        cancelButton.Focus();
+    }
+
+    private void PopulateCards(List<ActionDefinition> choices)
+    {
+        cardContainer.Clear();
+
+        foreach (var actionDef in choices)
+        {
+            if (actionDef == null)
+                continue;
+
+            VisualElement cardElement = cardTemplate.Instantiate();
+            Button button = cardElement.Q<Button>("ActionButton");
+            Label nameLabel = cardElement.Q<Label>("Name");
+            Image iconImage = cardElement.Q<Image>("Icon");
+            Label descLabel = cardElement.Q<Label>("Description");
+
+            if (nameLabel != null)
+            {
+                nameLabel.text = actionDef.DisplayName;
+            }
+
+            if (iconImage != null)
+            {
+                iconImage.image = actionDef.Icon != null ? actionDef.Icon.texture : null;
+            }
+
+            if (descLabel != null)
+            {
+                descLabel.text = actionDef.GetDescription();
+            }
+
+            if (button != null)
+            {
+                ActionDefinition selected = actionDef;
+                button.clicked += () => OnActionSelected(selected);
+            }
+
+            cardContainer.Add(cardElement);
+        }
+    }
+
+    private void OnActionSelected(ActionDefinition selectedAction)
+    {
+        if (currentTeacher == null || selectedAction == null)
+        {
+            return;
+        }
+
+        currentTeacher.LearnAction(selectedAction);
+        Close();
+    }
+
+    private void HandleCancelClicked()
+    {
+        Close();
     }
 
     public void Hide()
@@ -118,25 +169,14 @@ public class SkillLearnUI : MonoBehaviour
         backdrop.style.visibility = Visibility.Hidden;
     }
 
-    private void HandleYesClicked()
-    {
-        if (currentTeacher == null)
-        {
-            return;
-        }
-
-        currentTeacher.LearnAction();
-        Close();
-    }
-
-    private void HandleNoClicked()
-    {
-        Close();
-    }
-
     private void Close()
     {
         Hide();
+
+        if (cardContainer != null)
+        {
+            cardContainer.Clear();
+        }
 
         currentTeacher = null;
         isOpen = false;
@@ -156,14 +196,9 @@ public class SkillLearnUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (yesButton != null)
+        if (cancelButton != null)
         {
-            yesButton.clicked -= HandleYesClicked;
-        }
-
-        if (noButton != null)
-        {
-            noButton.clicked -= HandleNoClicked;
+            cancelButton.clicked -= HandleCancelClicked;
         }
 
         if (isOpen)

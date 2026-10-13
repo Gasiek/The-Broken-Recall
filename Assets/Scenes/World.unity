@@ -1370,6 +1370,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillLearnUI
   cameraFollow: {fileID: 330585548}
   playerInput: {fileID: 1194145307}
+  cardTemplate: {fileID: 9197481963319205126, guid: e50710e25f6c14586903a0fb239ba160, type: 3}
 --- !u!4 &198155800 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1153105171145662997, guid: ade4d5c71df86486fa10b8de90188308, type: 3}
@@ -16425,6 +16426,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardsMenuUI
   actionCollection: {fileID: 1194145299}
+  cardTemplate: {fileID: 9197481963319205126, guid: e50710e25f6c14586903a0fb239ba160, type: 3}
 --- !u!1 &1194145296
 GameObject:
   m_ObjectHideFlags: 0
@@ -16505,6 +16507,12 @@ MonoBehaviour:
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
+  - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
+  - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
+  - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
+  - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
+  - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
+  - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
   - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
   - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
 --- !u!114 &1194145300
@@ -18054,22 +18062,6 @@ PrefabInstance:
       propertyPath: actionCollection
       value: 
       objectReference: {fileID: 1194145299}
-    - target: {fileID: 8460068476188253741, guid: e802f1c73c6b24d458d3ae7adea993ff, type: 3}
-      propertyPath: completedInteractionTexts.Array.size
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 8460068476188253741, guid: e802f1c73c6b24d458d3ae7adea993ff, type: 3}
-      propertyPath: 'completedInteractionTexts.Array.data[0]'
-      value: Go practice
-      objectReference: {fileID: 0}
-    - target: {fileID: 8460068476188253741, guid: e802f1c73c6b24d458d3ae7adea993ff, type: 3}
-      propertyPath: 'completedInteractionTexts.Array.data[1]'
-      value: Go kill some goblins
-      objectReference: {fileID: 0}
-    - target: {fileID: 8460068476188253741, guid: e802f1c73c6b24d458d3ae7adea993ff, type: 3}
-      propertyPath: 'completedInteractionTexts.Array.data[2]'
-      value: Kill them all
-      objectReference: {fileID: 0}
     - target: {fileID: 9124348733363759965, guid: e802f1c73c6b24d458d3ae7adea993ff, type: 3}
       propertyPath: m_Name
       value: TeacherNPC (1)

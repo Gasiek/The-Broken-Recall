@@ -2,17 +2,18 @@
     <Style src="project://database/Assets/UI%20Toolkit/common-styles.uss?fileID=7433441132597879392&amp;guid=f5a483d70588545eeabe7eb35fd0f894&amp;type=3#common-styles"/>
     
     <ui:VisualElement name="Backdrop" class="remove-action-backdrop" style="display: none;">
-        <ui:VisualElement name="Panel" class="remove-action-panel">
+        <ui:VisualElement name="Panel" class="fullscreen-action-panel">
             
-            <ui:Label text="Choose an action to Remove" class="remove-action-title"/>
+            <!-- Title pinned to top -->
+            <ui:Label text="Choose an action to Remove" class="action-panel-title"/>
             
-            <!-- Vertical Scroll View -->
+            <!-- Centered Scrollable Area -->
             <ui:ScrollView name="ScrollView" mode="Vertical" class="remove-action-scroll">
-                <!-- Grid container with spacing gaps -->
                 <ui:VisualElement name="CardContainer" class="remove-action-grid"/>
             </ui:ScrollView>
 
-            <ui:Button name="CancelButton" text="Cancel" class="dialog-button button" style="margin-top: 10px; margin-bottom: 20px;"/>
+            <!-- Cancel Button pinned to bottom -->
+            <ui:Button name="CancelButton" text="Cancel" class="dialog-button button action-panel-cancel-button"/>
             
         </ui:VisualElement>
     </ui:VisualElement>

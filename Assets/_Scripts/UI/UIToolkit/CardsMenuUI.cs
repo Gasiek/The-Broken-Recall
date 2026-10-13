@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -8,13 +9,14 @@ public class CardsMenuUI : MonoBehaviour
     [SerializeField]
     private ActionCollection actionCollection;
 
+    [SerializeField]
+    private VisualTreeAsset cardTemplate; // Assign your ActionlistItem.uxml template here
+
     private VisualElement cardsSection;
+    private VisualElement cardContainer;
     private Button cardsBackButton;
     private Action backCallback;
-    private CardsCarousel carousel;
     private bool isVisible;
-
-    public CardsCarousel Carousel => carousel;
 
     private void OnEnable()
     {
@@ -34,17 +36,6 @@ public class CardsMenuUI : MonoBehaviour
         }
 
         UnbindUI();
-
-        carousel?.StopAnimation();
-    }
-
-    private void OnDestroy()
-    {
-        if (carousel != null)
-        {
-            carousel.Cleanup();
-            carousel = null;
-        }
     }
 
     public void Initialize(VisualElement root, Action onBackClicked)
@@ -60,6 +51,7 @@ public class CardsMenuUI : MonoBehaviour
         }
 
         cardsSection = root.Q<VisualElement>("CardsSection");
+        cardContainer = root.Q<VisualElement>("CardContainer");
         cardsBackButton = root.Q<Button>("CardsBackButton");
 
         if (cardsBackButton != null)
@@ -75,13 +67,6 @@ public class CardsMenuUI : MonoBehaviour
         {
             Debug.LogWarning("CardsSection was not found in the UI.", this);
         }
-
-        if (carousel == null)
-        {
-            carousel = new CardsCarousel(this);
-        }
-
-        carousel.Initialize(root, actionCollection);
     }
 
     private void UnbindUI()
@@ -93,38 +78,16 @@ public class CardsMenuUI : MonoBehaviour
 
         cardsBackButton = null;
         cardsSection = null;
+        cardContainer = null;
         backCallback = null;
-    }
-
-    public void OnPreviousCard(InputAction.CallbackContext context)
-    {
-        if (!context.performed || !isVisible || carousel == null)
-        {
-            return;
-        }
-
-        carousel.Previous();
-    }
-
-    public void OnNextCard(InputAction.CallbackContext context)
-    {
-        if (!context.performed || !isVisible || carousel == null)
-        {
-            return;
-        }
-
-        carousel.Next();
     }
 
     private void HandleActionCollectionChanged()
     {
-        if (carousel == null)
+        if (isVisible)
         {
-            return;
+            RefreshCards();
         }
-
-        carousel.StopAnimation();
-        carousel.Refresh();
     }
 
     public void Show()
@@ -136,25 +99,73 @@ public class CardsMenuUI : MonoBehaviour
             cardsSection.style.display = DisplayStyle.Flex;
         }
 
-        if (carousel != null)
-        {
-            carousel.StopAnimation();
-            carousel.ResetIndex();
-            carousel.Refresh();
-        }
+        RefreshCards();
 
         cardsBackButton?.Focus();
+    }
+
+    private void RefreshCards()
+    {
+        if (cardContainer == null || actionCollection == null || cardTemplate == null)
+        {
+            return;
+        }
+
+        cardContainer.Clear();
+
+        foreach (var cardInstance in actionCollection.Actions)
+        {
+            if (cardInstance == null || cardInstance.Definition == null)
+            {
+                continue;
+            }
+
+            ActionDefinition definition = cardInstance.Definition;
+
+            // Instantiate card template
+            VisualElement cardElement = cardTemplate.Instantiate();
+            Button button = cardElement.Q<Button>("ActionButton");
+            Label nameLabel = cardElement.Q<Label>("Name");
+            Image iconImage = cardElement.Q<Image>("Icon");
+            Label descLabel = cardElement.Q<Label>("Description");
+
+            if (nameLabel != null)
+            {
+                nameLabel.text = definition.DisplayName;
+            }
+
+            if (iconImage != null)
+            {
+                iconImage.image = definition.Icon != null ? definition.Icon.texture : null;
+            }
+
+            if (descLabel != null)
+            {
+                descLabel.text = definition.GetDescription();
+            }
+
+            // Optional: disable button clicking if this menu is strictly view-only
+            if (button != null)
+            {
+                button.focusable = false; // or leave clickable if you want card interaction in the menu
+            }
+
+            cardContainer.Add(cardElement);
+        }
     }
 
     public void Hide()
     {
         isVisible = false;
 
-        carousel?.StopAnimation();
-
         if (cardsSection != null)
         {
             cardsSection.style.display = DisplayStyle.None;
+        }
+
+        if (cardContainer != null)
+        {
+            cardContainer.Clear();
         }
     }
 

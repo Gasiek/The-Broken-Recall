@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TeacherNPC : MonoBehaviour, IInteractable
 {
     [SerializeField]
-    private ActionDefinition actionToTeach;
+    private List<ActionDefinition> actionsToTeach = new List<ActionDefinition>(3);
 
     private ActionCollection actionCollection;
 
@@ -43,9 +44,9 @@ public class TeacherNPC : MonoBehaviour, IInteractable
             return;
         }
 
-        if (actionToTeach == null)
+        if (actionsToTeach == null || actionsToTeach.Count == 0)
         {
-            Debug.LogWarning($"{name} has no action assigned to teach.");
+            Debug.LogWarning($"{name} has no actions assigned to teach.");
             return;
         }
 
@@ -57,19 +58,19 @@ public class TeacherNPC : MonoBehaviour, IInteractable
 
         actionCollection = player.ActionCollection;
 
-        skillLearnUI.Show(this, actionToTeach);
+        skillLearnUI.Show(this, actionsToTeach);
     }
 
-    public void LearnAction()
+    public void LearnAction(ActionDefinition chosenAction)
     {
         if (interactionCompleted)
         {
             return;
         }
 
-        if (actionToTeach == null)
+        if (chosenAction == null)
         {
-            Debug.LogWarning($"{name} has no action assigned to teach.");
+            Debug.LogWarning($"{name} was given a null action to learn.");
             return;
         }
 
@@ -79,9 +80,8 @@ public class TeacherNPC : MonoBehaviour, IInteractable
             return;
         }
 
-        // Creates a new instance, even if this definition
-        // is already present in the player's collection.
-        actionCollection.Add(actionToTeach);
+        // Add chosen action to player's collection
+        actionCollection.Add(chosenAction);
 
         interactionCompleted = true;
     }

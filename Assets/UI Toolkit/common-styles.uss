@@ -584,12 +584,13 @@
     -unity-text-align: middle-center;
 }
 
-/* ScrollView with space for card grid */
 .remove-action-scroll {
-    flex-grow: 1;
     width: 100%;
-    max-width: 1100px;
-    margin-bottom: 20px;
+    max-width: 1000px;
+    height: 740px;
+    max-height: 740px; /* Limits scroll container height so it leaves space for title/cancel */
+    margin-top: 60px;    /* Keeps cards clear of the top title */
+    margin-bottom: 90px; /* Keeps cards clear of the bottom cancel button */
 }
 
 /* Card Container: Fixed width for exactly 4 columns, centered on screen, left-aligned contents */
@@ -599,8 +600,7 @@
     justify-content: flex-start; /* Ensures cards in incomplete rows align to the left */
     align-items: flex-start;
     align-self: center;          /* Centers the entire 4-column grid block inside the ScrollView */
-    gap: 24px;                   /* 24px horizontal and vertical spacing */
-    width: 920px;
+    width: 936px;
     padding: 10px 0;
 }
 
@@ -616,7 +616,7 @@
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
     padding: 14px 10px;
-    margin: 10px;                       /* Ensures spacing even on older UI Toolkit versions */
+    margin: 12px;                       /* Ensures spacing even on older UI Toolkit versions */
     align-items: center;
     transition-property: scale, background-color, border-color;
     transition-duration: 0.12s;
@@ -656,4 +656,48 @@
     margin: 0;
     width: 100%;
     -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/LiberationSans.ttf?fileID=12800000&guid=e3265ab4bf004d28a9537516768c1c75&type=3#LiberationSans");
+}
+
+/* Container for exactly 3 learnable cards centered in the screen */
+.learn-action-grid {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 130px;
+    margin-bottom: 120px;
+}
+
+/* Shared layout for both RemoveActionPanel and NewActionPanel */
+.fullscreen-action-panel {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.96);
+    align-items: center;
+    justify-content: center; /* Centers the content block vertically */
+    position: relative;
+    padding: 0;
+    margin: 0;
+}
+
+/* Title strictly fixed at the top of the screen */
+.action-panel-title {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Bangers.ttf?fileID=12800000&guid=5dd49b3eacc540408c98eee0de38e0f1&type=3#Bangers");
+    font-size: 42px;
+    color: rgb(240, 220, 180);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    letter-spacing: 2px;
+    -unity-text-align: middle-center;
+}
+
+/* Cancel button strictly fixed at the bottom of the screen */
+.action-panel-cancel-button {
+    position: absolute;
+    bottom: 50px;
+    align-self: center;
+    margin: 0;
 }
