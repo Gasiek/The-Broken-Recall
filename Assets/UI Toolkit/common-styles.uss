@@ -536,3 +536,124 @@
     align-items: center;
     -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Bangers.ttf?fileID=12800000&guid=5dd49b3eacc540408c98eee0de38e0f1&type=3#Bangers");
 }
+
+
+
+
+
+
+
+
+/* --- Remove Action Panel Styles --- */
+
+/* Full-screen backdrop covering the entire screen */
+.remove-action-backdrop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Full screen panel with 80% opacity background and no border */
+.remove-action-panel {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.96);
+    border-width: 0;
+    border-color: transparent;
+    padding-top: 50px;
+    padding-bottom: 40px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Title text */
+.remove-action-title {
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Examples%20&%20Extras/Fonts/Bangers.ttf?fileID=12800000&guid=5dd49b3eacc540408c98eee0de38e0f1&type=3#Bangers");
+    font-size: 42px;
+    color: rgb(240, 220, 180);
+    -unity-text-outline-width: 1.5px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+    -unity-text-align: middle-center;
+}
+
+/* ScrollView with space for card grid */
+.remove-action-scroll {
+    flex-grow: 1;
+    width: 100%;
+    max-width: 1100px;
+    margin-bottom: 20px;
+}
+
+/* Card Container: Fixed width for exactly 4 columns, centered on screen, left-aligned contents */
+.remove-action-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* Ensures cards in incomplete rows align to the left */
+    align-items: flex-start;
+    align-self: center;          /* Centers the entire 4-column grid block inside the ScrollView */
+    gap: 24px;                   /* 24px horizontal and vertical spacing */
+    width: 920px;
+    padding: 10px 0;
+}
+
+/* Individual Card Styling */
+.removal-card-item {
+    width: 210px;
+    height: 300px;
+    background-color: rgb(55, 32, 32); /* Deep card tint */
+    border-color: rgb(190, 145, 95);    /* Gold Card Border */
+    border-width: 12px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    padding: 14px 10px;
+    margin: 10px;                       /* Ensures spacing even on older UI Toolkit versions */
+    align-items: center;
+    transition-property: scale, background-color, border-color;
+    transition-duration: 0.12s;
+    transition-timing-function: ease-out;
+}
+
+.removal-card-item:hover {
+    scale: 1.05 1.05;
+    background-color: rgb(75, 42, 42);
+    border-color: rgb(230, 185, 120);
+}
+
+/* Icon Frame with background matching card border color */
+.removal-card-icon-frame {
+    width: 145px;
+    height: 125px;
+    background-color: rgb(190, 145, 95); /* Same as card border color */
+    border-color: rgb(120, 90, 55);
+    border-width: 2px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Description directly on card without frame wrapper */
+.removal-card-description-direct {
+    font-size: 14px;
+    color: rgb(240, 230, 215);
+    -unity-text-align: middle-center;
+    white-space: normal;
+    padding: 6px 4px;
+    margin: 0;
+    width: 100%;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/LiberationSans.ttf?fileID=12800000&guid=e3265ab4bf004d28a9537516768c1c75&type=3#LiberationSans");
+}
