@@ -9,7 +9,7 @@ public class SwordChargeAction : ActionDefinition
     [SerializeField]
     private int damage = 25;
 
-    [Tooltip("Radius around the sword/front of the player to detect and hit enemies.")]
+    [Tooltip("Radius around the front of the player used to detect targets.")]
     [SerializeField]
     private float hitRadius = 1.1f;
 
@@ -17,23 +17,18 @@ public class SwordChargeAction : ActionDefinition
     private LayerMask targetLayer;
 
     [Header("Charge Motion & Timing")]
-    [Tooltip("Duration to point the sword forward.")]
     [SerializeField]
     private float prepDuration = 0.3f;
 
-    [Tooltip("Duration of holding the sword pointed forward before the sudden burst.")]
     [SerializeField]
     private float holdDuration = 0.25f;
 
-    [Tooltip("Duration of the rapid forward charge movement in seconds.")]
     [SerializeField]
     private float chargeMoveDuration = 1.0f;
 
-    [Tooltip("Distance traveled during the charge.")]
     [SerializeField]
     private float chargeDistance = 4.0f;
 
-    [Tooltip("Recovery duration after completing the charge.")]
     [SerializeField]
     private float recoveryDuration = 0.2f;
 
@@ -54,47 +49,69 @@ public class SwordChargeAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
-        CharacterController cc = context.Movement.CharacterController;
+        PlayerMovement movement = context.Movement;
 
-        context.Movement.SetMovementOverridden(true);
+        context.Visuals.SwordCharge(
+            prepDuration,
+            holdDuration,
+            chargeMoveDuration,
+            recoveryDuration
+        );
 
-        try
+        float prepTime = Mathf.Max(0f, prepDuration) + Mathf.Max(0f, holdDuration);
+
+        if (prepTime > 0f)
+            yield return new WaitForSeconds(prepTime);
+
+        if (context.Health == null || context.Health.IsDead)
         {
-            context.Visuals.SwordCharge(
-                prepDuration,
-                holdDuration,
-                chargeMoveDuration,
-                recoveryDuration
-            );
-
-            float prepWaitTime = prepDuration + holdDuration;
-            if (prepWaitTime > 0f)
-            {
-                yield return new WaitForSeconds(prepWaitTime);
-            }
-
-            yield return PerformCharge(context, cc);
-
-            if (recoveryDuration > 0f)
-            {
-                yield return new WaitForSeconds(recoveryDuration);
-            }
+            movement.CancelChargeMovement();
+            yield break;
         }
-        finally
+
+        Vector3 direction = context.Player.forward;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.001f)
         {
-            context.Movement.SetMovementOverridden(false);
+            movement.CancelChargeMovement();
+            yield break;
         }
+
+        direction.Normalize();
+
+        if (!movement.BeginChargeMovement(direction, chargeDistance, chargeMoveDuration))
+        {
+            movement.CancelChargeMovement();
+            yield break;
+        }
+
+        PlayChargeEffects(context, direction);
+
+        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
+
+        while (movement.IsChargeMoving)
+        {
+            if (context.Health == null || context.Health.IsDead)
+                break;
+
+            PerformChargeDamage(context, direction, damagedTargets);
+
+            yield return null;
+        }
+
+        // Release charge movement before recovery.
+        movement.CancelChargeMovement();
+
+        if (context.Health != null && !context.Health.IsDead)
+            PerformChargeDamage(context, direction, damagedTargets);
+
+        if (recoveryDuration > 0f)
+            yield return new WaitForSeconds(recoveryDuration);
     }
 
-    private IEnumerator PerformCharge(ActionContext context, CharacterController cc)
+    private void PlayChargeEffects(ActionContext context, Vector3 direction)
     {
-        Vector3 chargeDirection = context.Player.forward;
-        chargeDirection.y = 0f;
-        if (chargeDirection.sqrMagnitude > 0.001f)
-        {
-            chargeDirection.Normalize();
-        }
-
         if (dashSound != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayWorldSFX(dashSound, context.Player.position, soundVolume);
@@ -105,26 +122,8 @@ public class SwordChargeAction : ActionDefinition
             VfxSpawner.SpawnOneShot(
                 dashTrailVfxPrefab,
                 context.Player.position + Vector3.up * 0.5f,
-                Quaternion.LookRotation(chargeDirection)
+                Quaternion.LookRotation(direction)
             );
-        }
-
-        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
-        float elapsed = 0f;
-        float speed = chargeDistance / Mathf.Max(0.01f, chargeMoveDuration);
-
-        while (elapsed < chargeMoveDuration)
-        {
-            float dt = Time.deltaTime;
-            elapsed += dt;
-
-            Vector3 moveDelta = chargeDirection * speed * dt;
-            moveDelta += Vector3.down * (9.81f * dt);
-
-            cc.Move(moveDelta);
-            PerformChargeDamage(context, chargeDirection, damagedTargets);
-
-            yield return null;
         }
     }
 
@@ -135,6 +134,7 @@ public class SwordChargeAction : ActionDefinition
     )
     {
         Vector3 checkOrigin = context.Player.position + chargeDirection * 0.8f + Vector3.up * 0.8f;
+
         Collider[] hits = Physics.OverlapSphere(
             checkOrigin,
             hitRadius,
@@ -142,23 +142,25 @@ public class SwordChargeAction : ActionDefinition
             QueryTriggerInteraction.Ignore
         );
 
-        for (int i = 0; i < hits.Length; i++)
+        foreach (Collider hitCol in hits)
         {
-            Collider hitCol = hits[i];
+            if (hitCol == null)
+                continue;
+
             IDamageable damageable = hitCol.GetComponent<IDamageable>();
 
-            if (damageable != null && damagedTargets.Add(damageable))
-            {
-                Vector3 hitPoint = hitCol.ClosestPoint(checkOrigin);
+            if (damageable == null || !damagedTargets.Add(damageable))
+                continue;
 
-                CombatResolver.ResolveAttackHit(
-                    context.Player.gameObject,
-                    context.WeaponBuffs,
-                    damageable,
-                    damage,
-                    hitPoint
-                );
-            }
+            Vector3 hitPoint = hitCol.ClosestPoint(checkOrigin);
+
+            CombatResolver.ResolveAttackHit(
+                context.Player.gameObject,
+                context.WeaponBuffs,
+                damageable,
+                damage,
+                hitPoint
+            );
         }
     }
 }

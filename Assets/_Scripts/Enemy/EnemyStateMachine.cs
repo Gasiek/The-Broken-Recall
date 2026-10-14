@@ -8,7 +8,8 @@ public enum EnemyState
     Attacking,
     Returning,
     Patrolling,
-    Dead
+    Stunned,
+    Dead,
 }
 
 [RequireComponent(typeof(EnemyController))]
@@ -91,16 +92,27 @@ public class EnemyStateMachine : MonoBehaviour
     {
         if (enemy != null)
             enemy.Died += HandleDeath;
+
+        if (statusEffects != null)
+            statusEffects.StunStateChanged += HandleStunStateChanged;
     }
 
     private void OnDisable()
     {
         if (enemy != null)
             enemy.Died -= HandleDeath;
+
+        if (statusEffects != null)
+            statusEffects.StunStateChanged -= HandleStunStateChanged;
     }
 
     private void Start()
     {
+        if (statusEffects.IsStunned)
+        {
+            ChangeState(EnemyState.Stunned);
+            return;
+        }
         if (CurrentState == EnemyState.Idle && !aggro.HasTarget)
             ChangeState(EnemyState.Patrolling);
     }
@@ -132,17 +144,6 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void Update()
     {
-        if (statusEffects.IsStunned)
-        {
-            if (enemy.Agent != null && !enemy.Agent.isStopped)
-            {
-                enemy.Agent.isStopped = true;
-            }
-
-            enemyAnimation.SetLocomotion(0f);
-            return;
-        }
-
         switch (CurrentState)
         {
             case EnemyState.Idle:
@@ -163,6 +164,9 @@ public class EnemyStateMachine : MonoBehaviour
 
             case EnemyState.Patrolling:
                 UpdatePatrolling();
+                break;
+
+            case EnemyState.Stunned:
                 break;
 
             case EnemyState.Dead:
@@ -391,6 +395,10 @@ public class EnemyStateMachine : MonoBehaviour
                 EnterPatrolling();
                 break;
 
+            case EnemyState.Stunned:
+                EnterStunned();
+                break;
+
             case EnemyState.Dead:
                 EnterDead();
                 break;
@@ -452,6 +460,58 @@ public class EnemyStateMachine : MonoBehaviour
 
         activeAttack = null;
         enemyAnimation.PlayDie();
+    }
+
+    private void HandleStunStateChanged(bool isStunned)
+    {
+        if (CurrentState == EnemyState.Dead)
+            return;
+
+        if (isStunned)
+        {
+            ChangeState(EnemyState.Stunned);
+        }
+        else if (CurrentState == EnemyState.Stunned)
+        {
+            ResumeAfterStun();
+        }
+    }
+
+    private void EnterStunned()
+    {
+        // Cancel gameplay attack first, so its impact callback cannot deal damage.
+        if (activeAttack != null)
+        {
+            activeAttack.CancelAttack();
+            activeAttack = null;
+        }
+
+        if (enemy.Agent != null)
+        {
+            enemy.Agent.isStopped = true;
+            enemy.Agent.ResetPath();
+        }
+
+        enemyAnimation.SetLocomotion(0f);
+        enemyAnimation.SetStunned(true);
+    }
+
+    private void ResumeAfterStun()
+    {
+        enemyAnimation.SetStunned(false);
+
+        if (aggro.HasTarget)
+        {
+            ChangeState(EnemyState.Chasing);
+        }
+        else if (HasReachedHome())
+        {
+            ChangeState(EnemyState.Patrolling);
+        }
+        else
+        {
+            ChangeState(EnemyState.Returning);
+        }
     }
 
     private void HandleDeath()

@@ -7,10 +7,11 @@ using UnityEngine;
 [RequireComponent(typeof(ActionMemory))]
 [RequireComponent(typeof(PlayerActionVisuals))]
 [RequireComponent(typeof(WeaponBuffManager))]
+[RequireComponent(typeof(Health))]
 public class ActionController : MonoBehaviour
 {
     [Header("Action Settings")]
-    [SerializeField]
+    [SerializeField, Min(0f)]
     private float actionCooldown = 0.5f;
 
     private PlayerStateMachine stateMachine;
@@ -19,6 +20,11 @@ public class ActionController : MonoBehaviour
     private PlayerActionVisuals actionVisuals;
     private Health health;
     private WeaponBuffManager weaponBuffs;
+
+    private float nextActionTime;
+    private Coroutine activeActionRoutine;
+    private Coroutine actionExecutionRoutine;
+    private bool isExecutingAction;
 
     public event Action<float> ActionStarted;
 
@@ -34,7 +40,7 @@ public class ActionController : MonoBehaviour
 
     public void ExecuteAction(int slot)
     {
-        if (!stateMachine.CanAct)
+        if (isExecutingAction || !stateMachine.CanAct || Time.time < nextActionTime)
         {
             return;
         }
@@ -42,27 +48,19 @@ public class ActionController : MonoBehaviour
         ActionCardInstance card = actionMemory.GetAction(slot);
 
         if (card == null || card.Definition == null)
-        {
             return;
-        }
 
-        StartCoroutine(ExecuteActionRoutine(slot, card));
-    }
+        if (!stateMachine.StartActing())
+            return;
 
-    private IEnumerator ExecuteActionRoutine(int slot, ActionCardInstance card)
-    {
         ActionDefinition action = card.Definition;
 
-        stateMachine.StartActing();
-
-        Debug.Log($"Started action: {action.DisplayName}");
+        isExecutingAction = true;
+        nextActionTime = Time.time + actionCooldown;
 
         ActionStarted?.Invoke(actionCooldown);
 
-        // Apply cooldown to this copy, not to the shared definition.
         actionMemory.PutOnCooldown(card);
-
-        // Replace the used card immediately.
         actionMemory.ReplaceAction(slot);
 
         ActionContext context = new ActionContext(
@@ -74,11 +72,68 @@ public class ActionController : MonoBehaviour
             weaponBuffs
         );
 
-        // The action runs independently of the input cooldown.
-        StartCoroutine(action.Execute(context));
+        activeActionRoutine = StartCoroutine(ExecuteActionRoutine(action, context));
+    }
 
-        yield return new WaitForSeconds(actionCooldown);
+    private IEnumerator ExecuteActionRoutine(ActionDefinition action, ActionContext context)
+    {
+        bool executionFinished = false;
+
+        actionExecutionRoutine = StartCoroutine(
+            RunAction(action, context, () => executionFinished = true)
+        );
+
+        // Temporary acting-state duration until animation events
+        // become responsible for signaling action completion.
+        yield return new WaitForSeconds(action.Duration);
+
+        // Never allow another action while the previous action's
+        // gameplay coroutine is still running.
+        while (!executionFinished)
+            yield return null;
+
+        FinishCurrentAction();
+    }
+
+    private IEnumerator RunAction(ActionDefinition action, ActionContext context, Action onFinished)
+    {
+        yield return action.Execute(context);
+        onFinished?.Invoke();
+    }
+
+    private void FinishCurrentAction()
+    {
+        actionExecutionRoutine = null;
+        activeActionRoutine = null;
+        isExecutingAction = false;
 
         stateMachine.FinishActing();
+    }
+
+    private void OnDisable()
+    {
+        CancelCurrentAction();
+    }
+
+    public void CancelCurrentAction()
+    {
+        if (actionExecutionRoutine != null)
+        {
+            StopCoroutine(actionExecutionRoutine);
+            actionExecutionRoutine = null;
+        }
+
+        if (activeActionRoutine != null)
+        {
+            StopCoroutine(activeActionRoutine);
+            activeActionRoutine = null;
+        }
+
+        // Always restore movement, even if no action coroutine is running.
+        playerMovement.CancelChargeMovement();
+        playerMovement.SetMovementOverridden(false);
+
+        isExecutingAction = false;
+        stateMachine?.FinishActing();
     }
 }

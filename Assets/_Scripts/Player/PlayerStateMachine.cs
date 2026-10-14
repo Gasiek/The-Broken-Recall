@@ -15,14 +15,15 @@ public class PlayerStateMachine : MonoBehaviour
 
     public bool CanSleep => CurrentState == PlayerState.Normal;
 
-    public void StartActing()
+    public bool StartActing()
     {
         if (!CanAct)
         {
-            return;
+            return false;
         }
 
         CurrentState = PlayerState.Acting;
+        return true;
     }
 
     public void FinishActing()
