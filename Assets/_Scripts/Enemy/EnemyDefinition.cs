@@ -4,54 +4,36 @@ using UnityEngine;
 public class EnemyDefinition : ScriptableObject
 {
     [Header("Stats")]
-    [SerializeField]
+    [SerializeField, Min(1)]
     private int maxHealth = 100;
 
-    [SerializeField]
+    [Header("Movement")]
+    [SerializeField, Min(0f)]
     private float moveSpeed = 3.5f;
 
-    [SerializeField]
+    [SerializeField, Min(0f)]
     private float patrolSpeed = 2f;
 
-    [Header("Attack")]
+    [Header("Attacks")]
     [SerializeField]
-    private int attackDamage = 10;
-
-    [SerializeField]
-    private float attackCooldown = 1f;
-
-    [SerializeField]
-    private float attackRange = 1.5f;
-
-    [SerializeField]
-    private float attackRadius = 0.35f;
-
-    [SerializeField]
-    private float attackDelay = 0.2f;
-
-    [Header("Ranged Attack")]
-    [SerializeField]
-    private float rangedAttackRange = 8f;
-
-    [SerializeField]
-    private GameObject projectilePrefab;
-
-    [SerializeField]
-    private float projectileSpeed = 10f;
-
-    [SerializeField]
-    private float projectileLifetime = 10f;
+    private AttackDefinition[] attacks = new AttackDefinition[0];
 
     public int MaxHealth => maxHealth;
     public float MoveSpeed => moveSpeed;
     public float PatrolSpeed => patrolSpeed;
-    public int AttackDamage => attackDamage;
-    public float AttackCooldown => attackCooldown;
-    public float AttackRange => attackRange;
-    public float AttackRadius => attackRadius;
-    public float AttackDelay => attackDelay;
-    public float RangedAttackRange => rangedAttackRange;
-    public GameObject ProjectilePrefab => projectilePrefab;
-    public float ProjectileSpeed => projectileSpeed;
-    public float ProjectileLifetime => projectileLifetime;
+    public AttackDefinition[] Attacks => attacks;
+
+    private void OnValidate()
+    {
+        if (attacks == null)
+            attacks = new AttackDefinition[0];
+
+        for (int i = 0; i < attacks.Length; i++)
+        {
+            if (attacks[i] == null)
+            {
+                Debug.LogWarning($"{name}: Attack slot {i} is empty.", this);
+            }
+        }
+    }
 }

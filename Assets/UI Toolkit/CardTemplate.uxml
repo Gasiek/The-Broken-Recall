@@ -1,0 +1,10 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/common-styles.uss?fileID=7433441132597879392&amp;guid=f5a483d70588545eeabe7eb35fd0f894&amp;type=3#common-styles"/>
+    <ui:Button name="ActionButton" class="removal-card-item">
+        <ui:Label name="Name" text="Action Name" class="ability-card-title" style="font-size: 20px;"/>
+        <ui:VisualElement class="removal-card-icon-frame">
+            <ui:Image name="Icon" class="ability-card-icon"/>
+        </ui:VisualElement>
+        <ui:Label name="Description" text="Description text..." class="removal-card-description-direct"/>
+    </ui:Button>
+</ui:UXML>

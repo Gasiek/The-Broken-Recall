@@ -7,10 +7,11 @@ using UnityEngine;
 [RequireComponent(typeof(ActionMemory))]
 [RequireComponent(typeof(PlayerActionVisuals))]
 [RequireComponent(typeof(WeaponBuffManager))]
+[RequireComponent(typeof(Health))]
 public class ActionController : MonoBehaviour
 {
     [Header("Action Settings")]
-    [SerializeField]
+    [SerializeField, Min(0f)]
     private float actionCooldown = 0.5f;
 
     private PlayerStateMachine stateMachine;
@@ -19,6 +20,12 @@ public class ActionController : MonoBehaviour
     private PlayerActionVisuals actionVisuals;
     private Health health;
     private WeaponBuffManager weaponBuffs;
+
+    private float nextActionTime;
+    private Coroutine activeActionRoutine;
+    private Coroutine actionExecutionRoutine;
+    private bool isExecutingAction;
+
     public event Action<float> ActionStarted;
 
     private void Awake()
@@ -33,34 +40,27 @@ public class ActionController : MonoBehaviour
 
     public void ExecuteAction(int slot)
     {
-        // Player must be in a state where actions are allowed.
-        // This also prevents actions during the cooldown.
-        if (!stateMachine.CanAct)
+        if (isExecutingAction || !stateMachine.CanAct || Time.time < nextActionTime)
         {
             return;
         }
 
-        ActionDefinition action = actionMemory.GetAction(slot);
+        ActionCardInstance card = actionMemory.GetAction(slot);
 
-        if (action == null)
-        {
+        if (card == null || card.Definition == null)
             return;
-        }
 
-        StartCoroutine(ExecuteActionRoutine(slot, action));
-    }
+        if (!stateMachine.StartActing())
+            return;
 
-    private IEnumerator ExecuteActionRoutine(int slot, ActionDefinition action)
-    {
-        // Lock action/dash input for the cooldown duration.
-        stateMachine.StartActing();
+        ActionDefinition action = card.Definition;
 
-        Debug.Log($"Started action: {action.DisplayName}");
+        isExecutingAction = true;
+        nextActionTime = Time.time + actionCooldown;
 
-        // Tell the UI to start the global action cooldown.
         ActionStarted?.Invoke(actionCooldown);
 
-        // Immediately replace the used action in memory.
+        actionMemory.PutOnCooldown(card);
         actionMemory.ReplaceAction(slot);
 
         ActionContext context = new ActionContext(
@@ -72,15 +72,68 @@ public class ActionController : MonoBehaviour
             weaponBuffs
         );
 
-        // Start the actual action independently.
-        // We intentionally do NOT yield here because the action
-        // may have a much longer duration than the cooldown.
-        StartCoroutine(action.Execute(context));
+        activeActionRoutine = StartCoroutine(ExecuteActionRoutine(action, context));
+    }
 
-        // Acting only lasts for the global action cooldown.
-        yield return new WaitForSeconds(actionCooldown);
+    private IEnumerator ExecuteActionRoutine(ActionDefinition action, ActionContext context)
+    {
+        bool executionFinished = false;
 
-        // Player can now start another action or dash.
+        actionExecutionRoutine = StartCoroutine(
+            RunAction(action, context, () => executionFinished = true)
+        );
+
+        // Temporary acting-state duration until animation events
+        // become responsible for signaling action completion.
+        yield return new WaitForSeconds(action.Duration);
+
+        // Never allow another action while the previous action's
+        // gameplay coroutine is still running.
+        while (!executionFinished)
+            yield return null;
+
+        FinishCurrentAction();
+    }
+
+    private IEnumerator RunAction(ActionDefinition action, ActionContext context, Action onFinished)
+    {
+        yield return action.Execute(context);
+        onFinished?.Invoke();
+    }
+
+    private void FinishCurrentAction()
+    {
+        actionExecutionRoutine = null;
+        activeActionRoutine = null;
+        isExecutingAction = false;
+
         stateMachine.FinishActing();
+    }
+
+    private void OnDisable()
+    {
+        CancelCurrentAction();
+    }
+
+    public void CancelCurrentAction()
+    {
+        if (actionExecutionRoutine != null)
+        {
+            StopCoroutine(actionExecutionRoutine);
+            actionExecutionRoutine = null;
+        }
+
+        if (activeActionRoutine != null)
+        {
+            StopCoroutine(activeActionRoutine);
+            activeActionRoutine = null;
+        }
+
+        // Always restore movement, even if no action coroutine is running.
+        playerMovement.CancelChargeMovement();
+        playerMovement.SetMovementOverridden(false);
+
+        isExecutingAction = false;
+        stateMachine?.FinishActing();
     }
 }

@@ -5,44 +5,56 @@ using UnityEngine;
 public class ActionCollection : MonoBehaviour
 {
     [SerializeField]
-    private List<ActionDefinition> actions = new();
+    private List<ActionCardInstance> actions = new();
 
-    public IReadOnlyList<ActionDefinition> Actions => actions;
+    public IReadOnlyList<ActionCardInstance> Actions => actions;
 
     public event Action Changed;
 
-    public bool Contains(ActionDefinition action)
+    public bool Contains(ActionCardInstance card)
     {
-        return actions.Contains(action);
+        return card != null && actions.Contains(card);
     }
 
-    public void Add(ActionDefinition action)
+    public void Add(ActionDefinition definition)
     {
-        if (action == null)
+        if (definition == null)
         {
-            Debug.LogWarning("Tried to add a null action.");
+            Debug.LogWarning("Tried to add a null action definition.");
             return;
         }
 
-        if (actions.Contains(action))
-        {
-            Debug.LogWarning($"Action '{action.DisplayName}' is already known.");
-
-            return;
-        }
-
-        actions.Add(action);
+        actions.Add(new ActionCardInstance(definition));
         Changed?.Invoke();
     }
 
-    public bool Remove(ActionDefinition action)
+    public bool Add(ActionCardInstance card)
     {
-        if (action == null)
+        if (card == null || card.Definition == null)
+        {
+            Debug.LogWarning("Tried to add an invalid action card.");
+            return false;
+        }
+
+        if (actions.Contains(card))
+        {
+            Debug.LogWarning("This card instance is already in the collection.");
+            return false;
+        }
+
+        actions.Add(card);
+        Changed?.Invoke();
+        return true;
+    }
+
+    public bool Remove(ActionCardInstance card)
+    {
+        if (card == null)
         {
             return false;
         }
 
-        bool removed = actions.Remove(action);
+        bool removed = actions.Remove(card);
 
         if (removed)
         {
@@ -52,17 +64,14 @@ public class ActionCollection : MonoBehaviour
         return removed;
     }
 
-    public ActionDefinition GetRandomAction()
+    public ActionCardInstance GetRandomAction()
     {
         if (actions.Count == 0)
         {
             Debug.LogWarning("Cannot get a random action: collection is empty.");
-
             return null;
         }
 
-        int index = UnityEngine.Random.Range(0, actions.Count);
-
-        return actions[index];
+        return actions[UnityEngine.Random.Range(0, actions.Count)];
     }
 }

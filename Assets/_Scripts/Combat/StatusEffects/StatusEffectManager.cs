@@ -11,6 +11,7 @@ public class StatusEffectManager : MonoBehaviour
         public StatusEffectDefinition Definition;
         public Coroutine Coroutine;
         public ParticleSystem VfxInstance;
+        public GameObject VisualInstance;
         public float RemainingTime;
     }
 
@@ -26,6 +27,9 @@ public class StatusEffectManager : MonoBehaviour
 
     private float defaultNavSpeed;
     private bool hasRecordedDefaultNavSpeed;
+
+    public bool IsStunned { get; private set; }
+    public event System.Action<bool> StunStateChanged;
 
     private void Awake()
     {
@@ -84,10 +88,19 @@ public class StatusEffectManager : MonoBehaviour
             Vector3.up * 0.8f
         );
 
+        GameObject visualInstance = null;
+        if (definition.VisualPrefab != null)
+        {
+            visualInstance = Instantiate(definition.VisualPrefab, transform);
+            visualInstance.transform.localPosition = definition.VisualOffset;
+            visualInstance.transform.localRotation = Quaternion.identity;
+        }
+
         ActiveEffect effect = new ActiveEffect
         {
             Definition = definition,
             VfxInstance = vfxInstance,
+            VisualInstance = visualInstance,
             RemainingTime = definition.Duration,
         };
 
@@ -119,16 +132,7 @@ public class StatusEffectManager : MonoBehaviour
                 {
                     tickTimer -= tickInterval;
 
-                    if (definition.DamagePerTick > 0)
-                    {
-                        health.TakeDamage(definition.DamagePerTick);
-
-                        // Damage may have killed the target.
-                        if (health.IsDead)
-                            break;
-
-                        PlaySound(definition.TickSound, definition.SoundVolume);
-                    }
+                    ApplyTickDamage(definition);
                 }
             }
 
@@ -140,9 +144,20 @@ public class StatusEffectManager : MonoBehaviour
         RemoveEffect(effectId);
     }
 
+    private void ApplyTickDamage(StatusEffectDefinition definition)
+    {
+        if (definition.DamagePerTick <= 0)
+            return;
+
+        health.TakeDamage(definition.DamagePerTick);
+
+        PlaySound(definition.TickSound, definition.SoundVolume);
+    }
+
     private static bool IsDamageOverTime(StatusEffectType effectType)
     {
-        return effectType == StatusEffectType.Burn || effectType == StatusEffectType.Poison;
+        return effectType == StatusEffectType.Burn
+            || effectType == StatusEffectType.Poison;
     }
 
     private static bool IsMovementEffect(StatusEffectType effectType)
@@ -169,6 +184,12 @@ public class StatusEffectManager : MonoBehaviour
             effect.VfxInstance = null;
         }
 
+        if (effect.VisualInstance != null)
+        {
+            Destroy(effect.VisualInstance);
+            effect.VisualInstance = null;
+        }
+
         activeEffects.Remove(effectId);
 
         UpdateSpeedModifiers();
@@ -177,10 +198,16 @@ public class StatusEffectManager : MonoBehaviour
     private void UpdateSpeedModifiers()
     {
         float lowestSpeedMultiplier = 1f;
+        bool currentlyStunned = false;
 
         foreach (ActiveEffect effect in activeEffects.Values)
         {
             StatusEffectDefinition definition = effect.Definition;
+
+            if (definition.EffectType == StatusEffectType.Stun || definition.EffectType == StatusEffectType.Freeze)
+            {
+                currentlyStunned = true;
+            }
 
             if (IsMovementEffect(definition.EffectType))
             {
@@ -191,9 +218,23 @@ public class StatusEffectManager : MonoBehaviour
             }
         }
 
-        if (navAgent != null && hasRecordedDefaultNavSpeed)
+        if (IsStunned != currentlyStunned)
+        {
+            IsStunned = currentlyStunned;
+            StunStateChanged?.Invoke(IsStunned);
+        }
+
+        if (navAgent != null && hasRecordedDefaultNavSpeed && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
         {
             navAgent.speed = defaultNavSpeed * lowestSpeedMultiplier;
+            if (IsStunned)
+            {
+                navAgent.isStopped = true;
+            }
+            else if (navAgent.isStopped && lowestSpeedMultiplier > 0f)
+            {
+                navAgent.isStopped = false;
+            }
         }
 
         if (playerMovement != null)
@@ -224,6 +265,9 @@ public class StatusEffectManager : MonoBehaviour
 
             if (effect.VfxInstance != null)
                 VfxSpawner.StopAndDestroy(effect.VfxInstance);
+
+            if (effect.VisualInstance != null)
+                Destroy(effect.VisualInstance);
         }
 
         activeEffects.Clear();

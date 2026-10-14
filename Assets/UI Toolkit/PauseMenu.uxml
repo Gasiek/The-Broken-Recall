@@ -1,70 +1,29 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI%20Toolkit/common-styles.uss?fileID=7433441132597879392&amp;guid=f5a483d70588545eeabe7eb35fd0f894&amp;type=3#common-styles"/>
+    
     <ui:VisualElement name="PauseMenu" enabled="true" class="backdrop" style="flex-grow: 1; visibility: hidden;">
+        <!-- Standard Pause Buttons Section -->
         <ui:VisualElement name="Buttons" class="buttons" style="flex-grow: 1;">
             <ui:Button text="Resume" name="ResumeButton" class="button"/>
             <ui:Button text="Cards" name="CardsButton" class="button"/>
             <ui:Button text="Quit" name="QuitButton" class="button"/>
         </ui:VisualElement>
-        <ui:VisualElement name="CardsSection" class="panel cards-panel" style="display: none; min-width: 760px; min-height: 520px; position: absolute; align-items: center; justify-content: flex-start; padding: 20px 24px 20px 24px;">
-            <ui:Button name="CardsBackButton" class="back-button" style="position: absolute; top: 16px; left: 16px;">
-                <ui:VisualElement class="back-button-icon" picking-mode="Ignore"/>
-            </ui:Button>
-            <ui:Label text="CARDS" class="title" style="margin-top: 4px; margin-bottom: 12px; -unity-font-definition: url(&apos;project://database/Assets/TextMesh%20Pro/Examples%20&amp;%20Extras/Fonts/Bangers.ttf?fileID=12800000&amp;guid=5dd49b3eacc540408c98eee0de38e0f1&amp;type=3#Bangers&apos;); font-size: 50px; color: rgb(255, 255, 255); -unity-text-outline-width: 2px; -unity-text-outline-color: rgb(0, 0, 0); letter-spacing: 2px;"/>
+
+        <!-- Cards Section Fullscreen Design -->
+        <ui:VisualElement name="CardsSection" class="fullscreen-action-panel" style="display: none;">
             
-            <ui:VisualElement name="CarouselArea" style="flex-direction: row; align-items: center; justify-content: center; width: 100%; flex-grow: 1;">
-                <ui:Button name="PrevCardButton" text="◀" class="carousel-nav-button"/>
-                
-                <ui:VisualElement name="CarouselStage" class="carousel-stage">
-                    <!-- Left Card (previous card in loop, tucked behind middle card) -->
-                    <ui:VisualElement name="LeftCard" class="ability-card ability-card-side ability-card-left">
-                        <ui:Label name="LeftCardTitle" class="ability-card-title"/>
-                        <ui:VisualElement class="ability-card-art-frame">
-                            <ui:Image name="LeftCardIcon" class="ability-card-icon"/>
-                        </ui:VisualElement>
-                    </ui:VisualElement>
+            <!-- Title pinned to top -->
+            <ui:Label text="CARDS" class="action-panel-title"/>
+            
+            <!-- ScrollView reusing our safe height and spacing -->
+            <ui:ScrollView name="ScrollView" mode="Vertical" class="remove-action-scroll">
+                <!-- Grid Container that wraps cards into 4 columns and aligns left -->
+                <ui:VisualElement name="CardContainer" class="remove-action-grid"/>
+            </ui:ScrollView>
 
-                    <!-- Right Card (next card in loop, tucked behind middle card) -->
-                    <ui:VisualElement name="RightCard" class="ability-card ability-card-side ability-card-right">
-                        <ui:Label name="RightCardTitle" class="ability-card-title"/>
-                        <ui:VisualElement class="ability-card-art-frame">
-                            <ui:Image name="RightCardIcon" class="ability-card-icon"/>
-                        </ui:VisualElement>
-                    </ui:VisualElement>
-
-                    <!-- Middle Card (active card, ALWAYS in the center, rendered on top) -->
-                    <ui:VisualElement name="MiddleCard" class="ability-card ability-card-middle">
-                        <!-- Front Face -->
-                        <ui:VisualElement name="MiddleCardFront" class="ability-card-face">
-                            <ui:Label name="MiddleCardTitle" class="ability-card-title"/>
-                            <ui:VisualElement class="ability-card-art-frame">
-                                <ui:Image name="MiddleCardIcon" class="ability-card-icon"/>
-                            </ui:VisualElement>
-                        </ui:VisualElement>
-
-                        <!-- Back Face (hidden by default) -->
-                        <ui:VisualElement name="MiddleCardBack" class="ability-card-face" style="display: none;">
-                            <ui:Label name="MiddleCardBackTitle" class="ability-card-title"/>
-                            <ui:VisualElement class="ability-card-back-frame">
-                                <ui:Label name="MiddleCardDescription" class="ability-card-description"/>
-                            </ui:VisualElement>
-                        </ui:VisualElement>
-
-                        <!-- Flip Button in top-right corner -->
-                        <ui:Button name="MiddleCardFlipButton" class="card-flip-button">
-                            <ui:VisualElement class="card-flip-button-icon" picking-mode="Ignore"/>
-                        </ui:Button>
-                    </ui:VisualElement>
-
-                    <!-- Empty state label -->
-                    <ui:Label name="NoCardsLabel" text="No cards available" class="action-name" style="position: absolute; display: none; color: rgb(255, 255, 255); -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(0, 0, 0); font-size: 28px;"/>
-                </ui:VisualElement>
-
-                <ui:Button name="NextCardButton" text="▶" class="carousel-nav-button"/>
-            </ui:VisualElement>
-
-            <!-- Card Counter indicator -->
-            <ui:Label name="CardCounter" text="0 / 0" class="card-counter"/>
+            <!-- Back Button pinned to bottom -->
+            <ui:Button name="CardsBackButton" text="Back" class="dialog-button button action-panel-cancel-button"/>
+            
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

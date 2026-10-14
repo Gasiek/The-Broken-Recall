@@ -18,6 +18,7 @@ public class Bed : MonoBehaviour, IInteractable
 
     [SerializeField, Range(0f, 1f)]
     private float yawnVolume = 1f;
+    private ActionMemory actionMemory;
 
     private ScreenFader screenFader;
 
@@ -39,6 +40,7 @@ public class Bed : MonoBehaviour, IInteractable
         return player != null
             && player.Health != null
             && player.StateMachine != null
+            && player.ActionMemory != null
             && screenFader != null
             && AudioManager.Instance != null
             && player.StateMachine.CanSleep;
@@ -58,7 +60,7 @@ public class Bed : MonoBehaviour, IInteractable
         }
 
         player.StateMachine.StartSleeping();
-
+        actionMemory = player.ActionMemory;
         screenFader.SleepSequence(
             fadeOutDuration,
             sleepDuration,
@@ -70,10 +72,14 @@ public class Bed : MonoBehaviour, IInteractable
     private void FinishRest(Player player)
     {
         if (player == null)
+        {
             return;
+        }
 
         PlayYawnSound(player);
         RestoreHealth(player);
+
+        actionMemory.ResetCooldownsAndReshuffle();
 
         if (player.StateMachine != null)
         {
@@ -84,7 +90,9 @@ public class Bed : MonoBehaviour, IInteractable
     private void PlayYawnSound(Player player)
     {
         if (yawnSound == null || AudioManager.Instance == null)
+        {
             return;
+        }
 
         AudioManager.Instance.PlayWorldSFX(yawnSound, player.transform.position, yawnVolume);
     }
@@ -92,12 +100,16 @@ public class Bed : MonoBehaviour, IInteractable
     private void RestoreHealth(Player player)
     {
         if (player.Health == null)
+        {
             return;
+        }
 
         int missingHealth = player.Health.MaxHealth - player.Health.CurrentHealth;
 
         if (missingHealth <= 0)
+        {
             return;
+        }
 
         player.Health.Heal(missingHealth);
 

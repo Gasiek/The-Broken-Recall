@@ -77,7 +77,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7baa58e4a157c4fee918bb4cde5b8f76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeacherNPC
-  actionToTeach: {fileID: 0}
-  actionCollection: {fileID: 0}
+  actionsToTeach:
+  - {fileID: 11400000, guid: 59c8d1e2a34b4c7d8e9f0123456789ab, type: 2}
+  - {fileID: 11400000, guid: 4ded916a11731426389cfff2e0d5992e, type: 2}
+  - {fileID: 11400000, guid: e7f8a9b0c1d234567890abcdef123456, type: 2}
   skillLearnUI: {fileID: 0}
-  completedInteractionTexts: []
+  completedInteractionTexts:
+  - Go practice
+  - Go kill some goblins
+  - Kill them all
