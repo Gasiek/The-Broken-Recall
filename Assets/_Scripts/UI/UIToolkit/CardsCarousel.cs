@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -16,6 +17,7 @@ public class CardsCarousel
 
     private Button prevCardButton;
     private Button nextCardButton;
+
     private Label cardCounter;
     private Label noCardsLabel;
 
@@ -28,10 +30,13 @@ public class CardsCarousel
     private VisualElement middleCard;
     private Label middleCardTitle;
     private Image middleCardIcon;
+
     private VisualElement middleCardFront;
     private VisualElement middleCardBack;
+
     private Label middleCardBackTitle;
     private Label middleCardDescription;
+
     private Button middleCardFlipButton;
 
     // Right card
@@ -40,6 +45,7 @@ public class CardsCarousel
     private Image rightCardIcon;
 
     private int currentCardIndex;
+
     private bool isAnimating;
     private bool isFlipped;
     private bool isFlipping;
@@ -62,12 +68,12 @@ public class CardsCarousel
         if (root == null)
         {
             Debug.LogError("CardsCarousel.Initialize received a null root.");
-
             return;
         }
 
         prevCardButton = root.Q<Button>("PrevCardButton");
         nextCardButton = root.Q<Button>("NextCardButton");
+
         cardCounter = root.Q<Label>("CardCounter");
         noCardsLabel = root.Q<Label>("NoCardsLabel");
 
@@ -89,10 +95,13 @@ public class CardsCarousel
         {
             middleCardTitle = middleCard.Q<Label>("MiddleCardTitle");
             middleCardIcon = middleCard.Q<Image>("MiddleCardIcon");
+
             middleCardFront = middleCard.Q<VisualElement>("MiddleCardFront");
             middleCardBack = middleCard.Q<VisualElement>("MiddleCardBack");
+
             middleCardBackTitle = middleCard.Q<Label>("MiddleCardBackTitle");
             middleCardDescription = middleCard.Q<Label>("MiddleCardDescription");
+
             middleCardFlipButton = middleCard.Q<Button>("MiddleCardFlipButton");
 
             if (middleCardFlipButton != null)
@@ -168,6 +177,7 @@ public class CardsCarousel
 
         prevCardButton = null;
         nextCardButton = null;
+
         cardCounter = null;
         noCardsLabel = null;
 
@@ -176,14 +186,20 @@ public class CardsCarousel
 
         middleCardTitle = null;
         middleCardIcon = null;
+
         middleCardFront = null;
         middleCardBack = null;
+
         middleCardBackTitle = null;
         middleCardDescription = null;
         middleCardFlipButton = null;
 
         rightCardTitle = null;
         rightCardIcon = null;
+
+        leftCard = null;
+        rightCard = null;
+        middleCard = null;
     }
 
     private void HandleLeftCardClicked(ClickEvent evt)
@@ -200,6 +216,7 @@ public class CardsCarousel
     {
         currentCardIndex = 0;
         ResetFlipState();
+        Refresh();
     }
 
     public void Flip()
@@ -292,6 +309,7 @@ public class CardsCarousel
     {
         isFlipped = false;
         isFlipping = false;
+
         UpdateFlipVisuals();
     }
 
@@ -328,6 +346,13 @@ public class CardsCarousel
         {
             slideCoroutine = coroutineRunner.StartCoroutine(AnimateCardSlide(1));
         }
+        else
+        {
+            int count = actionCollection.Actions.Count;
+            currentCardIndex = (currentCardIndex - 1 + count) % count;
+            ResetFlipState();
+            Refresh();
+        }
     }
 
     public void Next()
@@ -350,11 +375,19 @@ public class CardsCarousel
         {
             slideCoroutine = coroutineRunner.StartCoroutine(AnimateCardSlide(-1));
         }
+        else
+        {
+            int count = actionCollection.Actions.Count;
+            currentCardIndex = (currentCardIndex + 1) % count;
+            ResetFlipState();
+            Refresh();
+        }
     }
 
     public void Refresh()
     {
-        var actions = actionCollection != null ? actionCollection.Actions : null;
+        IReadOnlyList<ActionCardInstance> actions =
+            actionCollection != null ? actionCollection.Actions : null;
 
         int count = actions != null ? actions.Count : 0;
 
@@ -364,31 +397,47 @@ public class CardsCarousel
             ResetCardTransformStyles();
 
             if (leftCard != null)
+            {
                 leftCard.style.display = DisplayStyle.None;
+            }
 
             if (middleCard != null)
+            {
                 middleCard.style.display = DisplayStyle.None;
+            }
 
             if (rightCard != null)
+            {
                 rightCard.style.display = DisplayStyle.None;
+            }
 
             if (noCardsLabel != null)
+            {
                 noCardsLabel.style.display = DisplayStyle.Flex;
+            }
 
             if (cardCounter != null)
+            {
                 cardCounter.text = "0 / 0";
+            }
 
             if (prevCardButton != null)
+            {
                 prevCardButton.SetEnabled(false);
+            }
 
             if (nextCardButton != null)
+            {
                 nextCardButton.SetEnabled(false);
+            }
 
             return;
         }
 
         if (noCardsLabel != null)
+        {
             noCardsLabel.style.display = DisplayStyle.None;
+        }
 
         currentCardIndex = ((currentCardIndex % count) + count) % count;
 
@@ -400,10 +449,14 @@ public class CardsCarousel
         bool canNavigate = count > 1;
 
         if (prevCardButton != null)
+        {
             prevCardButton.SetEnabled(canNavigate);
+        }
 
         if (nextCardButton != null)
+        {
             nextCardButton.SetEnabled(canNavigate);
+        }
 
         // Middle card
         if (middleCard != null)
@@ -411,14 +464,17 @@ public class CardsCarousel
             middleCard.style.display = DisplayStyle.Flex;
             middleCard.style.visibility = Visibility.Visible;
 
-            ActionDefinition currentAction = actions[currentCardIndex];
+            ActionCardInstance currentCard = actions[currentCardIndex];
+            ActionDefinition currentAction = currentCard?.Definition;
 
             PopulateCard(middleCardTitle, middleCardIcon, currentAction);
 
             string title = GetActionTitle(currentAction);
 
             if (middleCardBackTitle != null)
+            {
                 middleCardBackTitle.text = title;
+            }
 
             if (middleCardDescription != null)
             {
@@ -437,7 +493,7 @@ public class CardsCarousel
 
                 int previousIndex = (currentCardIndex - 1 + count) % count;
 
-                PopulateCard(leftCardTitle, leftCardIcon, actions[previousIndex]);
+                PopulateCard(leftCardTitle, leftCardIcon, actions[previousIndex]?.Definition);
             }
             else
             {
@@ -455,7 +511,7 @@ public class CardsCarousel
 
                 int nextIndex = (currentCardIndex + 1) % count;
 
-                PopulateCard(rightCardTitle, rightCardIcon, actions[nextIndex]);
+                PopulateCard(rightCardTitle, rightCardIcon, actions[nextIndex]?.Definition);
             }
             else
             {
@@ -464,13 +520,16 @@ public class CardsCarousel
         }
 
         middleCard?.BringToFront();
+
         UpdateFlipVisuals();
     }
 
     private static string GetActionTitle(ActionDefinition action)
     {
         if (action == null)
+        {
             return string.Empty;
+        }
 
         return !string.IsNullOrEmpty(action.DisplayName) ? action.DisplayName : action.name;
     }
@@ -483,7 +542,9 @@ public class CardsCarousel
         }
 
         if (iconImage == null)
+        {
             return;
+        }
 
         Sprite icon = action != null ? action.Icon : null;
 
@@ -494,10 +555,12 @@ public class CardsCarousel
     private IEnumerator AnimateCardSlide(int direction)
     {
         ResetFlipState();
+
         isAnimating = true;
 
         float elapsed = 0f;
         float targetOffset = CardSlideDistance * direction;
+
         bool swappedLayers = false;
 
         VisualElement incomingCard = direction < 0 ? rightCard : leftCard;
@@ -630,7 +693,9 @@ public class CardsCarousel
     private static void ResetCardTransform(VisualElement card)
     {
         if (card == null)
+        {
             return;
+        }
 
         card.style.translate = StyleKeyword.Null;
         card.style.scale = StyleKeyword.Null;
@@ -652,6 +717,7 @@ public class CardsCarousel
         }
 
         isAnimating = false;
+
         ResetFlipVisuals();
         ResetCardTransformStyles();
 

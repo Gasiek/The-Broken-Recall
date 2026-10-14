@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -10,22 +11,25 @@ public class SkillLearnUI : MonoBehaviour
     [SerializeField]
     private PlayerInput playerInput;
 
-    private PanelRenderer panelRenderer;
+    [SerializeField]
+    private VisualTreeAsset cardTemplate;
 
+    private PanelRenderer panelRenderer;
     private VisualElement backdrop;
-    private Button yesButton;
-    private Button noButton;
-    private Image actionIcon;
-    private Label actionName;
+    private VisualElement cardContainer;
+    private Button cancelButton;
 
     private TeacherNPC currentTeacher;
-
     private bool isOpen;
 
     private void OnEnable()
     {
         panelRenderer = GetComponent<PanelRenderer>();
-        panelRenderer.RegisterUIReloadCallback(OnUIReload);
+
+        if (panelRenderer != null)
+        {
+            panelRenderer.RegisterUIReloadCallback(OnUIReload);
+        }
     }
 
     private void OnDisable()
@@ -36,74 +40,122 @@ public class SkillLearnUI : MonoBehaviour
         }
     }
 
-    private void OnUIReload(PanelRenderer panelRenderer, VisualElement root, int version)
+    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
         backdrop = root.Q<VisualElement>("Backdrop");
-        yesButton = root.Q<Button>("ButtonYes");
-        noButton = root.Q<Button>("ButtonNo");
-        actionIcon = root.Q<Image>("ActionIcon");
-        actionName = root.Q<Label>("ActionName");
+        cardContainer = root.Q<VisualElement>("CardContainer");
+        cancelButton = root.Q<Button>("CancelButton");
 
-        yesButton.clicked += HandleYesClicked;
-        noButton.clicked += HandleNoClicked;
+        if (cancelButton != null)
+        {
+            cancelButton.clicked += HandleCancelClicked;
+        }
 
         Hide();
     }
 
-    public void Show(TeacherNPC teacher, ActionDefinition action)
+    public void Show(TeacherNPC teacher, List<ActionDefinition> choices)
     {
         if (isOpen)
         {
             return;
         }
 
-        if (teacher == null)
+        if (teacher == null || choices == null || choices.Count == 0)
         {
-            Debug.LogWarning("Cannot show SkillLearnUI without a teacher.");
+            Debug.LogWarning("Cannot show SkillLearnUI without a teacher and action choices.");
             return;
         }
 
-        if (action == null)
+        if (cameraFollow == null || playerInput == null)
         {
-            Debug.LogWarning("Cannot show SkillLearnUI without an action.");
+            Debug.LogWarning("SkillLearnUI is missing CameraFollow or PlayerInput.");
             return;
         }
 
-        if (cameraFollow == null)
+        if (cardTemplate == null)
         {
-            Debug.LogWarning("SkillLearnUI has no CameraFollow assigned.");
+            Debug.LogWarning("SkillLearnUI is missing cardTemplate reference.");
             return;
         }
 
-        if (playerInput == null)
+        if (backdrop == null || cardContainer == null || cancelButton == null)
         {
-            Debug.LogWarning("SkillLearnUI has no PlayerInput assigned.");
+            Debug.LogWarning("SkillLearnUI has not initialized its UI elements.");
             return;
         }
 
         currentTeacher = teacher;
 
-        actionName.text = action.DisplayName;
-
-        if (action.Icon != null)
-        {
-            actionIcon.image = action.Icon.texture;
-        }
-        else
-        {
-            actionIcon.image = null;
-        }
+        // Populate the 3 action cards
+        PopulateCards(choices);
 
         isOpen = true;
-
         Time.timeScale = 0f;
+
         playerInput.SwitchCurrentActionMap("UI");
         cameraFollow.OnPause();
 
         backdrop.style.display = DisplayStyle.Flex;
         backdrop.style.visibility = Visibility.Visible;
 
-        yesButton.Focus();
+        cancelButton.Focus();
+    }
+
+    private void PopulateCards(List<ActionDefinition> choices)
+    {
+        cardContainer.Clear();
+
+        foreach (var actionDef in choices)
+        {
+            if (actionDef == null)
+                continue;
+
+            VisualElement cardElement = cardTemplate.Instantiate();
+            Button button = cardElement.Q<Button>("ActionButton");
+            Label nameLabel = cardElement.Q<Label>("Name");
+            Image iconImage = cardElement.Q<Image>("Icon");
+            Label descLabel = cardElement.Q<Label>("Description");
+
+            if (nameLabel != null)
+            {
+                nameLabel.text = actionDef.DisplayName;
+            }
+
+            if (iconImage != null)
+            {
+                iconImage.image = actionDef.Icon != null ? actionDef.Icon.texture : null;
+            }
+
+            if (descLabel != null)
+            {
+                descLabel.text = actionDef.GetDescription();
+            }
+
+            if (button != null)
+            {
+                ActionDefinition selected = actionDef;
+                button.clicked += () => OnActionSelected(selected);
+            }
+
+            cardContainer.Add(cardElement);
+        }
+    }
+
+    private void OnActionSelected(ActionDefinition selectedAction)
+    {
+        if (currentTeacher == null || selectedAction == null)
+        {
+            return;
+        }
+
+        currentTeacher.LearnAction(selectedAction);
+        Close();
+    }
+
+    private void HandleCancelClicked()
+    {
+        Close();
     }
 
     public void Hide()
@@ -117,49 +169,38 @@ public class SkillLearnUI : MonoBehaviour
         backdrop.style.visibility = Visibility.Hidden;
     }
 
-    private void HandleYesClicked()
-    {
-        if (currentTeacher == null)
-        {
-            return;
-        }
-
-        currentTeacher.LearnAction();
-
-        Close();
-    }
-
-    private void HandleNoClicked()
-    {
-        Close();
-    }
-
     private void Close()
     {
         Hide();
+
+        if (cardContainer != null)
+        {
+            cardContainer.Clear();
+        }
 
         currentTeacher = null;
         isOpen = false;
 
         Time.timeScale = 1f;
-        playerInput.SwitchCurrentActionMap("Player");
-        cameraFollow.OnResume();
+
+        if (playerInput != null)
+        {
+            playerInput.SwitchCurrentActionMap("Player");
+        }
+
+        if (cameraFollow != null)
+        {
+            cameraFollow.OnResume();
+        }
     }
 
     private void OnDestroy()
     {
-        if (yesButton != null)
+        if (cancelButton != null)
         {
-            yesButton.clicked -= HandleYesClicked;
+            cancelButton.clicked -= HandleCancelClicked;
         }
 
-        if (noButton != null)
-        {
-            noButton.clicked -= HandleNoClicked;
-        }
-
-        // Make sure the game doesn't remain paused
-        // if this UI object is destroyed while the popup is open.
         if (isOpen)
         {
             Time.timeScale = 1f;

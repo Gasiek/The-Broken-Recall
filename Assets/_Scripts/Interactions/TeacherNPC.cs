@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TeacherNPC : MonoBehaviour, IInteractable
 {
     [SerializeField]
-    private ActionDefinition actionToTeach;
+    private List<ActionDefinition> actionsToTeach = new List<ActionDefinition>(3);
+
     private ActionCollection actionCollection;
 
     [SerializeField]
@@ -17,10 +19,14 @@ public class TeacherNPC : MonoBehaviour, IInteractable
     public bool CanInteract(Player player)
     {
         if (player == null || player.ActionCollection == null)
+        {
             return false;
+        }
 
         if (!interactionCompleted)
+        {
             return true;
+        }
 
         return completedInteractionTexts != null && completedInteractionTexts.Length > 0;
     }
@@ -28,7 +34,9 @@ public class TeacherNPC : MonoBehaviour, IInteractable
     public void Interact(Player player)
     {
         if (!CanInteract(player))
+        {
             return;
+        }
 
         if (interactionCompleted)
         {
@@ -36,9 +44,9 @@ public class TeacherNPC : MonoBehaviour, IInteractable
             return;
         }
 
-        if (actionToTeach == null)
+        if (actionsToTeach == null || actionsToTeach.Count == 0)
         {
-            Debug.LogWarning($"{name} has no action assigned to teach.");
+            Debug.LogWarning($"{name} has no actions assigned to teach.");
             return;
         }
 
@@ -47,35 +55,34 @@ public class TeacherNPC : MonoBehaviour, IInteractable
             Debug.LogWarning($"{name} has no SkillLearnUI assigned.");
             return;
         }
+
         actionCollection = player.ActionCollection;
 
-        if (actionCollection.Contains(actionToTeach))
-        {
-            interactionCompleted = true;
-            return;
-        }
-
-        skillLearnUI.Show(this, actionToTeach);
+        skillLearnUI.Show(this, actionsToTeach);
     }
 
-    public void LearnAction()
+    public void LearnAction(ActionDefinition chosenAction)
     {
         if (interactionCompleted)
-            return;
-
-        if (actionToTeach == null)
         {
-            Debug.LogWarning($"{name} has no action assigned to teach.");
             return;
         }
 
-        if (actionCollection.Contains(actionToTeach))
+        if (chosenAction == null)
         {
-            interactionCompleted = true;
+            Debug.LogWarning($"{name} was given a null action to learn.");
             return;
         }
 
-        actionCollection.Add(actionToTeach);
+        if (actionCollection == null)
+        {
+            Debug.LogWarning($"{name} has no ActionCollection assigned.");
+            return;
+        }
+
+        // Add chosen action to player's collection
+        actionCollection.Add(chosenAction);
+
         interactionCompleted = true;
     }
 

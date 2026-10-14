@@ -19,6 +19,7 @@ public class ActionController : MonoBehaviour
     private PlayerActionVisuals actionVisuals;
     private Health health;
     private WeaponBuffManager weaponBuffs;
+
     public event Action<float> ActionStarted;
 
     private void Awake()
@@ -33,34 +34,35 @@ public class ActionController : MonoBehaviour
 
     public void ExecuteAction(int slot)
     {
-        // Player must be in a state where actions are allowed.
-        // This also prevents actions during the cooldown.
         if (!stateMachine.CanAct)
         {
             return;
         }
 
-        ActionDefinition action = actionMemory.GetAction(slot);
+        ActionCardInstance card = actionMemory.GetAction(slot);
 
-        if (action == null)
+        if (card == null || card.Definition == null)
         {
             return;
         }
 
-        StartCoroutine(ExecuteActionRoutine(slot, action));
+        StartCoroutine(ExecuteActionRoutine(slot, card));
     }
 
-    private IEnumerator ExecuteActionRoutine(int slot, ActionDefinition action)
+    private IEnumerator ExecuteActionRoutine(int slot, ActionCardInstance card)
     {
-        // Lock action/dash input for the cooldown duration.
+        ActionDefinition action = card.Definition;
+
         stateMachine.StartActing();
 
         Debug.Log($"Started action: {action.DisplayName}");
 
-        // Tell the UI to start the global action cooldown.
         ActionStarted?.Invoke(actionCooldown);
 
-        // Immediately replace the used action in memory.
+        // Apply cooldown to this copy, not to the shared definition.
+        actionMemory.PutOnCooldown(card);
+
+        // Replace the used card immediately.
         actionMemory.ReplaceAction(slot);
 
         ActionContext context = new ActionContext(
@@ -72,15 +74,11 @@ public class ActionController : MonoBehaviour
             weaponBuffs
         );
 
-        // Start the actual action independently.
-        // We intentionally do NOT yield here because the action
-        // may have a much longer duration than the cooldown.
+        // The action runs independently of the input cooldown.
         StartCoroutine(action.Execute(context));
 
-        // Acting only lasts for the global action cooldown.
         yield return new WaitForSeconds(actionCooldown);
 
-        // Player can now start another action or dash.
         stateMachine.FinishActing();
     }
 }
