@@ -3,42 +3,34 @@ using UnityEngine;
 public class EnemyAnimation : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
-
-    private static readonly int AttackHash = Animator.StringToHash("Attack");
-
     private static readonly int DieHash = Animator.StringToHash("Die");
 
     [SerializeField]
     private Animator animator;
-    private float speedSmoothTime = 0.15f;
 
-    public Animator Animator => animator;
+    [SerializeField]
+    private float speedSmoothTime = 0.15f;
 
     private void Awake()
     {
         if (animator == null)
         {
-            Debug.LogError($"{name}: No child Animator found.", this);
+            Debug.LogError($"{name}: No Animator found.", this);
         }
     }
 
     public void SetLocomotion(float speed)
     {
-        if (animator != null)
-        {
-            animator.SetFloat(SpeedHash, speed, speedSmoothTime, Time.deltaTime);
-        }
+        animator.SetFloat(SpeedHash, speed, speedSmoothTime, Time.deltaTime);
     }
 
-    public void PlayAttack()
+    public void PlayAttack(string triggerName)
     {
-        if (animator != null)
-            animator.SetTrigger(AttackHash);
+        animator.SetTrigger(triggerName);
     }
 
     public void PlayDie()
     {
-        if (animator != null)
-            animator.SetTrigger(DieHash);
+        animator.SetTrigger(DieHash);
     }
 }

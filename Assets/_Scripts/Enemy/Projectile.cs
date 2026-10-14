@@ -8,6 +8,9 @@ public class Projectile : MonoBehaviour
     [SerializeField]
     private float collisionRadius = 0.1f;
 
+    [SerializeField]
+    private float gizmoDirectionLength = 1f;
+
     private Vector3 direction;
 
     private float speed;
@@ -59,7 +62,7 @@ public class Projectile : MonoBehaviour
 
     private void HandleHit(RaycastHit hit)
     {
-        IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
+        IDamageable damageable = hit.collider.GetComponent<IDamageable>();
 
         if (damageable != null)
         {
@@ -67,5 +70,26 @@ public class Projectile : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Preview the collision sphere.
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, collisionRadius);
+
+        // Preview the movement direction.
+        Vector3 drawDirection = Application.isPlaying ? direction : transform.forward;
+
+        if (drawDirection.sqrMagnitude > 0.001f)
+        {
+            drawDirection.Normalize();
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(
+                transform.position,
+                transform.position + drawDirection * gizmoDirectionLength
+            );
+        }
     }
 }
