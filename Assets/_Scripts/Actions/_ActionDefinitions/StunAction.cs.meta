@@ -3,7 +3,10 @@ guid: e1f2a3b4c5d6789012345678abcdef90
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - icon: {fileID: -3092091983728275804, guid: 679d7d10d4af1470c8bc2dc2b244dc3f, type: 3}
+  - stunStatusEffect: {fileID: 11400000, guid: d1e2f3a4b5c678901234abcdef012345, type: 2}
+  - stunSound: {fileID: 8300000, guid: a8c6b3d7ebc144fbd805e4fe94477253, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

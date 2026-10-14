@@ -11,15 +11,11 @@ public class StatusEffectManager : MonoBehaviour
         public StatusEffectDefinition Definition;
         public Coroutine Coroutine;
         public ParticleSystem VfxInstance;
+        public GameObject VisualInstance;
         public float RemainingTime;
     }
 
     private const float MinimumTickInterval = 0.05f;
-
-    [Header("Visuals")]
-    [Tooltip("Visual object enabled when stunned (e.g. stun stars child object on the prefab).")]
-    [SerializeField]
-    private GameObject stunVisual;
 
     private Health health;
     private NavMeshAgent navAgent;
@@ -47,11 +43,6 @@ public class StatusEffectManager : MonoBehaviour
         {
             defaultNavSpeed = navAgent.speed;
             hasRecordedDefaultNavSpeed = true;
-        }
-
-        if (stunVisual != null)
-        {
-            stunVisual.SetActive(false);
         }
     }
 
@@ -97,10 +88,19 @@ public class StatusEffectManager : MonoBehaviour
             Vector3.up * 0.8f
         );
 
+        GameObject visualInstance = null;
+        if (definition.VisualPrefab != null)
+        {
+            visualInstance = Instantiate(definition.VisualPrefab, transform);
+            visualInstance.transform.localPosition = definition.VisualOffset;
+            visualInstance.transform.localRotation = Quaternion.identity;
+        }
+
         ActiveEffect effect = new ActiveEffect
         {
             Definition = definition,
             VfxInstance = vfxInstance,
+            VisualInstance = visualInstance,
             RemainingTime = definition.Duration,
         };
 
@@ -184,6 +184,12 @@ public class StatusEffectManager : MonoBehaviour
             effect.VfxInstance = null;
         }
 
+        if (effect.VisualInstance != null)
+        {
+            Destroy(effect.VisualInstance);
+            effect.VisualInstance = null;
+        }
+
         activeEffects.Remove(effectId);
 
         UpdateSpeedModifiers();
@@ -216,11 +222,6 @@ public class StatusEffectManager : MonoBehaviour
         {
             IsStunned = currentlyStunned;
             StunStateChanged?.Invoke(IsStunned);
-
-            if (stunVisual != null)
-            {
-                stunVisual.SetActive(IsStunned);
-            }
         }
 
         if (navAgent != null && hasRecordedDefaultNavSpeed && navAgent.isActiveAndEnabled && navAgent.isOnNavMesh)
@@ -264,14 +265,12 @@ public class StatusEffectManager : MonoBehaviour
 
             if (effect.VfxInstance != null)
                 VfxSpawner.StopAndDestroy(effect.VfxInstance);
+
+            if (effect.VisualInstance != null)
+                Destroy(effect.VisualInstance);
         }
 
         activeEffects.Clear();
-
-        if (stunVisual != null)
-        {
-            stunVisual.SetActive(false);
-        }
 
         UpdateSpeedModifiers();
     }

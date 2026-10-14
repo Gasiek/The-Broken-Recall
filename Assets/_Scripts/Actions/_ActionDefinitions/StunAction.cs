@@ -16,16 +16,20 @@ public class StunAction : ActionDefinition
     private LayerMask targetLayer;
 
     [Header("Stun Effect")]
-    [Tooltip("Status effect definition for stun. If empty, a runtime stun effect with stunDuration is created.")]
     [SerializeField]
     private StatusEffectDefinition stunStatusEffect;
+
+    [Header("Audio")]
+    [Tooltip("Optional sound override. If empty, the status effect's apply sound is played.")]
+    [SerializeField]
+    private AudioClip stunSound;
 
     [Range(0f, 1f)]
     [SerializeField]
     private float soundVolume = 0.9f;
 
     public float AttackRange => attackRange;
-    public float StunDuration => stunStatusEffect.duration;
+    public float StunDuration => stunStatusEffect != null ? stunStatusEffect.Duration : 0f;
 
     public override IEnumerator Execute(ActionContext context)
     {
@@ -82,11 +86,9 @@ public class StunAction : ActionDefinition
             Debug.LogWarning("No stun status effect applied.");
         }
 
-        // Play Stunned sound on the stunned enemy
-        AudioClip clipToPlay = stunStatusEffect != null ? stunStatusEffect.ApplySound : null;
-        if (clipToPlay != null && AudioManager.Instance != null)
+        if (stunSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlayWorldSFX(clipToPlay, targetObj.transform.position, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(stunSound, targetObj.transform.position, soundVolume);
         }
     }
 }
