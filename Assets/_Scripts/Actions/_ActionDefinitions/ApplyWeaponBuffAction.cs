@@ -40,4 +40,7 @@ public class ApplyWeaponBuffAction : ActionDefinition
 
         yield return new WaitForSeconds(Duration);
     }
+
+    public override string GetDescription() =>
+        buffDefinition != null ? $"Imbues weapon with {buffDefinition.name}." : "Imbues weapon with a temporary enchantment.";
 }

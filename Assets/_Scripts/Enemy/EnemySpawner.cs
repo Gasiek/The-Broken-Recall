@@ -26,13 +26,13 @@ public class EnemySpawner : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (hasTriggered)
-        {
+        if (hasTriggered || !IsPlayer(other))
             return;
-        }
 
-        if (!IsPlayer(other))
+        if (enemyPrefab == null || spawnPoint == null)
         {
+            Debug.LogError($"{name}: Assign an enemy prefab and spawn point.", this);
+
             return;
         }
 
@@ -45,11 +45,14 @@ public class EnemySpawner : MonoBehaviour
     {
         for (int i = 0; i < enemyCount; i++)
         {
+            if (player == null)
+                yield break;
+
             SpawnEnemy(player);
 
             if (i < enemyCount - 1)
             {
-                yield return new WaitForSeconds(spawnInterval);
+                yield return new WaitForSeconds(Mathf.Max(0f, spawnInterval));
             }
         }
     }

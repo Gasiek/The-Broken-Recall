@@ -1,37 +1,82 @@
-using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 
+[RequireComponent(typeof(PanelRenderer))]
 public class InteractionPromptUI : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject promptObject;
+    private const string PromptElementName = "InteractionPrompt";
+    private const string PromptTextElementName = "InteractionPromptText";
+    private const string DefaultPromptText = "Press E to interact";
 
-    [SerializeField]
-    private TextMeshProUGUI promptText;
+    private PanelRenderer panelRenderer;
+    private VisualElement promptElement;
+    private Label promptText;
 
-    private void Awake()
+    private bool isVisible;
+
+    private void OnEnable()
     {
-        Hide();
+        panelRenderer = GetComponent<PanelRenderer>();
+        panelRenderer.RegisterUIReloadCallback(OnUIReload);
+    }
+
+    private void OnDisable()
+    {
+        panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+
+        promptElement = null;
+        promptText = null;
+    }
+
+    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
+    {
+        promptElement = root.Q<VisualElement>(PromptElementName);
+        promptText = root.Q<Label>(PromptTextElementName);
+
+        if (promptElement == null)
+        {
+            Debug.LogError(
+                $"InteractionPromptUI could not find '{PromptElementName}' in the HUD UXML.",
+                this
+            );
+            return;
+        }
+
+        if (promptText == null)
+        {
+            Debug.LogError(
+                $"InteractionPromptUI could not find '{PromptTextElementName}' in the HUD UXML.",
+                this
+            );
+        }
+
+        if (promptText != null)
+            promptText.text = DefaultPromptText;
+
+        ApplyVisibility();
     }
 
     public void Show()
     {
-        if (promptText != null)
-        {
-            promptText.text = "Press E to interact";
-        }
+        isVisible = true;
 
-        if (promptObject != null)
-        {
-            promptObject.SetActive(true);
-        }
+        if (promptText != null)
+            promptText.text = DefaultPromptText;
+
+        ApplyVisibility();
     }
 
     public void Hide()
     {
-        if (promptObject != null)
-        {
-            promptObject.SetActive(false);
-        }
+        isVisible = false;
+        ApplyVisibility();
+    }
+
+    private void ApplyVisibility()
+    {
+        if (promptElement == null)
+            return;
+
+        promptElement.style.display = isVisible ? DisplayStyle.Flex : DisplayStyle.None;
     }
 }

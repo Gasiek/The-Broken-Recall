@@ -54,4 +54,6 @@ public class BasicHitAction : ActionDefinition
             hit.point
         );
     }
+
+    public override string GetDescription() => $"Delivers a quick slash dealing {damage} damage to an enemy in front.";
 }

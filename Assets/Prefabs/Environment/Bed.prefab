@@ -1458,8 +1458,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bed
   playerHealth: {fileID: 0}
-  restSound: {fileID: 8300000, guid: 35578e6800eca4a92a3487cb24e4fc50, type: 3}
-  restVolume: 1
+  playerStateMachine: {fileID: 0}
+  playerTransform: {fileID: 0}
+  fadeOutDuration: 0.8
+  sleepDuration: 0.5
+  fadeInDuration: 0.8
+  yawnSound: {fileID: 8300000, guid: 35578e6800eca4a92a3487cb24e4fc50, type: 3}
+  yawnVolume: 1
 --- !u!1 &7218622048202839088
 GameObject:
   m_ObjectHideFlags: 0

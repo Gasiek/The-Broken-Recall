@@ -188,4 +188,7 @@ public class JumpSlamAction : ActionDefinition
             }
         }
     }
+
+    public override string GetDescription() =>
+        $"Leaps into the air and slams down, dealing {damage} damage within a {slamRadius:0.#}m radius and knocking enemies back {knockbackDistance:0.#}m.";
 }

@@ -5,17 +5,15 @@ public class CommonNPC : MonoBehaviour, IInteractable
     [SerializeField]
     private string[] interactionTexts;
 
-    public bool CanInteract
+    public bool CanInteract(Player player)
     {
-        get { return interactionTexts != null && interactionTexts.Length > 0; }
+        return player != null && interactionTexts != null && interactionTexts.Length > 0;
     }
 
-    public void Interact()
+    public void Interact(Player player)
     {
-        if (!CanInteract)
-        {
+        if (!CanInteract(player))
             return;
-        }
 
         string text = interactionTexts[Random.Range(0, interactionTexts.Length)];
 

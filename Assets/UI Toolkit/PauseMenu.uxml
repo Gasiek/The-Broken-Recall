@@ -1,9 +1,29 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI%20Toolkit/common-styles.uss?fileID=7433441132597879392&amp;guid=f5a483d70588545eeabe7eb35fd0f894&amp;type=3#common-styles"/>
+    
     <ui:VisualElement name="PauseMenu" enabled="true" class="backdrop" style="flex-grow: 1; visibility: hidden;">
+        <!-- Standard Pause Buttons Section -->
         <ui:VisualElement name="Buttons" class="buttons" style="flex-grow: 1;">
             <ui:Button text="Resume" name="ResumeButton" class="button"/>
+            <ui:Button text="Cards" name="CardsButton" class="button"/>
             <ui:Button text="Quit" name="QuitButton" class="button"/>
+        </ui:VisualElement>
+
+        <!-- Cards Section Fullscreen Design -->
+        <ui:VisualElement name="CardsSection" class="fullscreen-action-panel" style="display: none;">
+            
+            <!-- Title pinned to top -->
+            <ui:Label text="CARDS" class="action-panel-title"/>
+            
+            <!-- ScrollView reusing our safe height and spacing -->
+            <ui:ScrollView name="ScrollView" mode="Vertical" class="remove-action-scroll">
+                <!-- Grid Container that wraps cards into 4 columns and aligns left -->
+                <ui:VisualElement name="CardContainer" class="remove-action-grid"/>
+            </ui:ScrollView>
+
+            <!-- Back Button pinned to bottom -->
+            <ui:Button name="CardsBackButton" text="Back" class="dialog-button button action-panel-cancel-button"/>
+            
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

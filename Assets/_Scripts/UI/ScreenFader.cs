@@ -2,14 +2,18 @@ using System;
 using System.Collections;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-[RequireComponent(typeof(CanvasGroup))]
+[RequireComponent(typeof(PanelRenderer))]
 public class ScreenFader : MonoBehaviour
 {
     public static ScreenFader Instance { get; private set; }
 
-    private CanvasGroup canvasGroup;
+    private PanelRenderer panelRenderer;
+    private VisualElement fadeOverlay;
+
     private Coroutine sleepRoutine;
+    private Tween fadeTween;
 
     public bool IsSleepingSequenceRunning => sleepRoutine != null;
 
@@ -22,31 +26,87 @@ public class ScreenFader : MonoBehaviour
         }
 
         Instance = this;
+        panelRenderer = GetComponent<PanelRenderer>();
+    }
 
-        canvasGroup = GetComponent<CanvasGroup>();
-        canvasGroup.alpha = 0f;
-        canvasGroup.blocksRaycasts = false;
+    private void OnEnable()
+    {
+        if (panelRenderer == null)
+        {
+            panelRenderer = GetComponent<PanelRenderer>();
+        }
+
+        if (panelRenderer != null)
+        {
+            panelRenderer.RegisterUIReloadCallback(OnUIReload);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (panelRenderer != null)
+        {
+            panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+        }
+
+        StopSleepSequence();
+        KillFadeTween();
+    }
+
+    private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
+    {
+        KillFadeTween();
+        fadeOverlay = null;
+
+        if (root == null)
+        {
+            Debug.LogError("[ScreenFader] UI reload received a null root.", this);
+            return;
+        }
+
+        fadeOverlay = root.Q<VisualElement>("FadeOverlay");
+
+        if (fadeOverlay == null)
+        {
+            Debug.LogError($"[ScreenFader] Could not find FadeOverlay in the UI.", this);
+            return;
+        }
+
+        fadeOverlay.style.opacity = 0f;
+        SetRaycastBlocking(false);
     }
 
     public void FadeToBlack(float duration, Action onComplete = null)
     {
-        canvasGroup.blocksRaycasts = true;
-        canvasGroup.DOKill();
+        if (!IsOverlayReady())
+        {
+            return;
+        }
 
-        canvasGroup.DOFade(1f, duration).OnComplete(() => onComplete?.Invoke());
+        KillFadeTween();
+        SetRaycastBlocking(true);
+
+        fadeTween = CreateFadeTween(1f, duration, onComplete);
     }
 
     public void FadeFromBlack(float duration, Action onComplete = null)
     {
-        canvasGroup.DOKill();
+        if (!IsOverlayReady())
+        {
+            return;
+        }
 
-        canvasGroup
-            .DOFade(0f, duration)
-            .OnComplete(() =>
+        KillFadeTween();
+
+        fadeTween = CreateFadeTween(
+            0f,
+            duration,
+            () =>
             {
-                canvasGroup.blocksRaycasts = false;
+                SetRaycastBlocking(false);
                 onComplete?.Invoke();
-            });
+            }
+        );
     }
 
     public void SleepSequence(
@@ -56,10 +116,14 @@ public class ScreenFader : MonoBehaviour
         Action onSleep
     )
     {
+        if (!IsOverlayReady())
+        {
+            return;
+        }
+
         if (sleepRoutine != null)
         {
             Debug.LogWarning("[ScreenFader] A sleep sequence is already running.", this);
-
             return;
         }
 
@@ -75,32 +139,91 @@ public class ScreenFader : MonoBehaviour
         Action onSleep
     )
     {
-        canvasGroup.blocksRaycasts = true;
-        canvasGroup.DOKill();
+        SetRaycastBlocking(true);
+        KillFadeTween();
 
-        // 1. Fade to black.
-        yield return canvasGroup.DOFade(1f, Mathf.Max(0f, fadeOutTime)).WaitForCompletion();
+        fadeTween = CreateFadeTween(1f, fadeOutTime);
+        yield return fadeTween.WaitForCompletion();
 
-        // 2. Perform the sleep effect while the screen is black.
         onSleep?.Invoke();
 
-        // 3. Hold the black screen.
         yield return new WaitForSeconds(Mathf.Max(0f, sleepHoldTime));
 
-        // 4. Fade back in.
-        yield return canvasGroup.DOFade(0f, Mathf.Max(0f, fadeInTime)).WaitForCompletion();
+        fadeTween = CreateFadeTween(0f, fadeInTime);
+        yield return fadeTween.WaitForCompletion();
 
-        canvasGroup.blocksRaycasts = false;
+        SetRaycastBlocking(false);
+
+        fadeTween = null;
         sleepRoutine = null;
+    }
+
+    private Tween CreateFadeTween(float targetOpacity, float duration, Action onComplete = null)
+    {
+        return DOTween
+            .To(
+                () => fadeOverlay.resolvedStyle.opacity,
+                value => fadeOverlay.style.opacity = value,
+                targetOpacity,
+                Mathf.Max(0f, duration)
+            )
+            .SetUpdate(true)
+            .OnComplete(() => onComplete?.Invoke());
+    }
+
+    private void SetRaycastBlocking(bool blocks)
+    {
+        if (fadeOverlay == null)
+        {
+            return;
+        }
+
+        fadeOverlay.pickingMode = blocks ? PickingMode.Position : PickingMode.Ignore;
+    }
+
+    private bool IsOverlayReady()
+    {
+        if (fadeOverlay != null)
+        {
+            return true;
+        }
+
+        Debug.LogError(
+            "[ScreenFader] FadeOverlay is not initialized. "
+                + "Check the PanelRenderer and UI document.",
+            this
+        );
+
+        return false;
+    }
+
+    private void KillFadeTween()
+    {
+        if (fadeTween != null && fadeTween.IsActive())
+        {
+            fadeTween.Kill();
+        }
+
+        fadeTween = null;
+    }
+
+    private void StopSleepSequence()
+    {
+        if (sleepRoutine != null)
+        {
+            StopCoroutine(sleepRoutine);
+            sleepRoutine = null;
+        }
     }
 
     private void OnDestroy()
     {
+        StopSleepSequence();
+        KillFadeTween();
+
         if (Instance == this)
         {
             Instance = null;
         }
-
-        canvasGroup?.DOKill();
     }
 }
