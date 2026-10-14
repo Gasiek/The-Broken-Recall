@@ -21,6 +21,6 @@ MonoBehaviour:
   attackRadius: 0.35
   attackDelay: 0
   rangedAttackRange: 8
-  projectilePrefab: {fileID: 6171831489755700641, guid: 56e719fe1fcb1420387d0315f13eee22, type: 3}
+  projectilePrefab: {fileID: 8457282935446286535, guid: 317300e9503914596976c7701401d5d3, type: 3}
   projectileSpeed: 6
   projectileLifetime: 10
