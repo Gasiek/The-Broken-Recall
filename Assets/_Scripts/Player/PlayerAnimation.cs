@@ -6,6 +6,7 @@ public class PlayerAnimation : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int BasicHitHash = Animator.StringToHash("BasicHit");
+    private static readonly int BlockingHash = Animator.StringToHash("Blocking");
 
     [SerializeField]
     private Animator animator;
@@ -35,6 +36,9 @@ public class PlayerAnimation : MonoBehaviour
             case BasicHitAction basicHitAction:
                 animator.SetBool(BasicHitHash, true);
                 break;
+            case BlockAction blockingAction:
+                animator.SetBool(BlockingHash, true);
+                break;
             default:
                 RestartActions();
                 break;
@@ -52,5 +56,6 @@ public class PlayerAnimation : MonoBehaviour
 
     public void RestartActions(){
         animator.SetBool(BasicHitHash, false);
+        animator.SetBool(BlockingHash, false);
     }
 }
