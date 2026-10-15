@@ -37,6 +37,10 @@ public class EnemyStateMachine : MonoBehaviour
 
     [SerializeField]
     private Transform projectileSpawnPoint;
+
+    [SerializeField]
+    private float rotationSpeed = 360f;
+
     public EnemyState CurrentState { get; private set; }
 
     private void Awake()
@@ -212,24 +216,23 @@ public class EnemyStateMachine : MonoBehaviour
         {
             enemy.Agent.isStopped = true;
             enemyAnimation.SetLocomotion(0f);
-            FaceTarget(target);
 
-            // An attack is in range. Wait if all attacks are on cooldown.
+            if (!IsFacingTarget(target))
+            {
+                FaceTargetSmoothly(target);
+                return;
+            }
+
             IEnemyAttack attackToUse = SelectAttack(distanceToTarget);
-
             if (attackToUse == null)
                 return;
 
             activeAttack = attackToUse;
 
             if (activeAttack.TryStartAttack(target))
-            {
                 ChangeState(EnemyState.Attacking);
-            }
             else
-            {
                 activeAttack = null;
-            }
 
             return;
         }
@@ -528,7 +531,28 @@ public class EnemyStateMachine : MonoBehaviour
         Destroy(gameObject, destroyDelay);
     }
 
-    private void FaceTarget(Transform target)
+    private bool IsAttackInRange(IEnemyAttack attack, float distanceToTarget)
+    {
+        return distanceToTarget >= attack.MinimumRange && distanceToTarget <= attack.AttackRange;
+    }
+
+    private bool IsFacingTarget(Transform target, float angleTolerance = 8f)
+    {
+        if (target == null)
+            return false;
+
+        Vector3 direction = target.position - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.001f)
+            return true;
+
+        float angle = Vector3.Angle(transform.forward, direction.normalized);
+
+        return angle <= angleTolerance;
+    }
+
+    private void FaceTargetSmoothly(Transform target)
     {
         if (target == null)
             return;
@@ -536,14 +560,15 @@ public class EnemyStateMachine : MonoBehaviour
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
 
-        if (direction.sqrMagnitude <= 0.001f)
+        if (direction.sqrMagnitude < 0.001f)
             return;
 
-        transform.rotation = Quaternion.LookRotation(direction);
-    }
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
 
-    private bool IsAttackInRange(IEnemyAttack attack, float distanceToTarget)
-    {
-        return distanceToTarget >= attack.MinimumRange && distanceToTarget <= attack.AttackRange;
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * Time.deltaTime
+        );
     }
 }
