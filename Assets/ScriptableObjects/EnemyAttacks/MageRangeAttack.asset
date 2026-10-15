@@ -19,6 +19,6 @@ MonoBehaviour:
   animationTrigger: Attack
   attackRadius: 0.5
   minimumRange: 0
-  projectilePrefab: {fileID: 634076412066877005, guid: 3b6396541c4254f43a6bff7f11eba416, type: 3}
+  projectilePrefab: {fileID: 8457282935446286535, guid: 317300e9503914596976c7701401d5d3, type: 3}
   projectileSpeed: 10
   projectileLifetime: 5

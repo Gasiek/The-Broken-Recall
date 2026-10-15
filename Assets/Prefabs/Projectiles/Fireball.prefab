@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7156625130804791006}
   - component: {fileID: 6725689040894246772}
   - component: {fileID: 438396420480592}
-  - component: {fileID: 8125915479819832032}
+  - component: {fileID: 1487708050129962765}
   m_Layer: 0
   m_Name: InnerSphere
   m_TagString: Untagged
@@ -91,7 +91,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8125915479819832032
+--- !u!114 &1487708050129962765
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -100,14 +100,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 6193017036811814986}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f19c7f94c794c5097d8bd11e39c750d, type: 3}
+  m_Script: {fileID: 11500000, guid: 870c47a112f0f4fb89bdd2f4bb510302, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TMPro.Examples.ObjectSpin
-  Motion: 0
-  TranslationDistance: {x: 1, y: 1, z: 0}
-  TranslationSpeed: 1
-  SpinSpeed: -180
-  RotationRange: 15
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectSpin
+  rotationAxis: {x: 0, y: 1, z: 0}
+  degreesPerSecond: -180
 --- !u!1 &9041677906479228039
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,7 +116,7 @@ GameObject:
   - component: {fileID: 8449889414103079077}
   - component: {fileID: 4059818124783276418}
   - component: {fileID: 5276647117900735658}
-  - component: {fileID: 5305967204387665912}
+  - component: {fileID: 6599119731567327227}
   m_Layer: 0
   m_Name: OuterSphere
   m_TagString: Untagged
@@ -199,7 +196,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5305967204387665912
+--- !u!114 &6599119731567327227
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -208,14 +205,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 9041677906479228039}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f19c7f94c794c5097d8bd11e39c750d, type: 3}
+  m_Script: {fileID: 11500000, guid: 870c47a112f0f4fb89bdd2f4bb510302, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TMPro.Examples.ObjectSpin
-  Motion: 0
-  TranslationDistance: {x: 1, y: 1, z: 0}
-  TranslationSpeed: 1
-  SpinSpeed: -300
-  RotationRange: 15
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectSpin
+  rotationAxis: {x: 0, y: 1, z: 0}
+  degreesPerSecond: -300
 --- !u!1001 &9048575141248564874
 PrefabInstance:
   m_ObjectHideFlags: 0
