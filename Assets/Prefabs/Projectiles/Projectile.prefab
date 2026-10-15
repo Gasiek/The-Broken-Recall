@@ -48,3 +48,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 384
   collisionRadius: 0.1
+  gizmoDirectionLength: 1
+  destructionParticlesPrefab: {fileID: 0}
+  destructionSound: {fileID: 0}
+  destructionSoundVolume: 1
