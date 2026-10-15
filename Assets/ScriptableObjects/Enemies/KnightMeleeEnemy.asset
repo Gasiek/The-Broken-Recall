@@ -11,6 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b9e7a9c6321a54d7da4978b99320b450, type: 3}
   m_Name: KnightMeleeEnemy
+  m_Name: LightEnemy
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDefinition
   maxHealth: 50
   moveSpeed: 4

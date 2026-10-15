@@ -1380,7 +1380,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillLearnUI
   cameraFollow: {fileID: 330585548}
   playerInput: {fileID: 1194145307}
-  cardTemplate: {fileID: 0}
+  cardTemplate: {fileID: 9197481963319205126, guid: e50710e25f6c14586903a0fb239ba160, type: 3}
 --- !u!4 &198155800 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1153105171145662997, guid: ade4d5c71df86486fa10b8de90188308, type: 3}
@@ -16719,7 +16719,7 @@ Transform:
   m_GameObject: {fileID: 1194145296}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 37.1, y: 2, z: -62.3}
+  m_LocalPosition: {x: 19.3, y: 2, z: -105.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
