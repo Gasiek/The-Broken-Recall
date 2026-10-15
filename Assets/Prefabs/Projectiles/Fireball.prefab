@@ -266,6 +266,10 @@ PrefabInstance:
       propertyPath: collisionRadius
       value: 0.3
       objectReference: {fileID: 0}
+    - target: {fileID: 9014105463740583071, guid: 3b6396541c4254f43a6bff7f11eba416, type: 3}
+      propertyPath: destructionSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 2f92c4368b1414b87b50ef0d7a897474, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
