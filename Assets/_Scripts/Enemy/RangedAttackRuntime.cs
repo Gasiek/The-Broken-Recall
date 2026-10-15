@@ -38,6 +38,15 @@ public class RangedAttackRuntime : EnemyAttackRuntime
             Quaternion.LookRotation(direction)
         );
 
+        if (Definition.ProjectileLaunchSound != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayWorldSFX(
+                Definition.ProjectileLaunchSound,
+                spawnPosition,
+                Definition.ProjectileLaunchSoundVolume
+            );
+        }
+
         Projectile projectile = projectileObject.GetComponent<Projectile>();
 
         if (projectile == null)

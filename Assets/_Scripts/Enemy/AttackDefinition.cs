@@ -43,6 +43,15 @@ public class AttackDefinition : ScriptableObject
     [SerializeField, Min(0f)]
     private float projectileLifetime = 5f;
 
+    [Header("Audio")]
+    [SerializeField]
+    private AudioClip projectileLaunchSound;
+
+    [SerializeField, Range(0f, 1f)]
+    private float projectileLaunchSoundVolume = 1f;
+
+    public AudioClip ProjectileLaunchSound => projectileLaunchSound;
+    public float ProjectileLaunchSoundVolume => projectileLaunchSoundVolume;
     public EnemyAttackType AttackType => attackType;
     public int Damage => damage;
     public float Cooldown => cooldown;
