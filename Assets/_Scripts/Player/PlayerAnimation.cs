@@ -1,9 +1,11 @@
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovement))]
+[RequireComponent(typeof(ActionController))]
 public class PlayerAnimation : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
+    private static readonly int BasicHitHash = Animator.StringToHash("BasicHit");
 
     [SerializeField]
     private Animator animator;
@@ -12,10 +14,12 @@ public class PlayerAnimation : MonoBehaviour
     private float dampTime = 0.15f;
 
     private PlayerMovement playerMovement;
+    private ActionController actionController;
 
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
+        actionController = GetComponent<ActionController>();
     }
 
     private void Update()
@@ -25,6 +29,16 @@ public class PlayerAnimation : MonoBehaviour
 
         float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
         animator.SetFloat(SpeedHash, targetSpeed, dampTime, Time.deltaTime);
+
+        switch (actionController.CurrentAction)
+        {
+            case BasicHitAction basicHitAction:
+                animator.SetBool(BasicHitHash, true);
+                break;
+            default:
+                RestartActions();
+                break;
+        }
     }
 
     private void OnDisable()
@@ -32,6 +46,11 @@ public class PlayerAnimation : MonoBehaviour
         if (animator != null)
         {
             animator.SetFloat(SpeedHash, 0f);
+            RestartActions();
         }
+    }
+
+    public void RestartActions(){
+        animator.SetBool(BasicHitHash, false);
     }
 }
