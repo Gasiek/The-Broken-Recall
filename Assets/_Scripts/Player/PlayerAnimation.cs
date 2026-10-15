@@ -16,6 +16,7 @@ public class PlayerAnimation : MonoBehaviour
 
     private PlayerMovement playerMovement;
     private ActionController actionController;
+    private ActionDefinition lastAction;
 
     private void Awake()
     {
@@ -31,31 +32,43 @@ public class PlayerAnimation : MonoBehaviour
         float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
         animator.SetFloat(SpeedHash, targetSpeed, dampTime, Time.deltaTime);
 
-        switch (actionController.CurrentAction)
+        ActionDefinition currentAction = actionController.CurrentAction;
+        if (currentAction != lastAction)
         {
-            case BasicHitAction basicHitAction:
-                animator.SetBool(BasicHitHash, true);
-                break;
-            case BlockAction blockingAction:
-                animator.SetBool(BlockingHash, true);
-                break;
-            default:
-                RestartActions();
-                break;
+            lastAction = currentAction;
+
+            switch (currentAction)
+            {
+                case BasicHitAction:
+                    animator.SetTrigger(BasicHitHash);
+                    break;
+                case BlockAction:
+                    animator.SetTrigger(BlockingHash);
+                    break;
+                default:
+                    ResetAnimations();
+                    break;
+            }
         }
     }
 
     private void OnDisable()
     {
+        lastAction = null;
+
         if (animator != null)
         {
             animator.SetFloat(SpeedHash, 0f);
-            RestartActions();
+            ResetAnimations();
         }
     }
 
-    public void RestartActions(){
-        animator.SetBool(BasicHitHash, false);
-        animator.SetBool(BlockingHash, false);
+    public void ResetAnimations()
+    {
+        if (animator == null)
+            return;
+
+        animator.ResetTrigger(BasicHitHash);
+        animator.ResetTrigger(BlockingHash);
     }
 }
