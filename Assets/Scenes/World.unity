@@ -17117,11 +17117,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterAudio
   hitSound: {fileID: 8300000, guid: 2998a0db2773a4067bd750745fb1ca83, type: 3}
-  hitVolume: 1
+  hitVolume: 0.631
   blockSound: {fileID: 8300000, guid: d58a67eb8ae974d1d9fc0774b7072663, type: 3}
   blockVolume: 1
   healSound: {fileID: 0}
-  healVolume: 0.8
+  healVolume: 0.844
 --- !u!82 &1194145318
 AudioSource:
   m_ObjectHideFlags: 0

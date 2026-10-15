@@ -43,6 +43,16 @@ public class MeleeAttackRuntime : EnemyAttackRuntime
                 continue;
 
             damageable.TakeDamage(Definition.Damage);
+
+            if (Definition.MeleeImpactSound != null && AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayWorldSFX(
+                    Definition.MeleeImpactSound,
+                    hit.ClosestPoint(attackOrigin.position),
+                    Definition.MeleeImpactSoundVolume
+                );
+            }
+
             break;
         }
     }

@@ -30,6 +30,12 @@ public class AttackDefinition : ScriptableObject
     [SerializeField, Min(0f)]
     private float attackRadius = 0.5f;
 
+    [SerializeField]
+    private AudioClip meleeImpactSound;
+
+    [SerializeField, Range(0f, 1f)]
+    private float meleeImpactSoundVolume = 1f;
+
     [Header("Ranged")]
     [SerializeField, Min(0f)]
     private float minimumRange = 0f;
@@ -52,6 +58,8 @@ public class AttackDefinition : ScriptableObject
 
     public AudioClip ProjectileLaunchSound => projectileLaunchSound;
     public float ProjectileLaunchSoundVolume => projectileLaunchSoundVolume;
+    public AudioClip MeleeImpactSound => meleeImpactSound;
+    public float MeleeImpactSoundVolume => meleeImpactSoundVolume;
     public EnemyAttackType AttackType => attackType;
     public int Damage => damage;
     public float Cooldown => cooldown;
