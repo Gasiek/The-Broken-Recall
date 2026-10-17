@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PanelRenderer))]
-public class InteractionPromptUI : MonoBehaviour
+public sealed class InteractionPromptUI : MonoBehaviour
 {
     private const string PromptElementName = "InteractionPrompt";
     private const string PromptTextElementName = "InteractionPromptText";
@@ -14,16 +14,27 @@ public class InteractionPromptUI : MonoBehaviour
 
     private bool isVisible;
 
-    private void OnEnable()
+    private void Awake()
     {
         panelRenderer = GetComponent<PanelRenderer>();
+    }
+
+    private void OnEnable()
+    {
+        if (panelRenderer == null)
+            panelRenderer = GetComponent<PanelRenderer>();
+
         panelRenderer.RegisterUIReloadCallback(OnUIReload);
+
+        ApplyVisibility();
     }
 
     private void OnDisable()
     {
-        panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+        if (panelRenderer != null)
+            panelRenderer.UnregisterUIReloadCallback(OnUIReload);
 
+        isVisible = false;
         promptElement = null;
         promptText = null;
     }
@@ -36,7 +47,8 @@ public class InteractionPromptUI : MonoBehaviour
         if (promptElement == null)
         {
             Debug.LogError(
-                $"InteractionPromptUI could not find '{PromptElementName}' in the HUD UXML.",
+                $"[InteractionPromptUI] Could not find "
+                    + $"'{PromptElementName}' in the UI document.",
                 this
             );
             return;
@@ -45,13 +57,15 @@ public class InteractionPromptUI : MonoBehaviour
         if (promptText == null)
         {
             Debug.LogError(
-                $"InteractionPromptUI could not find '{PromptTextElementName}' in the HUD UXML.",
+                $"[InteractionPromptUI] Could not find "
+                    + $"'{PromptTextElementName}' in the UI document.",
                 this
             );
         }
-
-        if (promptText != null)
+        else
+        {
             promptText.text = DefaultPromptText;
+        }
 
         ApplyVisibility();
     }

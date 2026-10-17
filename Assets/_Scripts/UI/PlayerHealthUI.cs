@@ -2,54 +2,96 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PanelRenderer))]
-public class PlayerHealthUI : MonoBehaviour
+public sealed class PlayerHealthUI : PlayerHUDBase
 {
-    [Header("Gameplay")]
-    [SerializeField]
-    private Health health;
-
     private PanelRenderer panelRenderer;
     private VisualElement healthFill;
+    private Health health;
 
-    private void Awake()
-    {
-        if (health == null)
-            Debug.LogError("PlayerHealthUI has no Health assigned.", this);
-    }
-
-    private void OnEnable()
+    protected override void OnEnable()
     {
         panelRenderer = GetComponent<PanelRenderer>();
+
+        if (panelRenderer == null)
+        {
+            Debug.LogError("[PlayerHealthUI] PanelRenderer is missing.", this);
+            return;
+        }
+
         panelRenderer.RegisterUIReloadCallback(OnUIReload);
 
-        if (health != null)
-            health.HealthChanged += Refresh;
+        base.OnEnable();
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
-        panelRenderer.UnregisterUIReloadCallback(OnUIReload);
+        if (panelRenderer != null)
+            panelRenderer.UnregisterUIReloadCallback(OnUIReload);
 
-        if (health != null)
-            health.HealthChanged -= Refresh;
+        base.OnDisable();
 
         healthFill = null;
     }
 
+    protected override void OnPlayerBound(Player player)
+    {
+        UnsubscribeFromHealth();
+
+        if (player == null)
+            return;
+
+        health = player.Health;
+
+        if (health == null)
+        {
+            Debug.LogWarning(
+                "[PlayerHealthUI] The bound player has no Health component reference.",
+                player
+            );
+            Refresh();
+            return;
+        }
+
+        health.HealthChanged += Refresh;
+        Refresh();
+    }
+
+    protected override void OnPlayerUnbound(Player player)
+    {
+        UnsubscribeFromHealth();
+    }
+
+    private void UnsubscribeFromHealth()
+    {
+        if (health != null)
+            health.HealthChanged -= Refresh;
+
+        health = null;
+    }
+
     private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
-        healthFill = root.Q<VisualElement>("HealthFill");
+        healthFill = root != null ? root.Q<VisualElement>("HealthFill") : null;
 
         if (healthFill == null)
-            Debug.LogError("PlayerHealthUI could not find 'HealthFill' in the HUD UXML.", this);
+        {
+            Debug.LogError("[PlayerHealthUI] Could not find 'HealthFill' in the HUD UXML.", this);
+            return;
+        }
 
         Refresh();
     }
 
     private void Refresh()
     {
-        if (health == null || healthFill == null)
+        if (healthFill == null)
             return;
+
+        if (health == null)
+        {
+            healthFill.style.width = Length.Percent(0f);
+            return;
+        }
 
         float ratio =
             health.MaxHealth > 0

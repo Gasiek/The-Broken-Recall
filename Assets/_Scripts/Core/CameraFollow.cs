@@ -27,30 +27,34 @@ public class CameraFollow : MonoBehaviour
     private float currentYaw;
     private float currentPitch = 40f;
 
-    private void Awake()
-    {
-        if (target == null)
-        {
-            Debug.LogError("CameraFollow has no target assigned.");
-        }
-    }
+    public Transform Target => target;
 
     private void Start()
     {
         if (target != null)
-        {
-            currentYaw = target.eulerAngles.y;
-        }
+            InitializeOrbit();
 
         LockCursor();
+    }
+
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
+
+        if (target != null)
+            InitializeOrbit();
+    }
+
+    private void InitializeOrbit()
+    {
+        currentYaw = target.eulerAngles.y;
+        currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
     }
 
     private void LateUpdate()
     {
         if (target == null)
-        {
             return;
-        }
 
         UpdateCameraPosition();
     }
@@ -58,15 +62,12 @@ public class CameraFollow : MonoBehaviour
     public void OnLook(InputAction.CallbackContext context)
     {
         if (!context.performed)
-        {
             return;
-        }
 
         Vector2 lookInput = context.ReadValue<Vector2>();
 
         currentYaw += lookInput.x * mouseSensitivity;
         currentPitch -= lookInput.y * mouseSensitivity;
-
         currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
     }
 
@@ -83,13 +84,10 @@ public class CameraFollow : MonoBehaviour
     private void UpdateCameraPosition()
     {
         Vector3 targetFocusPoint = target.position + Vector3.up * height;
-
         Quaternion orbitRotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
-
         Vector3 orbitOffset = orbitRotation * (Vector3.back * distance);
 
         transform.position = targetFocusPoint + orbitOffset;
-
         transform.LookAt(targetFocusPoint);
     }
 

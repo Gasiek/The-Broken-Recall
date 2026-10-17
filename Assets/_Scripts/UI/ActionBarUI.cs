@@ -3,69 +3,69 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PanelRenderer))]
-public class ActionBarUI : MonoBehaviour
+public sealed class ActionBarUI : PlayerHUDBase
 {
-    [Header("Gameplay")]
-    [SerializeField]
-    private ActionMemory actionMemory;
-
-    [SerializeField]
-    private ActionController actionController;
-
     private PanelRenderer panelRenderer;
+    private ActionMemory actionMemory;
+    private ActionController actionController;
 
     private VisualElement[] slotElements;
     private VisualElement[] iconElements;
     private RadialCooldownElement[] cooldownElements;
     private Label[] actionNameLabels;
-
     private Label drawPileLabel;
 
     private Coroutine cooldownRoutine;
 
     private const int SlotCount = ActionMemory.SlotCount;
 
-    private void OnEnable()
+    protected override void OnEnable()
     {
+        base.OnEnable();
+
         panelRenderer = GetComponent<PanelRenderer>();
-
         panelRenderer.RegisterUIReloadCallback(OnUIReload);
-
-        if (actionMemory != null)
-        {
-            actionMemory.MemoryChanged += RefreshSlots;
-        }
-
-        if (actionController != null)
-        {
-            actionController.ActionStarted += StartCooldown;
-        }
     }
 
-    private void OnDisable()
+    protected override void OnDisable()
     {
         if (panelRenderer != null)
-        {
             panelRenderer.UnregisterUIReloadCallback(OnUIReload);
-        }
+
+        StopCooldownRoutine();
+        ClearElementReferences();
+
+        base.OnDisable();
+    }
+
+    protected override void OnPlayerBound(Player player)
+    {
+        actionMemory = player.ActionMemory;
+        actionController = player.GetComponent<ActionController>();
 
         if (actionMemory != null)
-        {
-            actionMemory.MemoryChanged -= RefreshSlots;
-        }
+            actionMemory.MemoryChanged += RefreshSlots;
 
         if (actionController != null)
-        {
+            actionController.ActionStarted += StartCooldown;
+
+        RefreshSlots();
+        RefreshCooldown(0f);
+        RefreshDrawPileCount();
+    }
+
+    protected override void OnPlayerUnbound(Player player)
+    {
+        if (actionMemory != null)
+            actionMemory.MemoryChanged -= RefreshSlots;
+
+        if (actionController != null)
             actionController.ActionStarted -= StartCooldown;
-        }
 
-        if (cooldownRoutine != null)
-        {
-            StopCoroutine(cooldownRoutine);
-            cooldownRoutine = null;
-        }
+        StopCooldownRoutine();
 
-        ClearElementReferences();
+        actionMemory = null;
+        actionController = null;
     }
 
     private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
@@ -87,8 +87,7 @@ public class ActionBarUI : MonoBehaviour
 
             if (slotElements[i] == null)
             {
-                Debug.LogError($"ActionBarUI could not find ActionSlot{i}.", this);
-
+                Debug.LogError($"Missing ActionSlot{i} in the HUD UXML.", this);
                 continue;
             }
 
@@ -109,21 +108,14 @@ public class ActionBarUI : MonoBehaviour
     private void RefreshSlots()
     {
         if (actionMemory == null || slotElements == null)
-        {
             return;
-        }
 
         for (int i = 0; i < SlotCount; i++)
         {
             if (slotElements[i] == null)
-            {
                 continue;
-            }
 
-            // ActionMemory returns the card instance occupying this slot.
             ActionCardInstance card = actionMemory.GetAction(i);
-
-            // The definition contains the shared display data.
             ActionDefinition action = card?.Definition;
 
             if (action == null)
@@ -131,14 +123,11 @@ public class ActionBarUI : MonoBehaviour
                 if (iconElements[i] != null)
                 {
                     iconElements[i].style.backgroundImage = StyleKeyword.None;
-
                     iconElements[i].style.display = DisplayStyle.None;
                 }
 
                 if (actionNameLabels[i] != null)
-                {
                     actionNameLabels[i].text = string.Empty;
-                }
 
                 continue;
             }
@@ -155,9 +144,7 @@ public class ActionBarUI : MonoBehaviour
             }
 
             if (actionNameLabels[i] != null)
-            {
                 actionNameLabels[i].text = action.DisplayName;
-            }
         }
 
         RefreshDrawPileCount();
@@ -166,9 +153,7 @@ public class ActionBarUI : MonoBehaviour
     private void RefreshDrawPileCount()
     {
         if (drawPileLabel == null || actionMemory == null)
-        {
             return;
-        }
 
         drawPileLabel.text = actionMemory.DrawPileCount.ToString();
     }
@@ -176,15 +161,9 @@ public class ActionBarUI : MonoBehaviour
     private void StartCooldown(float duration)
     {
         if (duration <= 0f || cooldownElements == null)
-        {
             return;
-        }
 
-        if (cooldownRoutine != null)
-        {
-            StopCoroutine(cooldownRoutine);
-        }
-
+        StopCooldownRoutine();
         cooldownRoutine = StartCoroutine(CooldownRoutine(duration));
     }
 
@@ -199,7 +178,6 @@ public class ActionBarUI : MonoBehaviour
             float progress = 1f - Mathf.Clamp01(elapsed / duration);
 
             RefreshCooldown(progress);
-
             yield return null;
         }
 
@@ -210,17 +188,22 @@ public class ActionBarUI : MonoBehaviour
     private void RefreshCooldown(float progress)
     {
         if (cooldownElements == null)
-        {
             return;
-        }
 
         foreach (RadialCooldownElement element in cooldownElements)
         {
             if (element != null)
-            {
                 element.Progress = progress;
-            }
         }
+    }
+
+    private void StopCooldownRoutine()
+    {
+        if (cooldownRoutine == null)
+            return;
+
+        StopCoroutine(cooldownRoutine);
+        cooldownRoutine = null;
     }
 
     private void ClearElementReferences()

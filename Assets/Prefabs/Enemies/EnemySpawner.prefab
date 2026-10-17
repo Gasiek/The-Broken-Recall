@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 5159958709726328682}
   - component: {fileID: 2651290343004021627}
   - component: {fileID: 790347676777859029}
+  - component: {fileID: 1516633720768103369}
   m_Layer: 0
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -79,7 +80,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   enemyPrefab: {fileID: 2341251069822883802, guid: aaf5db0697e0b4ba788cd617777c94e3, type: 3}
   spawnPoint: {fileID: 9107882960547482554}
-  enemyCount: 4
+  enemyCount: 2
   spawnInterval: 15
   playerLayer:
     serializedVersion: 2
@@ -105,3 +106,16 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 27.1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1516633720768103369
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8739298885825169495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcee7c467e14947be9fd5c48257fe716, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PersistentEncounter
+  stableId: EnemySpawner_bda7306fbeee4d5cb7376cefd49d1f74

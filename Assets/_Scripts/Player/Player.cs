@@ -1,10 +1,12 @@
+using System.Linq;
 using UnityEngine;
 
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(PlayerStateMachine))]
 [RequireComponent(typeof(ActionCollection))]
 [RequireComponent(typeof(ActionMemory))]
-public class Player : MonoBehaviour
+[RequireComponent(typeof(WeaponBuffManager))]
+public sealed class Player : MonoBehaviour
 {
     [SerializeField]
     private PlayerDefinition definition;
@@ -14,6 +16,9 @@ public class Player : MonoBehaviour
     public PlayerStateMachine StateMachine { get; private set; }
     public ActionCollection ActionCollection { get; private set; }
     public ActionMemory ActionMemory { get; private set; }
+    public WeaponBuffManager WeaponBuffs { get; private set; }
+
+    private bool initialized;
 
     private void Awake()
     {
@@ -21,13 +26,80 @@ public class Player : MonoBehaviour
         StateMachine = GetComponent<PlayerStateMachine>();
         ActionCollection = GetComponent<ActionCollection>();
         ActionMemory = GetComponent<ActionMemory>();
+        WeaponBuffs = GetComponent<WeaponBuffManager>();
+
         if (definition == null)
         {
             Debug.LogError("[Player] No PlayerDefinition assigned.", this);
+            return;
+        }
 
+        if (Health == null)
+        {
+            Debug.LogError("[Player] Health component is missing.", this);
             return;
         }
 
         Health.Initialize(definition.MaxHealth);
+        initialized = true;
+    }
+
+    public PlayerSaveData CaptureState()
+    {
+        if (!initialized || ActionCollection == null || ActionMemory == null)
+        {
+            Debug.LogError("[Player] Cannot capture state before player initialization.", this);
+            return null;
+        }
+
+        PlayerSaveData data = new PlayerSaveData
+        {
+            CurrentHealth = Health.CurrentHealth,
+            ActionMemory = ActionMemory.CaptureState(),
+        };
+
+        data.Actions.AddRange(ActionCollection.Actions);
+
+        if (WeaponBuffs != null)
+            data.WeaponBuff = WeaponBuffs.CaptureState();
+
+        return data;
+    }
+
+    public void RestoreState(PlayerSaveData data)
+    {
+        if (data == null)
+            return;
+
+        if (!initialized)
+        {
+            Debug.LogError(
+                "[Player] Cannot restore state because initialization failed. "
+                    + "Check the PlayerDefinition and Health component.",
+                this
+            );
+            return;
+        }
+
+        Health.RestoreHealth(data.CurrentHealth);
+
+        if (ActionCollection != null && data.Actions != null)
+        {
+            // Remove the prefab's default collection before restoring.
+            foreach (ActionCardInstance card in ActionCollection.Actions.ToArray())
+                ActionCollection.Remove(card);
+
+            foreach (ActionCardInstance card in data.Actions)
+            {
+                if (card != null)
+                    ActionCollection.Add(card);
+            }
+        }
+
+        if (data.ActionMemory != null)
+            ActionMemory?.RestoreState(data.ActionMemory);
+
+        if (data.WeaponBuff != null)
+            WeaponBuffs?.RestoreState(data.WeaponBuff);
     }
 }
