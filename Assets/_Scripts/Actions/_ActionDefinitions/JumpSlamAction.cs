@@ -51,9 +51,6 @@ public class JumpSlamAction : ActionDefinition
                 ? movement.CharacterController
                 : context.Player.GetComponent<CharacterController>();
 
-        if (context.Visuals != null)
-            context.Visuals.JumpSlam(Duration);
-
         if (jumpSound != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayWorldSFX(jumpSound, context.Player.position, soundVolume);

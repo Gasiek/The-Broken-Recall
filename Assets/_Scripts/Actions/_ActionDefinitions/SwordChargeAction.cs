@@ -51,13 +51,6 @@ public class SwordChargeAction : ActionDefinition
     {
         PlayerMovement movement = context.Movement;
 
-        context.Visuals.SwordCharge(
-            prepDuration,
-            holdDuration,
-            chargeMoveDuration,
-            recoveryDuration
-        );
-
         float prepTime = Mathf.Max(0f, prepDuration) + Mathf.Max(0f, holdDuration);
 
         if (prepTime > 0f)

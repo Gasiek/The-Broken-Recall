@@ -25,6 +25,10 @@ public class ActionController : MonoBehaviour
     private Coroutine activeActionRoutine;
     private Coroutine actionExecutionRoutine;
     private bool isExecutingAction;
+    private ActionDefinition currentAction;
+
+    public ActionDefinition CurrentAction => currentAction;
+    public bool IsExecutingAction => isExecutingAction;
 
     public event Action<float> ActionStarted;
 
@@ -56,6 +60,7 @@ public class ActionController : MonoBehaviour
         ActionDefinition action = card.Definition;
 
         isExecutingAction = true;
+        currentAction = action;
         nextActionTime = Time.time + actionCooldown;
 
         ActionStarted?.Invoke(actionCooldown);
@@ -106,6 +111,7 @@ public class ActionController : MonoBehaviour
         actionExecutionRoutine = null;
         activeActionRoutine = null;
         isExecutingAction = false;
+        currentAction = null;
 
         stateMachine.FinishActing();
     }
@@ -134,6 +140,7 @@ public class ActionController : MonoBehaviour
         playerMovement.SetMovementOverridden(false);
 
         isExecutingAction = false;
+        currentAction = null;
         stateMachine?.FinishActing();
     }
 }
