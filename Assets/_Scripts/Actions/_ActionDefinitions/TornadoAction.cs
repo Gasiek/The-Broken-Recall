@@ -15,8 +15,6 @@ public class TornadoAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
-        context.Visuals.Tornado();
-
         yield return new WaitForSeconds(Duration * 0.5f);
 
         DealDamage(context);

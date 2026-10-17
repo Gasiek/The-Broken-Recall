@@ -16110,10 +16110,9 @@ MonoBehaviour:
   actions:
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
   - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
-  - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
+  - definition: {fileID: 11400000, guid: 4ded916a11731426389cfff2e0d5992e, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16472,14 +16471,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerActionVisuals
   sword: {fileID: 0}
-  tornadoPivot: {fileID: 0}
   pushRotation: {x: 90, y: 0, z: 0}
   pushOffset: {x: 0, y: 0.5, z: 1}
   pushTransitionDuration: 0.05
   pushDuration: 0.2
-  tornadoRotation: {x: 0, y: 0, z: -90}
-  tornadoDuration: 0.4
-  tornadoTransitionDuration: 0.1
   basicHitRotation: {x: 65, y: 0, z: 20}
   basicHitSwingDuration: 0.2
   blockRotation: {x: 0, y: 0, z: 30}

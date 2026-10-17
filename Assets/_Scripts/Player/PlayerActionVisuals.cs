@@ -8,9 +8,6 @@ public class PlayerActionVisuals : MonoBehaviour
 
     public Transform Sword => sword;
 
-    [SerializeField]
-    private Transform tornadoPivot;
-
     [Header("Push")]
     [SerializeField]
     private Vector3 pushRotation = new Vector3(90f, 0f, 0f);
@@ -23,18 +20,6 @@ public class PlayerActionVisuals : MonoBehaviour
 
     [SerializeField]
     private float pushDuration = 0.2f;
-
-    [Header("Tornado")]
-    [SerializeField]
-    private Vector3 tornadoRotation = new Vector3(0f, 0f, 90f);
-
-    [SerializeField]
-    private float tornadoDuration = 0.4f;
-
-    [SerializeField]
-    private float tornadoTransitionDuration = 0.1f;
-
-    private Quaternion tornadoPivotIdleRotation;
 
     [Header("Basic Hit")]
     [SerializeField]
@@ -87,8 +72,6 @@ public class PlayerActionVisuals : MonoBehaviour
     {
         swordIdlePosition = sword.localPosition;
         swordIdleRotation = sword.localEulerAngles;
-
-        tornadoPivotIdleRotation = tornadoPivot.localRotation;
     }
 
     public void BasicHit()
@@ -127,42 +110,6 @@ public class PlayerActionVisuals : MonoBehaviour
 
         sequence.Join(
             sword.DOLocalMove(swordIdlePosition, blockTransitionDuration).SetEase(Ease.InQuad)
-        );
-    }
-
-    public void Tornado()
-    {
-        sword.DOKill();
-        tornadoPivot.DOKill();
-
-        tornadoPivot.localRotation = tornadoPivotIdleRotation;
-
-        Sequence sequence = DOTween.Sequence();
-
-        sequence.Append(
-            sword.DOLocalMove(swordIdlePosition, tornadoTransitionDuration).SetEase(Ease.OutQuad)
-        );
-
-        sequence.Join(
-            sword
-                .DOLocalRotate(swordIdleRotation + tornadoRotation, tornadoTransitionDuration)
-                .SetEase(Ease.OutQuad)
-        );
-
-        sequence.Append(
-            tornadoPivot
-                .DOLocalRotate(new Vector3(0f, 360f, 0f), tornadoDuration, RotateMode.FastBeyond360)
-                .SetEase(Ease.Linear)
-        );
-
-        sequence.Append(
-            sword.DOLocalRotate(swordIdleRotation, tornadoTransitionDuration).SetEase(Ease.InQuad)
-        );
-
-        sequence.Join(
-            tornadoPivot
-                .DOLocalRotate(tornadoPivotIdleRotation.eulerAngles, tornadoTransitionDuration)
-                .SetEase(Ease.InQuad)
         );
     }
 
@@ -322,9 +269,7 @@ public class PlayerActionVisuals : MonoBehaviour
     public void ResetVisuals()
     {
         sword.DOKill();
-        tornadoPivot.DOKill();
         sword.localPosition = swordIdlePosition;
         sword.localEulerAngles = swordIdleRotation;
-        tornadoPivot.localRotation = tornadoPivotIdleRotation;
     }
 }
