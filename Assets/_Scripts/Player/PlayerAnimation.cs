@@ -11,6 +11,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int JumpSlamHash = Animator.StringToHash("JumpSlam");
     private static readonly int SwordChargeHash = Animator.StringToHash("SwordCharge");
     private static readonly int HealHash = Animator.StringToHash("Heal");
+    private static readonly int ElementalChargeHash = Animator.StringToHash("ElementalCharge");
 
     [SerializeField]
     private Animator animator;
@@ -61,6 +62,9 @@ public class PlayerAnimation : MonoBehaviour
                 case HealAction:
                     animator.SetTrigger(HealHash);
                     break;
+                case LightningChargeAction:
+                    animator.SetTrigger(ElementalChargeHash);
+                    break;
                 default:
                     ResetAnimations();
                     break;
@@ -90,5 +94,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.ResetTrigger(JumpSlamHash);
         animator.ResetTrigger(SwordChargeHash);
         animator.ResetTrigger(HealHash);
+        animator.ResetTrigger(ElementalChargeHash);
     }
 }
