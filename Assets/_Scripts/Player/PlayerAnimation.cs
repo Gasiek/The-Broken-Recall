@@ -6,8 +6,9 @@ public class PlayerAnimation : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int BasicHitHash = Animator.StringToHash("BasicHit");
-    private static readonly int BlockingHash = Animator.StringToHash("Blocking");
+    private static readonly int BlockingHash = Animator.StringToHash("Block");
     private static readonly int TornadoHash = Animator.StringToHash("Tornado");
+    private static readonly int JumpSlamHash = Animator.StringToHash("JumpSlam");
 
     [SerializeField]
     private Animator animator;
@@ -49,6 +50,9 @@ public class PlayerAnimation : MonoBehaviour
                 case TornadoAction:
                     animator.SetTrigger(TornadoHash);
                     break;
+                case JumpSlamAction:
+                    animator.SetTrigger(JumpSlamHash);
+                    break;
                 default:
                     ResetAnimations();
                     break;
@@ -75,5 +79,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.ResetTrigger(BasicHitHash);
         animator.ResetTrigger(BlockingHash);
         animator.ResetTrigger(TornadoHash);
+        animator.ResetTrigger(JumpSlamHash);
     }
 }
