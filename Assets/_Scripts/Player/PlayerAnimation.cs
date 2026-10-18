@@ -6,7 +6,6 @@ using UnityEngine;
 public class PlayerAnimation : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
-    private static readonly int BasicHitHash = Animator.StringToHash("BasicHit");
     private static readonly int BlockingHash = Animator.StringToHash("Block");
     private static readonly int TornadoHash = Animator.StringToHash("Tornado");
     private static readonly int JumpSlamHash = Animator.StringToHash("JumpSlam");
@@ -16,6 +15,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int KickHash = Animator.StringToHash("Kick");
     private static readonly int DyingHash = Animator.StringToHash("Dying");
     private static readonly int StunHash = Animator.StringToHash("Stun");
+    private static readonly int ComboStepHash = Animator.StringToHash("BasicHitCombo");
 
     [SerializeField]
     private Animator animator;
@@ -23,11 +23,20 @@ public class PlayerAnimation : MonoBehaviour
     [SerializeField]
     private float dampTime = 0.15f;
 
+    [Header("Combo Settings")]
+    [Tooltip("Maximum delay in seconds between consecutive BasicHits to continue the combo.")]
+    [SerializeField, Min(0.1f)]
+    private float comboResetTime = 2f;
+
     private PlayerMovement playerMovement;
     private ActionController actionController;
     private Health health;
     private ActionDefinition lastAction;
     private bool isDead;
+    private int currentComboStep;
+    private float lastBasicHitTime = -999f;
+
+    public int CurrentComboStep => currentComboStep;
 
     private void Awake()
     {
@@ -49,6 +58,11 @@ public class PlayerAnimation : MonoBehaviour
         if (animator == null || isDead)
             return;
 
+        if (currentComboStep > 0 && Time.time - lastBasicHitTime > comboResetTime)
+        {
+            ResetCombo();
+        }
+
         float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
         animator.SetFloat(SpeedHash, targetSpeed, dampTime, Time.deltaTime);
 
@@ -60,7 +74,18 @@ public class PlayerAnimation : MonoBehaviour
             switch (currentAction)
             {
                 case BasicHitAction:
-                    animator.SetTrigger(BasicHitHash);
+                    if (Time.time - lastBasicHitTime <= comboResetTime)
+                    {
+                        currentComboStep = (currentComboStep % 3) + 1;
+                    }
+                    else
+                    {
+                        currentComboStep = 1;
+                    }
+
+                    lastBasicHitTime = Time.time;
+
+                    animator.SetInteger(ComboStepHash, currentComboStep);
                     break;
                 case BlockAction:
                     animator.SetTrigger(BlockingHash);
@@ -114,20 +139,24 @@ public class PlayerAnimation : MonoBehaviour
 
         isDead = false;
         lastAction = null;
+        ResetCombo();
+        animator.SetFloat(SpeedHash, 0f);
+        ResetAnimations();
+    }
 
-        if (animator != null)
-        {
-            animator.SetFloat(SpeedHash, 0f);
-            ResetAnimations();
-        }
+    public void ResetCombo()
+    {
+        currentComboStep = 0;
+        animator.SetInteger(ComboStepHash, 0);
     }
 
     public void ResetAnimations()
     {
-        if (animator == null)
-            return;
 
-        animator.ResetTrigger(BasicHitHash);
+        if (currentComboStep > 0 && Time.time - lastBasicHitTime > comboResetTime)
+        {
+            ResetCombo();
+        }
         animator.ResetTrigger(BlockingHash);
         animator.ResetTrigger(TornadoHash);
         animator.ResetTrigger(JumpSlamHash);
