@@ -31,7 +31,9 @@ public static class VfxSpawner
     public static ParticleSystem SpawnAttached(
         ParticleSystem prefab,
         Transform parent,
-        Vector3 localPosition
+        Vector3 localPosition,
+        Quaternion localRotation,
+        Vector3? localScale = null
     )
     {
         if (prefab == null || parent == null)
@@ -40,11 +42,25 @@ public static class VfxSpawner
         ParticleSystem instance = Object.Instantiate(prefab, parent);
 
         instance.transform.localPosition = localPosition;
-        instance.transform.localRotation = Quaternion.identity;
+        instance.transform.localRotation = localRotation;
+
+        if (localScale.HasValue)
+        {
+            instance.transform.localScale = localScale.Value;
+        }
 
         instance.Play();
 
         return instance;
+    }
+
+    public static ParticleSystem SpawnAttached(
+        ParticleSystem prefab,
+        Transform parent,
+        Vector3 localPosition
+    )
+    {
+        return SpawnAttached(prefab, parent, localPosition, Quaternion.identity);
     }
 
     public static void StopAndDestroy(ParticleSystem instance, float delay = 0f)

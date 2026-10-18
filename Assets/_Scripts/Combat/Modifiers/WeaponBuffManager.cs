@@ -1,15 +1,26 @@
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerActionVisuals))]
+[RequireComponent(typeof(Player))]
 public class WeaponBuffManager : MonoBehaviour
 {
-    private PlayerActionVisuals visuals;
+    [Header("Weapon VFX Offset")]
+    [SerializeField]
+    private Vector3 vfxRotationOffset = new Vector3(90f, 0f, 0f);
+
+    [SerializeField]
+    private Vector3 vfxPositionOffset = Vector3.zero;
+
+    [SerializeField]
+    private Vector3 vfxScale = Vector3.one;
+
+    private Player player;
     private Health playerHealth;
     private AudioManager audioManager;
 
     private WeaponBuffDefinition activeBuff;
     private ParticleSystem currentSwordVfx;
+    private Lightning currentSwordLightning;
     private Coroutine durationCoroutine;
 
     private bool hasCustomBuff;
@@ -22,7 +33,7 @@ public class WeaponBuffManager : MonoBehaviour
 
     private void Awake()
     {
-        visuals = GetComponent<PlayerActionVisuals>();
+        player = GetComponent<Player>();
         playerHealth = GetComponent<Health>();
     }
 
@@ -60,7 +71,7 @@ public class WeaponBuffManager : MonoBehaviour
 
     public void ApplyCustomBuff(
         int bonusDamage,
-        ParticleSystem swordVfxPrefab,
+        Lightning swordLightningPrefab,
         ParticleSystem onHitVfxPrefab,
         AudioClip dischargeSound,
         float soundVolume
@@ -74,7 +85,7 @@ public class WeaponBuffManager : MonoBehaviour
         customOnHitSound = dischargeSound;
         customVolume = Mathf.Clamp01(soundVolume);
 
-        AttachSwordVfx(swordVfxPrefab);
+        AttachSwordLightning(swordLightningPrefab);
     }
 
     public int CalculateDamage(int baseDamage)
@@ -169,12 +180,29 @@ public class WeaponBuffManager : MonoBehaviour
 
     private void AttachSwordVfx(ParticleSystem prefab)
     {
-        if (prefab == null)
+        if (prefab == null || player == null || player.Weapon == null)
             return;
 
-        Transform parent = visuals != null && visuals.Sword != null ? visuals.Sword : transform;
+        currentSwordVfx = VfxSpawner.SpawnAttached(
+            prefab,
+            player.Weapon,
+            vfxPositionOffset,
+            Quaternion.Euler(vfxRotationOffset),
+            vfxScale
+        );
+    }
 
-        currentSwordVfx = VfxSpawner.SpawnAttached(prefab, parent, Vector3.zero);
+    private void AttachSwordLightning(Lightning prefab)
+    {
+        if (prefab == null || player == null || player.Weapon == null)
+            return;
+
+        currentSwordLightning = Instantiate(prefab, player.Weapon);
+
+        Transform lightningTransform = currentSwordLightning.transform;
+        lightningTransform.localPosition = vfxPositionOffset;
+        lightningTransform.localRotation = Quaternion.Euler(vfxRotationOffset);
+        lightningTransform.localScale = vfxScale;
     }
 
     private IEnumerator DurationRoutine(float duration)
@@ -197,6 +225,12 @@ public class WeaponBuffManager : MonoBehaviour
         {
             VfxSpawner.StopAndDestroy(currentSwordVfx, 0.5f);
             currentSwordVfx = null;
+        }
+
+        if (currentSwordLightning != null)
+        {
+            Destroy(currentSwordLightning.gameObject);
+            currentSwordLightning = null;
         }
 
         activeBuff = null;

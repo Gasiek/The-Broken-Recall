@@ -9,9 +9,9 @@ public class LightningChargeAction : ActionDefinition
     private int bonusDamage = 10;
 
     [Header("Visual Effects")]
-    [Tooltip("Looping lightning particles attached to the sword while charged.")]
+    [Tooltip("LineRenderer lightning attached to the weapon while charged.")]
     [SerializeField]
-    private ParticleSystem swordLightningVfxPrefab;
+    private Lightning swordLightningPrefab;
 
     [Tooltip("Burst of lightning sparks spawned at the hit point when consuming the charge.")]
     [SerializeField]
@@ -35,13 +35,7 @@ public class LightningChargeAction : ActionDefinition
             yield break;
         }
 
-        // 1. Play sword charge animation
-        if (context.Visuals != null)
-        {
-            context.Visuals.ChargeSword(Duration);
-        }
-
-        // 2. Play charge sound at the player's position
+        // 1. Play charge sound at the player's position
         if (chargeSound != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayWorldSFX(
@@ -51,20 +45,17 @@ public class LightningChargeAction : ActionDefinition
             );
         }
 
-        // 3. Apply lightning charge to player's weapon
-        WeaponBuffManager buffManager = context.Player.GetComponent<WeaponBuffManager>();
-        if (buffManager == null)
+        // 2. Apply lightning charge to player's weapon
+        if (context.WeaponBuffs != null)
         {
-            buffManager = context.Player.gameObject.AddComponent<WeaponBuffManager>();
+            context.WeaponBuffs.ApplyCustomBuff(
+                bonusDamage,
+                swordLightningPrefab,
+                onHitDischargeVfxPrefab,
+                dischargeSound,
+                soundVolume
+            );
         }
-
-        buffManager.ApplyCustomBuff(
-            bonusDamage,
-            swordLightningVfxPrefab,
-            onHitDischargeVfxPrefab,
-            dischargeSound,
-            soundVolume
-        );
 
         yield return new WaitForSeconds(Duration);
     }
