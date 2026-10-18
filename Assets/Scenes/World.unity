@@ -16145,6 +16145,7 @@ MonoBehaviour:
   - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
   - definition: {fileID: 11400000, guid: c1a2b3d4e5f60718293a4b5c6d7e8f99, type: 2}
   - definition: {fileID: 11400000, guid: e7f8a9b0c1d234567890abcdef123456, type: 2}
+  - definition: {fileID: 11400000, guid: 2653b44309e5e430ba12bb6e79ac85f7, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16513,7 +16514,7 @@ MonoBehaviour:
   blockPosition: {x: -0.2, y: 0, z: 0.65}
   blockTransitionDuration: 0.15
   chargeRotation: {x: -30, y: 0, z: 15}
-  chargeOffset: {x: 0, y: 0.4, z: 0.3}
+  chargeOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &1194145312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16718,7 +16719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponBuffManager
   vfxRotationOffset: {x: 90, y: 0, z: 0}
-  vfxPositionOffset: {x: 0, y: 10, z: 0}
+  vfxPositionOffset: {x: 0, y: 0.15, z: 0}
   vfxScale: {x: 1, y: 0.5, z: 1}
 --- !u!114 &1194145320
 MonoBehaviour:
