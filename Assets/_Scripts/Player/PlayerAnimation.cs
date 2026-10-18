@@ -2,6 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(ActionController))]
+[RequireComponent(typeof(Health))]
 public class PlayerAnimation : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -13,7 +14,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int HealHash = Animator.StringToHash("Heal");
     private static readonly int ElementalChargeHash = Animator.StringToHash("ElementalCharge");
     private static readonly int KickHash = Animator.StringToHash("Kick");
-
+    private static readonly int DyingHash = Animator.StringToHash("Dying");
 
     [SerializeField]
     private Animator animator;
@@ -23,17 +24,28 @@ public class PlayerAnimation : MonoBehaviour
 
     private PlayerMovement playerMovement;
     private ActionController actionController;
+    private Health health;
     private ActionDefinition lastAction;
+    private bool isDead;
 
     private void Awake()
     {
         playerMovement = GetComponent<PlayerMovement>();
         actionController = GetComponent<ActionController>();
+        health = GetComponent<Health>();
+    }
+
+    private void OnEnable()
+    {
+        if (health != null)
+        {
+            health.Died += HandleDeath;
+        }
     }
 
     private void Update()
     {
-        if (animator == null)
+        if (animator == null || isDead)
             return;
 
         float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
@@ -77,8 +89,26 @@ public class PlayerAnimation : MonoBehaviour
         }
     }
 
+    private void HandleDeath()
+    {
+        isDead = true;
+
+        if (animator == null)
+            return;
+
+        animator.SetFloat(SpeedHash, 0f);
+        ResetAnimations();
+        animator.SetTrigger(DyingHash);
+    }
+
     private void OnDisable()
     {
+        if (health != null)
+        {
+            health.Died -= HandleDeath;
+        }
+
+        isDead = false;
         lastAction = null;
 
         if (animator != null)
@@ -101,5 +131,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.ResetTrigger(HealHash);
         animator.ResetTrigger(ElementalChargeHash);
         animator.ResetTrigger(KickHash);
+        animator.ResetTrigger(DyingHash);
     }
 }

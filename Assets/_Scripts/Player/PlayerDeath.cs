@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -5,8 +6,13 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(PlayerStateMachine))]
 public class PlayerDeath : MonoBehaviour
 {
+    [Header("Death Settings")]
+    [SerializeField, Min(0f)]
+    private float restartDelay = 3f;
+
     private Health health;
     private PlayerStateMachine stateMachine;
+    private Coroutine deathRoutine;
 
     private void Awake()
     {
@@ -26,7 +32,16 @@ public class PlayerDeath : MonoBehaviour
 
     private void HandleDeath()
     {
+        if (deathRoutine != null)
+            return;
+
         stateMachine.Die();
+        deathRoutine = StartCoroutine(RestartSceneAfterDelay());
+    }
+
+    private IEnumerator RestartSceneAfterDelay()
+    {
+        yield return new WaitForSeconds(restartDelay);
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
