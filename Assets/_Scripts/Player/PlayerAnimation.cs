@@ -15,6 +15,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int ElementalChargeHash = Animator.StringToHash("ElementalCharge");
     private static readonly int KickHash = Animator.StringToHash("Kick");
     private static readonly int DyingHash = Animator.StringToHash("Dying");
+    private static readonly int StunHash = Animator.StringToHash("Stun");
 
     [SerializeField]
     private Animator animator;
@@ -82,6 +83,9 @@ public class PlayerAnimation : MonoBehaviour
                 case PushAction:
                     animator.SetTrigger(KickHash);
                     break;
+                case StunAction:
+                    animator.SetTrigger(StunHash);
+                    break;
                 default:
                     ResetAnimations();
                     break;
@@ -132,5 +136,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.ResetTrigger(ElementalChargeHash);
         animator.ResetTrigger(KickHash);
         animator.ResetTrigger(DyingHash);
+        animator.ResetTrigger(StunHash);
     }
 }

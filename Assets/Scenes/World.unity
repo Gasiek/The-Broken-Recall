@@ -16143,9 +16143,7 @@ MonoBehaviour:
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
   - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
-  - definition: {fileID: 11400000, guid: c1a2b3d4e5f60718293a4b5c6d7e8f99, type: 2}
-  - definition: {fileID: 11400000, guid: e7f8a9b0c1d234567890abcdef123456, type: 2}
-  - definition: {fileID: 11400000, guid: 2653b44309e5e430ba12bb6e79ac85f7, type: 2}
+  - definition: {fileID: 11400000, guid: f1e2d3c4b5a6789012345678abcdef11, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16540,6 +16538,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d4a31f9248b747ac9fc537235337cc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
+  restartDelay: 3
 --- !u!114 &1194145314
 MonoBehaviour:
   m_ObjectHideFlags: 0
