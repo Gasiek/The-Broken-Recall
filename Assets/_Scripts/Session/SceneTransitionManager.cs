@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 [DefaultExecutionOrder(-1000)]
@@ -17,14 +16,13 @@ public sealed class SceneTransitionManager : MonoBehaviour
     private SceneDestination initialDestination;
 
     private GameSession session;
+    private PlayerSceneBinder playerSceneBinder;
+    private PlayerSpawner playerSpawner;
+
     private bool loading;
     private bool initialSpawnStarted;
 
     private SceneDestination pendingDestination;
-
-    private PlayerInput boundPlayerInput;
-    private InputAction boundLookAction;
-    private CameraFollow boundCamera;
 
     private void Awake()
     {
@@ -42,27 +40,32 @@ public sealed class SceneTransitionManager : MonoBehaviour
         if (session == null)
             session = GameSession.Instance;
 
+        playerSceneBinder = new PlayerSceneBinder();
+        playerSpawner = new PlayerSpawner(playerPrefab, playerSceneBinder);
+
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private IEnumerator Start()
     {
-        // Let scene objects finish Awake and OnEnable.
+        // Allow scene objects to finish Awake and OnEnable.
         yield return null;
 
         if (initialSpawnStarted)
             yield break;
 
-        initialSpawnStarted = true;
-
         if (session == null)
             session = GameSession.Instance;
 
+        // Do not permanently consume the initial-spawn attempt if
+        // the session has not been initialized yet.
         if (session == null)
         {
             Debug.LogError("[SceneTransitionManager] No GameSession exists.", this);
             yield break;
         }
+
+        initialSpawnStarted = true;
 
         // Do not create a duplicate player.
         if (session.CurrentPlayer != null)
@@ -77,6 +80,12 @@ public sealed class SceneTransitionManager : MonoBehaviour
         if (context == null)
         {
             Debug.LogError($"No root SceneContext found in '{activeScene.name}'.", this);
+            yield break;
+        }
+
+        if (!context.ValidateConfiguration())
+        {
+            Debug.LogError($"SceneContext configuration is invalid in '{activeScene.name}'.", this);
             yield break;
         }
 
@@ -96,23 +105,33 @@ public sealed class SceneTransitionManager : MonoBehaviour
             }
 
             spawn = context.FindSpawnPoint(initialDestination);
-        }
 
-        // If no initial destination was assigned, use the scene's default.
-        if (spawn == null && initialDestination == null)
+            if (spawn == null)
+            {
+                Debug.LogError(
+                    $"No spawn point in '{activeScene.name}' matches "
+                        + $"initial destination '{initialDestination.name}'.",
+                    this
+                );
+                yield break;
+            }
+        }
+        else
+        {
             spawn = context.GetDefaultSpawnPoint();
+        }
 
         if (spawn == null)
         {
             Debug.LogError(
                 $"No valid initial spawn point found in '{activeScene.name}'. "
-                    + "Assign the Initial Destination or configure a default spawn point.",
+                    + "Assign an Initial Destination or configure a default spawn.",
                 this
             );
             yield break;
         }
 
-        SpawnPlayer(context, spawn, null, false);
+        SpawnPlayer(context, spawn, session.PlayerData);
     }
 
     public bool TransitionTo(SceneDestination destination)
@@ -145,7 +164,8 @@ public sealed class SceneTransitionManager : MonoBehaviour
         )
         {
             Debug.LogError(
-                $"Destination scene '{sceneName}' is empty or not included " + "in Build Settings.",
+                $"Destination scene '{sceneName}' is empty or is not "
+                    + "included in Build Settings.",
                 this
             );
             return false;
@@ -160,17 +180,24 @@ public sealed class SceneTransitionManager : MonoBehaviour
         pendingDestination = destination;
 
         StartCoroutine(TransitionRoutine(destination));
+
         return true;
     }
 
     private IEnumerator TransitionRoutine(SceneDestination destination)
     {
+        if (session == null || !session.BeginTransition())
+        {
+            loading = false;
+            pendingDestination = null;
+            yield break;
+        }
+
         loading = true;
-        session.BeginTransition();
 
         Player oldPlayer = session.CurrentPlayer;
 
-        // Capture and disconnect the old player before destroying it.
+        // Capture state and detach the outgoing player before destroying it.
         if (oldPlayer != null)
         {
             ActionController controller = oldPlayer.GetComponent<ActionController>();
@@ -184,7 +211,7 @@ public sealed class SceneTransitionManager : MonoBehaviour
             session.SetPlayerData(oldPlayer.CaptureState());
             session.UnregisterPlayer(oldPlayer);
 
-            UnbindLookInput();
+            playerSceneBinder.Unbind();
 
             Destroy(oldPlayer.gameObject);
         }
@@ -208,7 +235,7 @@ public sealed class SceneTransitionManager : MonoBehaviour
         while (!operation.isDone)
             yield return null;
 
-        // OnSceneLoaded should spawn and register the new player.
+        // OnSceneLoaded initializes the player.
         yield return null;
 
         if (loading)
@@ -222,6 +249,21 @@ public sealed class SceneTransitionManager : MonoBehaviour
         if (!loading || session == null)
             return;
 
+        if (pendingDestination == null)
+        {
+            AbortTransition("No destination was set for the scene transition.");
+            return;
+        }
+
+        if (pendingDestination.SceneName != scene.name)
+        {
+            AbortTransition(
+                $"Destination '{pendingDestination.name}' targets scene "
+                    + $"'{pendingDestination.SceneName}', but '{scene.name}' was loaded."
+            );
+            return;
+        }
+
         SceneContext context = GetSceneContext(scene);
 
         if (context == null)
@@ -229,48 +271,27 @@ public sealed class SceneTransitionManager : MonoBehaviour
             AbortTransition($"No root SceneContext found in '{scene.name}'.");
             return;
         }
-
-        if (pendingDestination == null)
-{
-    AbortTransition("No destination was set for the scene transition.");
-    return;
-}
-
-if (pendingDestination.SceneName != scene.name)
-{
-    AbortTransition(
-        $"Destination '{pendingDestination.name}' targets scene " +
-        $"'{pendingDestination.SceneName}', but '{scene.name}' was loaded."
-    );
-    return;
-}
-
-SceneSpawnPoint spawn = context.FindSpawnPoint(pendingDestination);
-
-if (spawn == null)
-{
-    AbortTransition(
-        $"No spawn point in '{scene.name}' uses destination " +
-        $"'{pendingDestination.name}'. Check the SceneDestination assignments."
-    );
-    return;
-}
-
-        if (spawn == null)
+        if (!context.ValidateConfiguration())
         {
-            AbortTransition($"No usable spawn point found in '{scene.name}'.");
+            AbortTransition($"SceneContext configuration is invalid in '{scene.name}'.");
             return;
         }
 
-        SpawnPlayer(context, spawn, session.PlayerData, true);
+        SceneSpawnPoint spawn = context.FindSpawnPoint(pendingDestination);
+
+        if (spawn == null)
+        {
+            AbortTransition(
+                $"No spawn point in '{scene.name}' uses destination "
+                    + $"'{pendingDestination.name}'. Check SceneDestination assignments."
+            );
+            return;
+        }
+
+        SpawnPlayer(context, spawn, session.PlayerData);
     }
 
-    private void SpawnPlayer(
-        SceneContext context,
-        SceneSpawnPoint spawn,
-        PlayerSaveData saveData,
-        bool isTransition
-    )
+    private void SpawnPlayer(SceneContext context, SceneSpawnPoint spawn, PlayerSaveData saveData)
     {
         if (context == null || spawn == null)
         {
@@ -286,54 +307,21 @@ if (spawn == null)
             return;
         }
 
-        GameObject instance = Instantiate(
-            playerPrefab,
-            spawn.transform.position,
-            spawn.transform.rotation
-        );
-
-        Player player = instance.GetComponent<Player>();
+        Player player = playerSpawner.TrySpawn(context, spawn, saveData);
 
         if (player == null)
         {
-            Destroy(instance);
-            AbortTransition("Player Prefab has no Player component.");
-            return;
-        }
-
-        // Validate and establish required camera/input connections
-        // before registering the player with the session.
-        if (!ConnectPlayerToScene(player, context))
-        {
-            UnbindLookInput();
-            Destroy(instance);
-
             AbortTransition(
-                "Player setup failed. Check the scene camera, PlayerInput, "
-                    + "and the Look input action."
+                "Player setup failed. Check the player prefab, scene camera, "
+                    + "PlayerInput, Look action, and scene UI references."
             );
             return;
         }
 
-        // Bind scene-specific UI references.
-        context.BindPlayerUIReferences(player);
-
-        InteractionController interactionController = player.GetComponent<InteractionController>();
-
-        if (interactionController != null)
+        // Preserve the existing GameSession registration contract.
+        if (session == null || !session.CompletePlayerSpawn(player))
         {
-            interactionController.SetInteractionPrompt(context.InteractionPrompt);
-        }
-
-        // Restore state before making the player active in the session.
-        player.RestoreState(saveData);
-
-        if (player.WeaponBuffs != null)
-            player.WeaponBuffs.ResumeBuffTimer();
-
-        if (!session.CompletePlayerSpawn(player))
-        {
-            UnbindLookInput();
+            playerSceneBinder.Unbind();
             Destroy(player.gameObject);
 
             AbortTransition("GameSession rejected the newly spawned player.");
@@ -342,65 +330,6 @@ if (spawn == null)
 
         pendingDestination = null;
         loading = false;
-    }
-
-    private bool ConnectPlayerToScene(Player player, SceneContext context)
-    {
-        if (player == null || context == null)
-            return false;
-
-        CameraFollow cameraFollow = context.CameraFollow;
-
-        if (cameraFollow == null)
-        {
-            Debug.LogError(
-                $"SceneContext in '{player.gameObject.scene.name}' has no camera.",
-                context
-            );
-            return false;
-        }
-
-        PlayerInput playerInput = player.GetComponent<PlayerInput>();
-
-        if (playerInput == null)
-        {
-            Debug.LogError("Player Prefab has no PlayerInput component.", player);
-            return false;
-        }
-
-        if (playerInput.actions == null)
-        {
-            Debug.LogError("PlayerInput has no Input Actions asset assigned.", player);
-            return false;
-        }
-
-        InputAction lookAction = playerInput.actions.FindAction("Look", false);
-
-        if (lookAction == null)
-        {
-            Debug.LogError("The PlayerInput actions asset has no 'Look' action.", player);
-            return false;
-        }
-
-        // All required references are valid. Connect the player.
-        UnbindLookInput();
-
-        cameraFollow.SetTarget(player.transform);
-
-        PlayerMovement movement = player.GetComponent<PlayerMovement>();
-
-        if (movement != null)
-            movement.SetMovementReference(cameraFollow.transform);
-
-        boundPlayerInput = playerInput;
-        boundLookAction = lookAction;
-        boundCamera = cameraFollow;
-
-        // This script owns the Look callback.
-        // Remove duplicate Look callbacks from PlayerInput's Inspector Unity Events.
-        boundLookAction.performed += boundCamera.OnLook;
-
-        return true;
     }
 
     private bool ValidatePlayerPrefab()
@@ -413,16 +342,16 @@ if (spawn == null)
 
         if (playerPrefab.GetComponent<Player>() == null)
         {
-            Debug.LogError("[SceneTransitionManager] Player Prefab has no Player component.", this);
+            Debug.LogError("[SceneTransitionManager] Player prefab has no Player component.", this);
             return false;
         }
 
-        PlayerInput playerInput = playerPrefab.GetComponent<PlayerInput>();
+        var playerInput = playerPrefab.GetComponent<UnityEngine.InputSystem.PlayerInput>();
 
         if (playerInput == null)
         {
             Debug.LogError(
-                "[SceneTransitionManager] Player Prefab has no PlayerInput component.",
+                "[SceneTransitionManager] Player prefab has no PlayerInput component.",
                 this
             );
             return false;
@@ -431,7 +360,7 @@ if (spawn == null)
         if (playerInput.actions == null || playerInput.actions.FindAction("Look", false) == null)
         {
             Debug.LogError(
-                "[SceneTransitionManager] Player Prefab must have an "
+                "[SceneTransitionManager] Player prefab must have an "
                     + "Input Actions asset containing a 'Look' action.",
                 this
             );
@@ -441,19 +370,8 @@ if (spawn == null)
         return true;
     }
 
-    private void UnbindLookInput()
-    {
-        if (boundLookAction != null && boundCamera != null)
-            boundLookAction.performed -= boundCamera.OnLook;
-
-        boundLookAction = null;
-        boundPlayerInput = null;
-        boundCamera = null;
-    }
-
     private SceneContext GetSceneContext(Scene scene)
     {
-        // SceneContext is expected on a root GameObject.
         GameObject[] roots = scene.GetRootGameObjects();
 
         foreach (GameObject root in roots)
@@ -471,7 +389,7 @@ if (spawn == null)
     {
         Debug.LogError($"[SceneTransitionManager] {reason}", this);
 
-        UnbindLookInput();
+        playerSceneBinder?.Unbind();
 
         loading = false;
         pendingDestination = null;
@@ -485,7 +403,7 @@ if (spawn == null)
         if (Instance != this)
             return;
 
-        UnbindLookInput();
+        playerSceneBinder?.Unbind();
 
         SceneManager.sceneLoaded -= OnSceneLoaded;
 

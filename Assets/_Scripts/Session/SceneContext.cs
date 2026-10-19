@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -23,6 +24,9 @@ public sealed class SceneContext : MonoBehaviour
     public CameraFollow CameraFollow => cameraFollow;
     public InteractionPromptUI InteractionPrompt => interactionPrompt;
 
+    /// <summary>
+    /// Finds the spawn point associated with the supplied destination asset.
+    /// </summary>
     public SceneSpawnPoint FindSpawnPoint(SceneDestination destination)
     {
         if (destination == null || spawnPoints == null)
@@ -37,12 +41,15 @@ public sealed class SceneContext : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Returns the spawn point named DefaultSpawn, if present.
+    /// Otherwise returns the first valid spawn-point entry.
+    /// </summary>
     public SceneSpawnPoint GetDefaultSpawnPoint()
     {
         if (spawnPoints == null)
             return null;
 
-        // Prefer a spawn point explicitly named DefaultSpawn.
         foreach (SceneSpawnPoint point in spawnPoints)
         {
             if (
@@ -50,7 +57,7 @@ public sealed class SceneContext : MonoBehaviour
                 && string.Equals(
                     point.gameObject.name,
                     "DefaultSpawn",
-                    System.StringComparison.OrdinalIgnoreCase
+                    StringComparison.OrdinalIgnoreCase
                 )
             )
             {
@@ -58,7 +65,6 @@ public sealed class SceneContext : MonoBehaviour
             }
         }
 
-        // Otherwise, return the first valid entry.
         foreach (SceneSpawnPoint point in spawnPoints)
         {
             if (point != null)
@@ -68,6 +74,116 @@ public sealed class SceneContext : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Validates the required scene references and spawn-point configuration.
+    /// Returns false if a required configuration error is found.
+    /// </summary>
+    public bool ValidateConfiguration()
+    {
+        bool isValid = true;
+
+        if (cameraFollow == null)
+        {
+            Debug.LogError(
+                "[SceneContext] CameraFollow is not assigned.",
+                this
+            );
+
+            isValid = false;
+        }
+
+        if (spawnPoints == null || spawnPoints.Length == 0)
+        {
+            Debug.LogError(
+                "[SceneContext] No spawn points are assigned.",
+                this
+            );
+
+            return false;
+        }
+
+        HashSet<SceneDestination> seenDestinations = new HashSet<SceneDestination>();
+        bool hasValidSpawn = false;
+
+        foreach (SceneSpawnPoint point in spawnPoints)
+        {
+            if (point == null)
+            {
+                Debug.LogWarning(
+                    "[SceneContext] The spawn-point array contains an empty entry.",
+                    this
+                );
+
+                continue;
+            }
+
+            hasValidSpawn = true;
+
+            if (point.gameObject.scene != gameObject.scene)
+            {
+                Debug.LogError(
+                    $"[SceneContext] Spawn point '{point.name}' belongs to a different scene.",
+                    point
+                );
+
+                isValid = false;
+                continue;
+            }
+
+            SceneDestination destination = point.Destination;
+
+            if (destination == null)
+            {
+                Debug.LogWarning(
+                    $"[SceneContext] Spawn point '{point.name}' has no SceneDestination assigned.",
+                    point
+                );
+
+                // A destination-less spawn can still be used as the
+                // fallback spawn, so this is a warning, not a failure.
+                continue;
+            }
+
+            if (!seenDestinations.Add(destination))
+            {
+                Debug.LogError(
+                    $"[SceneContext] Destination '{destination.name}' is assigned " +
+                    "to more than one spawn point in this scene.",
+                    point
+                );
+
+                isValid = false;
+            }
+
+            if (destination.SceneName != gameObject.scene.name)
+            {
+                Debug.LogError(
+                    $"[SceneContext] Destination '{destination.name}' targets " +
+                    $"scene '{destination.SceneName}', but this context is in " +
+                    $"'{gameObject.scene.name}'.",
+                    point
+                );
+
+                isValid = false;
+            }
+        }
+
+        if (!hasValidSpawn)
+        {
+            Debug.LogError(
+                "[SceneContext] No valid spawn-point references are assigned.",
+                this
+            );
+
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    /// <summary>
+    /// Connects optional scene-specific skill UI to the spawned player.
+    /// </summary>
     public void BindPlayerUIReferences(Player player)
     {
         if (player == null)
@@ -81,6 +197,7 @@ public sealed class SceneContext : MonoBehaviour
                 "[SceneContext] The spawned player has no PlayerInput component.",
                 this
             );
+
             return;
         }
 
@@ -93,74 +210,6 @@ public sealed class SceneContext : MonoBehaviour
 
     private void Awake()
     {
-        if (cameraFollow == null)
-        {
-            Debug.LogError("[SceneContext] Assign CameraFollow.", this);
-        }
-
-        if (spawnPoints == null || spawnPoints.Length == 0)
-        {
-            Debug.LogError("[SceneContext] Assign the scene's spawn points.", this);
-        }
-        else
-        {
-            ValidateSpawnPoints();
-        }
-    }
-
-    private void ValidateSpawnPoints()
-    {
-        HashSet<SceneDestination> seenDestinations = new HashSet<SceneDestination>();
-
-        bool hasValidSpawn = false;
-
-        foreach (SceneSpawnPoint point in spawnPoints)
-        {
-            if (point == null)
-            {
-                Debug.LogWarning(
-                    "[SceneContext] The spawn-point array contains an empty entry.",
-                    this
-                );
-                continue;
-            }
-
-            hasValidSpawn = true;
-
-            SceneDestination destination = point.Destination;
-
-            if (destination == null)
-            {
-                Debug.LogWarning(
-                    $"[SceneContext] Spawn point '{point.name}' has no SceneDestination assigned.",
-                    point
-                );
-                continue;
-            }
-
-            if (!seenDestinations.Add(destination))
-            {
-                Debug.LogError(
-                    $"[SceneContext] Duplicate destination '{destination.name}'. "
-                        + "Each destination should identify only one spawn point per scene.",
-                    point
-                );
-            }
-
-            if (destination.SceneName != gameObject.scene.name)
-            {
-                Debug.LogWarning(
-                    $"[SceneContext] Destination '{destination.name}' targets scene "
-                        + $"'{destination.SceneName}', but this spawn point is in "
-                        + $"'{gameObject.scene.name}'.",
-                    point
-                );
-            }
-        }
-
-        if (!hasValidSpawn)
-        {
-            Debug.LogError("[SceneContext] No valid spawn-point references are assigned.", this);
-        }
+        ValidateConfiguration();
     }
 }

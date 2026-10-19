@@ -35,6 +35,14 @@ public sealed class GameSession : MonoBehaviour
         CurrentSceneName = SceneManager.GetActiveScene().name;
     }
 
+    private void OnDestroy()
+    {
+        if (Instance != this)
+            return;
+
+        Instance = null;
+    }
+
     public void SetPlayerData(PlayerSaveData data)
     {
         PlayerData = data;
@@ -85,7 +93,8 @@ public sealed class GameSession : MonoBehaviour
     }
 
     /// <summary>
-    /// Completes player spawning for both initial spawns and scene transitions.
+    /// Registers a successfully initialized player and completes spawning.
+    /// Supports both initial player spawns and scene transitions.
     /// </summary>
     public bool CompletePlayerSpawn(Player player)
     {
@@ -136,11 +145,29 @@ public sealed class GameSession : MonoBehaviour
             completedEncounterIds.Add(stableId);
     }
 
-    public void BeginTransition()
+    /// <summary>
+    /// Starts a transition if one is not already in progress.
+    /// Returns false if a transition is already active.
+    /// </summary>
+    public bool BeginTransition()
     {
+        if (TransitionInProgress)
+        {
+            Debug.LogWarning(
+                "[GameSession] Cannot begin a transition because one is already in progress.",
+                this
+            );
+
+            return false;
+        }
+
         TransitionInProgress = true;
+        return true;
     }
 
+    /// <summary>
+    /// Clears the transition-in-progress flag.
+    /// </summary>
     public void CancelTransition()
     {
         TransitionInProgress = false;
