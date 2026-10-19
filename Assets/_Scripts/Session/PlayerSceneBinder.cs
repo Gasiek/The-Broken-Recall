@@ -1,19 +1,18 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
-/// Owns the scene-specific camera, movement, and Look input connections
-/// for the currently spawned player.
-/// </summary>
 public sealed class PlayerSceneBinder
 {
     private InputAction boundLookAction;
     private CameraFollow boundCamera;
 
-    /// <summary>
-    /// Connects a player to the scene's camera and input handling.
-    /// If validation fails, no new connections are established.
-    /// </summary>
+    private InputAction boundPauseAction;
+    private PauseController boundPauseController;
+    private PlayerInput boundPlayerInput;
+
+    private CardsMenuUI boundCardsMenuUI;
+    private ActionCollection boundActionCollection;
+
     public bool TryBind(Player player, SceneContext context)
     {
         if (player == null || context == null)
@@ -23,12 +22,23 @@ public sealed class PlayerSceneBinder
         }
 
         CameraFollow cameraFollow = context.CameraFollow;
+        PauseController pauseController = context.PauseController;
+        CardsMenuUI cardsMenuUI = context.CardsMenuUI;
 
         if (cameraFollow == null)
         {
             Debug.LogError(
                 $"[PlayerSceneBinder] Scene '{player.gameObject.scene.name}' "
                     + "has no CameraFollow."
+            );
+            return false;
+        }
+
+        if (pauseController == null || cardsMenuUI == null)
+        {
+            Debug.LogError(
+                $"[PlayerSceneBinder] Scene '{player.gameObject.scene.name}' "
+                    + "must provide PauseController and CardsMenuUI."
             );
             return false;
         }
@@ -49,13 +59,29 @@ public sealed class PlayerSceneBinder
 
         InputAction lookAction = playerInput.actions.FindAction("Look", false);
 
+        InputAction pauseAction = playerInput.actions.FindAction("Player/Pause", false);
+
         if (lookAction == null)
         {
             Debug.LogError("[PlayerSceneBinder] No 'Look' action was found.", player);
             return false;
         }
 
-        // Remove any previous binding before establishing a new one.
+        if (pauseAction == null)
+        {
+            Debug.LogError("[PlayerSceneBinder] No 'Player/Pause' action was found.", player);
+            return false;
+        }
+
+        ActionCollection actionCollection = player.GetComponent<ActionCollection>();
+
+        if (actionCollection == null)
+        {
+            Debug.LogError("[PlayerSceneBinder] Player has no ActionCollection.", player);
+            return false;
+        }
+
+        // Clear previous subscriptions before binding the new player.
         Unbind();
 
         cameraFollow.SetTarget(player.transform);
@@ -63,27 +89,58 @@ public sealed class PlayerSceneBinder
         PlayerMovement movement = player.GetComponent<PlayerMovement>();
 
         if (movement != null)
+        {
             movement.SetMovementReference(cameraFollow.transform);
+        }
 
         boundLookAction = lookAction;
         boundCamera = cameraFollow;
-
-        // This binder owns the Look callback. Do not also configure
-        // the same callback through PlayerInput Inspector Unity Events.
         boundLookAction.performed += boundCamera.OnLook;
+
+        boundPlayerInput = playerInput;
+        boundPauseController = pauseController;
+        boundPauseAction = pauseAction;
+
+        boundPauseController.BindPlayer(boundPlayerInput);
+        boundPauseAction.performed += boundPauseController.OnPause;
+
+        boundCardsMenuUI = cardsMenuUI;
+        boundActionCollection = actionCollection;
+        boundCardsMenuUI.BindActionCollection(boundActionCollection);
 
         return true;
     }
 
-    /// <summary>
-    /// Removes the Look callback subscription owned by this binder.
-    /// </summary>
     public void Unbind()
     {
         if (boundLookAction != null && boundCamera != null)
+        {
             boundLookAction.performed -= boundCamera.OnLook;
+        }
+
+        if (boundPauseAction != null && boundPauseController != null)
+        {
+            boundPauseAction.performed -= boundPauseController.OnPause;
+        }
+
+        if (boundPauseController != null && boundPlayerInput != null)
+        {
+            boundPauseController.UnbindPlayer(boundPlayerInput);
+        }
+
+        if (boundCardsMenuUI != null && boundActionCollection != null)
+        {
+            boundCardsMenuUI.UnbindActionCollection(boundActionCollection);
+        }
 
         boundLookAction = null;
         boundCamera = null;
+
+        boundPauseAction = null;
+        boundPauseController = null;
+        boundPlayerInput = null;
+
+        boundCardsMenuUI = null;
+        boundActionCollection = null;
     }
 }

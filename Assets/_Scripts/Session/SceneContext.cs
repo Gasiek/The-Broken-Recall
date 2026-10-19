@@ -21,8 +21,16 @@ public sealed class SceneContext : MonoBehaviour
     [SerializeField]
     private SkillRemovalUI skillRemovalUI;
 
+    [SerializeField]
+    private PauseController pauseController;
+
+    [SerializeField]
+    private CardsMenuUI cardsMenuUI;
+
     public CameraFollow CameraFollow => cameraFollow;
     public InteractionPromptUI InteractionPrompt => interactionPrompt;
+    public PauseController PauseController => pauseController;
+    public CardsMenuUI CardsMenuUI => cardsMenuUI;
 
     /// <summary>
     /// Finds the spawn point associated with the supplied destination asset.
@@ -84,20 +92,14 @@ public sealed class SceneContext : MonoBehaviour
 
         if (cameraFollow == null)
         {
-            Debug.LogError(
-                "[SceneContext] CameraFollow is not assigned.",
-                this
-            );
+            Debug.LogError("[SceneContext] CameraFollow is not assigned.", this);
 
             isValid = false;
         }
 
         if (spawnPoints == null || spawnPoints.Length == 0)
         {
-            Debug.LogError(
-                "[SceneContext] No spawn points are assigned.",
-                this
-            );
+            Debug.LogError("[SceneContext] No spawn points are assigned.", this);
 
             return false;
         }
@@ -147,8 +149,8 @@ public sealed class SceneContext : MonoBehaviour
             if (!seenDestinations.Add(destination))
             {
                 Debug.LogError(
-                    $"[SceneContext] Destination '{destination.name}' is assigned " +
-                    "to more than one spawn point in this scene.",
+                    $"[SceneContext] Destination '{destination.name}' is assigned "
+                        + "to more than one spawn point in this scene.",
                     point
                 );
 
@@ -158,9 +160,9 @@ public sealed class SceneContext : MonoBehaviour
             if (destination.SceneName != gameObject.scene.name)
             {
                 Debug.LogError(
-                    $"[SceneContext] Destination '{destination.name}' targets " +
-                    $"scene '{destination.SceneName}', but this context is in " +
-                    $"'{gameObject.scene.name}'.",
+                    $"[SceneContext] Destination '{destination.name}' targets "
+                        + $"scene '{destination.SceneName}', but this context is in "
+                        + $"'{gameObject.scene.name}'.",
                     point
                 );
 
@@ -170,10 +172,7 @@ public sealed class SceneContext : MonoBehaviour
 
         if (!hasValidSpawn)
         {
-            Debug.LogError(
-                "[SceneContext] No valid spawn-point references are assigned.",
-                this
-            );
+            Debug.LogError("[SceneContext] No valid spawn-point references are assigned.", this);
 
             isValid = false;
         }
@@ -202,10 +201,10 @@ public sealed class SceneContext : MonoBehaviour
         }
 
         if (skillLearnUI != null)
-            skillLearnUI.BindRuntimeReferences(cameraFollow, input);
+            skillLearnUI.BindRuntimeReferences(input);
 
         if (skillRemovalUI != null)
-            skillRemovalUI.BindRuntimeReferences(cameraFollow, input);
+            skillRemovalUI.BindRuntimeReferences(input);
     }
 
     private void Awake()

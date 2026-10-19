@@ -10,7 +10,6 @@ public sealed class SkillRemovalUI : MonoBehaviour
     private VisualTreeAsset actionListItemTemplate;
 
     private PanelRenderer panelRenderer;
-    private CameraFollow cameraFollow;
     private PlayerInput playerInput;
 
     private VisualElement backdrop;
@@ -54,15 +53,11 @@ public sealed class SkillRemovalUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Called by SceneContext after the current player and scene camera
+    /// Called by SceneContext after the current player
     /// have been connected.
     /// </summary>
-    public void BindRuntimeReferences(
-        CameraFollow sceneCameraFollow,
-        PlayerInput currentPlayerInput
-    )
+    public void BindRuntimeReferences(PlayerInput currentPlayerInput)
     {
-        cameraFollow = sceneCameraFollow;
         playerInput = currentPlayerInput;
     }
 
@@ -109,7 +104,7 @@ public sealed class SkillRemovalUI : MonoBehaviour
             return;
         }
 
-        if (cameraFollow == null || playerInput == null)
+        if (playerInput == null)
         {
             Debug.LogWarning(
                 "[SkillRemovalUI] Runtime references have not been bound. "
@@ -142,7 +137,8 @@ public sealed class SkillRemovalUI : MonoBehaviour
         Time.timeScale = 0f;
 
         playerInput.SwitchCurrentActionMap("UI");
-        cameraFollow.OnPause();
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = true;
         cameraPausedByThisPanel = true;
 
         backdrop.style.display = DisplayStyle.Flex;
@@ -240,8 +236,11 @@ public sealed class SkillRemovalUI : MonoBehaviour
         if (playerInput != null && !string.IsNullOrEmpty(previousActionMap))
             playerInput.SwitchCurrentActionMap(previousActionMap);
 
-        if (cameraPausedByThisPanel && cameraFollow != null)
-            cameraFollow.OnResume();
+        if (cameraPausedByThisPanel)
+        {
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+            UnityEngine.Cursor.visible = false;
+        }
 
         cameraPausedByThisPanel = false;
         previousActionMap = null;

@@ -6,7 +6,6 @@ using UnityEngine.UIElements;
 
 public class CardsMenuUI : MonoBehaviour
 {
-    [SerializeField]
     private ActionCollection actionCollection;
 
     [SerializeField]
@@ -17,10 +16,48 @@ public class CardsMenuUI : MonoBehaviour
     private Button cardsBackButton;
     private Action backCallback;
     private bool isVisible;
+    public bool IsVisible => isVisible;
+
+    public void BindActionCollection(ActionCollection collection)
+    {
+        if (actionCollection == collection)
+        {
+            return;
+        }
+
+        if (actionCollection != null)
+        {
+            actionCollection.Changed -= HandleActionCollectionChanged;
+        }
+
+        actionCollection = collection;
+
+        if (isVisible && actionCollection != null)
+        {
+            actionCollection.Changed += HandleActionCollectionChanged;
+            RefreshCards();
+        }
+    }
+
+    public void UnbindActionCollection(ActionCollection collection)
+    {
+        if (actionCollection != collection)
+        {
+            return;
+        }
+
+        actionCollection.Changed -= HandleActionCollectionChanged;
+        actionCollection = null;
+
+        if (cardContainer != null)
+        {
+            cardContainer.Clear();
+        }
+    }
 
     private void OnEnable()
     {
-        if (actionCollection != null)
+        if (isVisible && actionCollection != null)
         {
             actionCollection.Changed += HandleActionCollectionChanged;
         }
@@ -92,6 +129,11 @@ public class CardsMenuUI : MonoBehaviour
 
     public void Show()
     {
+        if (!isVisible && actionCollection != null && isActiveAndEnabled)
+        {
+            actionCollection.Changed += HandleActionCollectionChanged;
+        }
+
         isVisible = true;
 
         if (cardsSection != null)
@@ -100,7 +142,6 @@ public class CardsMenuUI : MonoBehaviour
         }
 
         RefreshCards();
-
         cardsBackButton?.Focus();
     }
 
@@ -156,6 +197,11 @@ public class CardsMenuUI : MonoBehaviour
 
     public void Hide()
     {
+        if (isVisible && actionCollection != null)
+        {
+            actionCollection.Changed -= HandleActionCollectionChanged;
+        }
+
         isVisible = false;
 
         if (cardsSection != null)
@@ -163,10 +209,7 @@ public class CardsMenuUI : MonoBehaviour
             cardsSection.style.display = DisplayStyle.None;
         }
 
-        if (cardContainer != null)
-        {
-            cardContainer.Clear();
-        }
+        cardContainer?.Clear();
     }
 
     private void HandleBackClicked()

@@ -10,7 +10,6 @@ public sealed class SkillLearnUI : MonoBehaviour
     private VisualTreeAsset cardTemplate;
 
     private PanelRenderer panelRenderer;
-    private CameraFollow cameraFollow;
     private PlayerInput playerInput;
 
     private VisualElement backdrop;
@@ -52,15 +51,13 @@ public sealed class SkillLearnUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Called by SceneContext after the current player and scene camera
+    /// Called by SceneContext after the current player
     /// have been connected.
     /// </summary>
     public void BindRuntimeReferences(
-        CameraFollow sceneCameraFollow,
         PlayerInput currentPlayerInput
     )
     {
-        cameraFollow = sceneCameraFollow;
         playerInput = currentPlayerInput;
     }
 
@@ -105,7 +102,7 @@ public sealed class SkillLearnUI : MonoBehaviour
             return;
         }
 
-        if (cameraFollow == null || playerInput == null)
+        if (playerInput == null)
         {
             Debug.LogWarning(
                 "[SkillLearnUI] Runtime references have not been bound. "
@@ -138,7 +135,8 @@ public sealed class SkillLearnUI : MonoBehaviour
         Time.timeScale = 0f;
 
         playerInput.SwitchCurrentActionMap("UI");
-        cameraFollow.OnPause();
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = true;
         cameraPausedByThisPanel = true;
 
         backdrop.style.display = DisplayStyle.Flex;
@@ -232,8 +230,11 @@ public sealed class SkillLearnUI : MonoBehaviour
         if (playerInput != null && !string.IsNullOrEmpty(previousActionMap))
             playerInput.SwitchCurrentActionMap(previousActionMap);
 
-        if (cameraPausedByThisPanel && cameraFollow != null)
-            cameraFollow.OnResume();
+        if (cameraPausedByThisPanel)
+        {
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+            UnityEngine.Cursor.visible = false;
+        }
 
         cameraPausedByThisPanel = false;
         previousActionMap = null;
