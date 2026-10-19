@@ -63,7 +63,14 @@ public class PlayerAnimation : MonoBehaviour
             ResetCombo();
         }
 
-        float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
+        float targetSpeed = 0f;
+        if (playerMovement.BaseMoveSpeed < playerMovement.CurrentMoveSpeed){
+            targetSpeed = 1f;
+        } else if (playerMovement.IsMoving){
+            targetSpeed = 0.5f;
+        } 
+        Debug.LogWarning($"Speed: {targetSpeed}");
+
         animator.SetFloat(SpeedHash, targetSpeed, dampTime, Time.deltaTime);
 
         ActionDefinition currentAction = actionController.CurrentAction;
