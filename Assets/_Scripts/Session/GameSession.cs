@@ -32,6 +32,9 @@ public sealed class GameSession : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        // A newly created session starts without saved player data.
+        PlayerData = null;
+
         CurrentSceneName = SceneManager.GetActiveScene().name;
     }
 
