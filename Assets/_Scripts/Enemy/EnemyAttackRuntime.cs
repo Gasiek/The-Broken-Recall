@@ -21,6 +21,8 @@ public abstract class EnemyAttackRuntime : IEnemyAttack
 
     public bool CanAttack => Definition != null && !isAttacking && Time.time >= nextAttackTime;
 
+    public bool IsSuperAttack => Definition != null && Definition.IsSuperAttack;
+
     protected EnemyAttackRuntime(
         AttackDefinition definition,
         Transform owner,
@@ -44,7 +46,10 @@ public abstract class EnemyAttackRuntime : IEnemyAttack
 
         target = newTarget;
         isAttacking = true;
-        nextAttackTime = Time.time + Definition.Cooldown;
+        if (Definition.IsSuperAttack)
+        {
+            nextAttackTime = Time.time + Definition.SuperAttackCooldown;
+        }
 
         if (enemyAnimation != null)
             enemyAnimation.PlayAttack(Definition.AnimationTrigger);

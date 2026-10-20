@@ -17,3 +17,6 @@ MonoBehaviour:
   patrolSpeed: 2
   attacks:
   - {fileID: 11400000, guid: 30b1cf0e528ea432a8126e50d8588513, type: 2}
+  - {fileID: 11400000, guid: 96fecb18da30a4ba6b94d8f27b8eacb0, type: 2}
+  generalAttackCooldown: 0.5
+  superAttackChance: 20

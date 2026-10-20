@@ -25,7 +25,43 @@ public class RangedAttackRuntime : EnemyAttackRuntime
         }
 
         Vector3 spawnPosition = projectileSpawnPoint.position;
-        Vector3 direction = target.position - spawnPosition;
+        Vector3 direction;
+
+        switch (Definition.AimMode)
+        {
+            case ProjectileAimMode.SpawnPointForward:
+            {
+                Vector3 forward = projectileSpawnPoint.forward;
+                forward.y = 0f;
+
+                if (forward.sqrMagnitude <= 0.001f)
+                    return;
+
+                forward.Normalize();
+
+                Vector3 toTarget = target.position - spawnPosition;
+
+                float horizontalDistance = Vector3.Dot(
+                    new Vector3(toTarget.x, 0f, toTarget.z),
+                    forward
+                );
+
+                horizontalDistance = Mathf.Max(horizontalDistance, 0.1f);
+
+                float verticalAngle = Mathf.Atan2(toTarget.y, horizontalDistance);
+
+                direction = (
+                    forward * Mathf.Cos(verticalAngle) + Vector3.up * Mathf.Sin(verticalAngle)
+                ).normalized;
+
+                break;
+            }
+
+            case ProjectileAimMode.Target:
+            default:
+                direction = target.position - spawnPosition;
+                break;
+        }
 
         if (direction.sqrMagnitude <= 0.001f)
             return;

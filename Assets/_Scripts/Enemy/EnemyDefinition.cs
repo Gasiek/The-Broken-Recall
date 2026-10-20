@@ -18,10 +18,19 @@ public class EnemyDefinition : ScriptableObject
     [SerializeField]
     private AttackDefinition[] attacks = new AttackDefinition[0];
 
+    [SerializeField, Min(0f)]
+    private float generalAttackCooldown = 2f;
+
+    [SerializeField, Range(0f, 100f)]
+    private float superAttackChance = 20f;
+
     public int MaxHealth => maxHealth;
     public float MoveSpeed => moveSpeed;
     public float PatrolSpeed => patrolSpeed;
     public AttackDefinition[] Attacks => attacks;
+
+    public float GeneralAttackCooldown => generalAttackCooldown;
+    public float SuperAttackChance => superAttackChance;
 
     private void OnValidate()
     {
