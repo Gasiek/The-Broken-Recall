@@ -2091,6 +2091,68 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1001 &413843855
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 754097159}
+    m_Modifications:
+    - target: {fileID: 2363249527387938900, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_Name
+      value: Rasengan
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 206970d98172f407094d082a3b694a81, type: 3}
+--- !u!4 &413843856 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3889246859795133778, guid: 206970d98172f407094d082a3b694a81, type: 3}
+  m_PrefabInstance: {fileID: 413843855}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &427455571
 GameObject:
   m_ObjectHideFlags: 0
@@ -3194,6 +3256,11 @@ MonoBehaviour:
   cameraFollow: {fileID: 330585548}
   playerInput: {fileID: 1194145307}
   actionListItemTemplate: {fileID: 9197481963319205126, guid: e50710e25f6c14586903a0fb239ba160, type: 3}
+--- !u!4 &754097159 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4425581764002347504, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
+  m_PrefabInstance: {fileID: 1846121257}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &761883489 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8723199989144047760, guid: 9f7f00f504ca14b45b69bef0b9f699c0, type: 3}
@@ -16141,10 +16208,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ActionCollection
   actions:
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
+  - definition: {fileID: 11400000, guid: 7d50f9d3108ca429b9d3c40196c6e008, type: 2}
+  - definition: {fileID: 11400000, guid: e82f9f8f21f614e4cbd044f89bfdc4a2, type: 2}
+  - definition: {fileID: 11400000, guid: 2653b44309e5e430ba12bb6e79ac85f7, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16566,6 +16632,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   definition: {fileID: 11400000, guid: 1aeebf283e25249ccb30647700eaeefa, type: 2}
   weapon: {fileID: 427455572}
+  leftHand: {fileID: 754097159}
 --- !u!114 &1194145316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20405,6 +20472,9 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4425581764002347504, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 413843856}
     - targetCorrespondingSourceObject: {fileID: 6547680489258809703, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 427455572}

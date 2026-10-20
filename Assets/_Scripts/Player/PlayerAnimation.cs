@@ -16,6 +16,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int DyingHash = Animator.StringToHash("Dying");
     private static readonly int StunHash = Animator.StringToHash("Stun");
     private static readonly int ComboStepHash = Animator.StringToHash("BasicHitCombo");
+    private static readonly int RasenganHash = Animator.StringToHash("Rasengan");
 
     [SerializeField]
     private Animator animator;
@@ -63,13 +64,19 @@ public class PlayerAnimation : MonoBehaviour
             ResetCombo();
         }
 
-        float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
+        float targetSpeed = 0f;
+        if (playerMovement.IsMoving)
+        {
+            targetSpeed = playerMovement.CurrentMoveSpeed > playerMovement.BaseMoveSpeed ? 1f : 0.5f;
+        }
         animator.SetFloat(SpeedHash, targetSpeed, dampTime, Time.deltaTime);
 
         ActionDefinition currentAction = actionController.CurrentAction;
         if (currentAction != lastAction)
         {
             lastAction = currentAction;
+
+            Debug.LogWarning($"Action: {currentAction}");
 
             switch (currentAction)
             {
@@ -110,6 +117,9 @@ public class PlayerAnimation : MonoBehaviour
                     break;
                 case StunAction:
                     animator.SetTrigger(StunHash);
+                    break;
+                case RasenganAction:
+                    animator.SetTrigger(RasenganHash);
                     break;
                 default:
                     ResetAnimations();
@@ -166,5 +176,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.ResetTrigger(KickHash);
         animator.ResetTrigger(DyingHash);
         animator.ResetTrigger(StunHash);
+        animator.ResetTrigger(RasenganHash);
     }
 }
