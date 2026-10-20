@@ -7,7 +7,6 @@ public class BlockAction : ActionDefinition
     public override IEnumerator Execute(ActionContext context)
     {
         context.Health.StartInvincibility();
-        context.Visuals.Block(Duration);
 
         yield return new WaitForSeconds(Duration);
 

@@ -20,13 +20,7 @@ public class ApplyWeaponBuffAction : ActionDefinition
             yield break;
         }
 
-        // 1. Play weapon charge animation
-        if (context.Visuals != null)
-        {
-            context.Visuals.ChargeSword(Duration);
-        }
-
-        // 2. Apply buff to player's weapon manager
+        // 1. Apply buff to player's weapon manager
         if (buffDefinition != null)
         {
             WeaponBuffManager buffManager = context.Player.GetComponent<WeaponBuffManager>();

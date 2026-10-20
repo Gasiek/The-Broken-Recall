@@ -5,7 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerStateMachine))]
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(ActionMemory))]
-[RequireComponent(typeof(PlayerActionVisuals))]
 [RequireComponent(typeof(WeaponBuffManager))]
 [RequireComponent(typeof(Health))]
 public class ActionController : MonoBehaviour
@@ -17,7 +16,6 @@ public class ActionController : MonoBehaviour
     private PlayerStateMachine stateMachine;
     private PlayerMovement playerMovement;
     private ActionMemory actionMemory;
-    private PlayerActionVisuals actionVisuals;
     private Health health;
     private WeaponBuffManager weaponBuffs;
 
@@ -37,7 +35,6 @@ public class ActionController : MonoBehaviour
         stateMachine = GetComponent<PlayerStateMachine>();
         playerMovement = GetComponent<PlayerMovement>();
         actionMemory = GetComponent<ActionMemory>();
-        actionVisuals = GetComponent<PlayerActionVisuals>();
         health = GetComponent<Health>();
         weaponBuffs = GetComponent<WeaponBuffManager>();
     }
@@ -72,7 +69,6 @@ public class ActionController : MonoBehaviour
             transform,
             playerMovement,
             health,
-            actionVisuals,
             action,
             weaponBuffs
         );

@@ -33,8 +33,6 @@ public class StunAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
-        context.Visuals.BasicHit();
-
         float halfDuration = Duration * 0.5f;
         yield return new WaitForSeconds(halfDuration);
 

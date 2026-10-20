@@ -15,8 +15,6 @@ public class BasicHitAction : ActionDefinition
 
     public override IEnumerator Execute(ActionContext context)
     {
-        context.Visuals.BasicHit();
-
         yield return new WaitForSeconds(Duration * 0.5f);
 
         DealDamage(context);
