@@ -3,6 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(ActionController))]
 [RequireComponent(typeof(Health))]
+[RequireComponent(typeof(DashController))]
 public class PlayerAnimation : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -16,6 +17,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int DyingHash = Animator.StringToHash("Dying");
     private static readonly int StunHash = Animator.StringToHash("Stun");
     private static readonly int ComboStepHash = Animator.StringToHash("BasicHitCombo");
+    private static readonly int RollHash = Animator.StringToHash("Roll");
 
     [SerializeField]
     private Animator animator;
@@ -31,6 +33,7 @@ public class PlayerAnimation : MonoBehaviour
     private PlayerMovement playerMovement;
     private ActionController actionController;
     private Health health;
+    private DashController dashController;
     private ActionDefinition lastAction;
     private bool isDead;
     private int currentComboStep;
@@ -43,6 +46,7 @@ public class PlayerAnimation : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
         actionController = GetComponent<ActionController>();
         health = GetComponent<Health>();
+        dashController = GetComponent<DashController>();
     }
 
     private void OnEnable()
@@ -50,6 +54,11 @@ public class PlayerAnimation : MonoBehaviour
         if (health != null)
         {
             health.Died += HandleDeath;
+        }
+
+        if (dashController != null)
+        {
+            dashController.DashStarted += HandleDashStarted;
         }
     }
 
@@ -130,11 +139,24 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetTrigger(DyingHash);
     }
 
+    private void HandleDashStarted()
+    {
+        if (animator == null || isDead)
+            return;
+
+        animator.SetTrigger(RollHash);
+    }
+
     private void OnDisable()
     {
         if (health != null)
         {
             health.Died -= HandleDeath;
+        }
+
+        if (dashController != null)
+        {
+            dashController.DashStarted -= HandleDashStarted;
         }
 
         isDead = false;
@@ -166,5 +188,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.ResetTrigger(KickHash);
         animator.ResetTrigger(DyingHash);
         animator.ResetTrigger(StunHash);
+        animator.ResetTrigger(RollHash);
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -14,6 +15,8 @@ public class DashController : MonoBehaviour
     private float dashTimer;
     private float cooldownTimer;
     private Vector3 dashDirection;
+
+    public event Action DashStarted;
 
     private void Awake()
     {
@@ -49,6 +52,8 @@ public class DashController : MonoBehaviour
         cooldownTimer = playerDefinition.DashCooldown;
 
         stateMachine.StartDashing();
+
+        DashStarted?.Invoke();
     }
 
     private void UpdateDash()
