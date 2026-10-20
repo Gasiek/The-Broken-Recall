@@ -12,12 +12,17 @@ public class Player : MonoBehaviour
     [SerializeField]
     private Transform weapon;
 
+    [Tooltip("Lefty loose")]
+    [SerializeField]
+    private Transform leftHand;
+
     public PlayerDefinition Definition => definition;
     public Transform Weapon => weapon;
     public Health Health { get; private set; }
     public PlayerStateMachine StateMachine { get; private set; }
     public ActionCollection ActionCollection { get; private set; }
     public ActionMemory ActionMemory { get; private set; }
+    public Transform LeftHand => leftHand;
 
     private void Awake()
     {
