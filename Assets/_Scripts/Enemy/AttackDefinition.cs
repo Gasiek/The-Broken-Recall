@@ -70,6 +70,13 @@ public class AttackDefinition : ScriptableObject
     [SerializeField, Min(0f)]
     private float superAttackCooldown = 8f;
 
+    [Header("Impact Effects")]
+    [SerializeField]
+    private bool pushesTarget;
+
+    [SerializeField, Min(0f)]
+    private float pushDistance = 2f;
+
     public AudioClip ProjectileLaunchSound => projectileLaunchSound;
     public float ProjectileLaunchSoundVolume => projectileLaunchSoundVolume;
     public AudioClip MeleeImpactSound => meleeImpactSound;
@@ -86,4 +93,6 @@ public class AttackDefinition : ScriptableObject
     public ProjectileAimMode AimMode => aimMode;
     public bool IsSuperAttack => isSuperAttack;
     public float SuperAttackCooldown => superAttackCooldown;
+    public bool PushesTarget => pushesTarget;
+    public float PushDistance => pushDistance;
 }

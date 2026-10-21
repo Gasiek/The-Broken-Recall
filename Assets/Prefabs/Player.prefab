@@ -605,6 +605,7 @@ GameObject:
   - component: {fileID: 3448127732034560218}
   - component: {fileID: 3606303093360516819}
   - component: {fileID: 1057827206836787202}
+  - component: {fileID: -7989781241684946519}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -1268,3 +1269,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HitVisuals
   hitParticlePrefab: {fileID: 3999699402599864446, guid: dec6211596081439fb7d9889c59f582b, type: 3}
   spawnOffset: {x: 0, y: 1, z: 0}
+--- !u!114 &-7989781241684946519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8871950886247871719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed7cfc176250d4e1ea81638b4cbad2fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PushReceiver
+  pushDuration: 0.2

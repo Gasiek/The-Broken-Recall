@@ -16,7 +16,7 @@ public class MeleeAttackRuntime : EnemyAttackRuntime
         if (!isAttacking || target == null || Definition == null)
             return;
 
-        if (attackOrigin == null)
+        if (owner == null || attackOrigin == null)
             return;
 
         float distance = Vector3.Distance(owner.position, target.position);
@@ -31,26 +31,37 @@ public class MeleeAttackRuntime : EnemyAttackRuntime
             if (hit == null)
                 continue;
 
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-
-            if (damageable == null)
+            if (hit.transform.root != target.root)
                 continue;
 
-            Transform hitRoot = hit.transform.root;
-            Transform targetRoot = target.root;
+            IDamageable damageable = hit.GetComponentInParent<IDamageable>();
 
-            if (hitRoot != targetRoot)
-                continue;
+            IPushable pushable = hit.GetComponentInParent<IPushable>();
 
-            damageable.TakeDamage(Definition.Damage);
-
-            if (Definition.MeleeImpactSound != null && AudioManager.Instance != null)
+            if (damageable != null)
             {
-                AudioManager.Instance.PlayWorldSFX(
-                    Definition.MeleeImpactSound,
-                    hit.ClosestPoint(attackOrigin.position),
-                    Definition.MeleeImpactSoundVolume
-                );
+                damageable.TakeDamage(Definition.Damage);
+
+                if (Definition.MeleeImpactSound != null && AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayWorldSFX(
+                        Definition.MeleeImpactSound,
+                        hit.ClosestPoint(attackOrigin.position),
+                        Definition.MeleeImpactSoundVolume
+                    );
+                }
+            }
+
+            if (Definition.PushesTarget && Definition.PushDistance > 0f && pushable != null)
+            {
+                Vector3 pushDirection = target.position - owner.position;
+
+                pushDirection.y = 0f;
+
+                if (pushDirection.sqrMagnitude > 0.001f)
+                {
+                    pushable.Push(pushDirection.normalized, Definition.PushDistance);
+                }
             }
 
             break;
