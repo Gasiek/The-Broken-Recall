@@ -1,48 +1,49 @@
-using System.Collections;
 using UnityEngine;
 
-[CreateAssetMenu(
-    fileName = "BasicHitAction",
-    menuName = "RPG/Actions/Basic Hit"
-)]
+[CreateAssetMenu(fileName = "BasicHitAction", menuName = "RPG/Actions/Basic Hit")]
 public class BasicHitAction : ActionDefinition
 {
-    [SerializeField] private int damage = 10;
-    [SerializeField] private float attackRange = 1.5f;
+    [SerializeField]
+    private int damage = 10;
+
+    [SerializeField]
+    private float attackRange = 1.5f;
+
     [Tooltip("The radius of the sphere cast for the attack.")]
-    [SerializeField] private float attackRadius = 0.35f;
-    [SerializeField] private LayerMask targetLayer;
+    [SerializeField]
+    private float attackRadius = 0.35f;
 
-    public override IEnumerator Execute(ActionContext context)
+    [SerializeField]
+    private LayerMask targetLayer;
+
+    public override void OnAnimationImpact(ActionContext context)
     {
-        yield return new WaitForSeconds(Duration * 0.5f);
-
         DealDamage(context);
-
-        yield return new WaitForSeconds(Duration * 0.5f);
     }
 
     private void DealDamage(ActionContext context)
     {
         Vector3 origin = context.Player.position;
         Vector3 direction = context.Player.forward;
-        if (!Physics.SphereCast(
-            origin,
-            attackRadius,
-            direction,
-            out RaycastHit hit,
-            attackRange,
-            targetLayer))
-    {
-        return;
-    }
 
-        IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
-
-        if (damageable == null)
+        if (
+            !Physics.SphereCast(
+                origin,
+                attackRadius,
+                direction,
+                out RaycastHit hit,
+                attackRange,
+                targetLayer
+            )
+        )
         {
             return;
         }
+
+        IDamageable damageable = hit.collider.GetComponent<IDamageable>();
+
+        if (damageable == null)
+            return;
 
         CombatResolver.ResolveAttackHit(
             context.Player.gameObject,
@@ -53,5 +54,6 @@ public class BasicHitAction : ActionDefinition
         );
     }
 
-    public override string GetDescription() => $"Delivers a quick slash dealing {damage} damage to an enemy in front.";
+    public override string GetDescription() =>
+        $"Delivers a quick slash dealing {damage} damage to an enemy in front.";
 }

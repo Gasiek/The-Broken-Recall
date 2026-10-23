@@ -25,7 +25,17 @@ public abstract class ActionDefinition : ScriptableObject
     public Sprite Icon => icon;
     public int ReshuffleCooldown => reshuffleCooldown;
 
-    public abstract IEnumerator Execute(ActionContext context);
+    // Called when the action begins.
+    public virtual void OnStarted(ActionContext context) { }
+
+    // Called by an animation event at the appropriate frame.
+    public virtual void OnAnimationImpact(ActionContext context) { }
+
+    // Called when the action animation reaches its finish event.
+    public virtual void OnAnimationFinished(ActionContext context) { }
+
+    // Called if the action is interrupted or cancelled.
+    public virtual void OnCancelled(ActionContext context) { }
 
     public virtual string GetDescription() => string.Empty;
 }

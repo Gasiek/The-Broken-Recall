@@ -20,13 +20,12 @@ public class PushAction : ActionDefinition
     [SerializeField]
     private LayerMask targetLayer;
 
-    public override IEnumerator Execute(ActionContext context)
+    public override void OnAnimationImpact(ActionContext context)
     {
-        yield return new WaitForSeconds(Duration * 0.2f);
+        if (context == null || context.Player == null)
+            return;
 
         DealDamageAndPush(context);
-
-        yield return new WaitForSeconds(Duration * 0.5f);
     }
 
     private void DealDamageAndPush(ActionContext context)
@@ -48,7 +47,7 @@ public class PushAction : ActionDefinition
             return;
         }
 
-        IDamageable damageable = hit.collider.GetComponentInParent<IDamageable>();
+        IDamageable damageable = hit.collider.GetComponent<IDamageable>();
 
         if (damageable != null)
         {
@@ -61,7 +60,7 @@ public class PushAction : ActionDefinition
             );
         }
 
-        IPushable pushable = hit.collider.GetComponentInParent<IPushable>();
+        IPushable pushable = hit.collider.GetComponent<IPushable>();
 
         if (pushable != null)
         {

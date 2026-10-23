@@ -13,13 +13,12 @@ public class TornadoAction : ActionDefinition
     [SerializeField]
     private LayerMask targetLayer;
 
-    public override IEnumerator Execute(ActionContext context)
+    public override void OnAnimationImpact(ActionContext context)
     {
-        yield return new WaitForSeconds(Duration * 0.5f);
+        if (context == null || context.Player == null)
+            return;
 
         DealDamage(context);
-
-        yield return new WaitForSeconds(Duration * 0.5f);
     }
 
     private void DealDamage(ActionContext context)
@@ -30,7 +29,7 @@ public class TornadoAction : ActionDefinition
 
         foreach (Collider hit in hits)
         {
-            IDamageable damageable = hit.GetComponentInParent<IDamageable>();
+            IDamageable damageable = hit.GetComponent<IDamageable>();
 
             if (damageable == null)
             {

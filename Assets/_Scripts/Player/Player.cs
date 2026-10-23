@@ -9,11 +9,7 @@ public class Player : MonoBehaviour
     [SerializeField]
     private PlayerDefinition definition;
 
-    [SerializeField]
-    private Transform weapon;
-
     public PlayerDefinition Definition => definition;
-    public Transform Weapon => weapon;
     public Health Health { get; private set; }
     public PlayerStateMachine StateMachine { get; private set; }
     public ActionCollection ActionCollection { get; private set; }

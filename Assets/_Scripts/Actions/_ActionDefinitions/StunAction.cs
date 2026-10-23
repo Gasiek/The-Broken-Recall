@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "StunAction", menuName = "RPG/Actions/Stun")]
@@ -31,14 +30,12 @@ public class StunAction : ActionDefinition
     public float AttackRange => attackRange;
     public float StunDuration => stunStatusEffect != null ? stunStatusEffect.Duration : 0f;
 
-    public override IEnumerator Execute(ActionContext context)
+    public override void OnAnimationImpact(ActionContext context)
     {
-        float halfDuration = Duration * 0.5f;
-        yield return new WaitForSeconds(halfDuration);
+        if (context == null || context.Player == null)
+            return;
 
         PerformStunStrike(context);
-
-        yield return new WaitForSeconds(halfDuration);
     }
 
     private void PerformStunStrike(ActionContext context)
@@ -46,15 +43,17 @@ public class StunAction : ActionDefinition
         Vector3 origin = context.Player.position + Vector3.up * 0.8f;
         Vector3 direction = context.Player.forward;
 
-        if (!Physics.SphereCast(
-            origin,
-            attackRadius,
-            direction,
-            out RaycastHit hit,
-            attackRange,
-            targetLayer,
-            QueryTriggerInteraction.Ignore
-        ))
+        if (
+            !Physics.SphereCast(
+                origin,
+                attackRadius,
+                direction,
+                out RaycastHit hit,
+                attackRange,
+                targetLayer,
+                QueryTriggerInteraction.Ignore
+            )
+        )
         {
             return;
         }
@@ -86,7 +85,11 @@ public class StunAction : ActionDefinition
 
         if (stunSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlayWorldSFX(stunSound, targetObj.transform.position, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(
+                stunSound,
+                targetObj.transform.position,
+                soundVolume
+            );
         }
     }
 }

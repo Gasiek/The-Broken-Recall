@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "HealAction", menuName = "RPG/Actions/Heal")]
@@ -15,15 +14,13 @@ public class HealAction : ActionDefinition
     [SerializeField]
     private Vector3 vfxOffset = Vector3.zero;
 
-    public override IEnumerator Execute(ActionContext context)
+    public override void OnAnimationImpact(ActionContext context)
     {
         if (context == null)
-            yield break;
+            return;
 
         if (context.Health != null)
-        {
             context.Health.Heal(healAmount);
-        }
 
         if (healVfxPrefab != null && context.Player != null)
         {
@@ -36,8 +33,6 @@ public class HealAction : ActionDefinition
                 context.Player
             );
         }
-
-        yield return new WaitForSeconds(Duration);
     }
 
     public override string GetDescription() => $"Restores {healAmount} health instantly.";

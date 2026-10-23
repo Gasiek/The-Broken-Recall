@@ -22,11 +22,8 @@ MonoBehaviour:
   targetLayer:
     serializedVersion: 2
     m_Bits: 64
-  prepDuration: 0.3
-  holdDuration: 0.25
-  chargeMoveDuration: 0.5
-  chargeDistance: 10
-  recoveryDuration: 0.2
+  chargeMoveDuration: 0.2
+  chargeDistance: 4
   dashSound: {fileID: 8300000, guid: 609d1590d78734a8385836d0360d95d1, type: 3}
   soundVolume: 0.9
   dashTrailVfxPrefab: {fileID: 0}

@@ -17,20 +17,12 @@ public class SwordChargeAction : ActionDefinition
     private LayerMask targetLayer;
 
     [Header("Charge Motion & Timing")]
-    [SerializeField]
-    private float prepDuration = 0.3f;
-
-    [SerializeField]
-    private float holdDuration = 0.25f;
 
     [SerializeField]
     private float chargeMoveDuration = 1.0f;
 
     [SerializeField]
     private float chargeDistance = 4.0f;
-
-    [SerializeField]
-    private float recoveryDuration = 0.2f;
 
     [Header("Audio & Effects")]
     [SerializeField]
@@ -47,43 +39,39 @@ public class SwordChargeAction : ActionDefinition
     public float ChargeDistance => chargeDistance;
     public float ChargeMoveDuration => chargeMoveDuration;
 
-    public override IEnumerator Execute(ActionContext context)
+    public override void OnAnimationImpact(ActionContext context)
     {
-        PlayerMovement movement = context.Movement;
-
-        float prepTime = Mathf.Max(0f, prepDuration) + Mathf.Max(0f, holdDuration);
-
-        if (prepTime > 0f)
-            yield return new WaitForSeconds(prepTime);
+        if (context?.Player == null || context.Movement == null)
+            return;
 
         if (context.Health == null || context.Health.IsDead)
-        {
-            movement.CancelChargeMovement();
-            yield break;
-        }
+            return;
 
         Vector3 direction = context.Player.forward;
         direction.y = 0f;
 
         if (direction.sqrMagnitude < 0.001f)
-        {
-            movement.CancelChargeMovement();
-            yield break;
-        }
+            return;
 
         direction.Normalize();
 
-        if (!movement.BeginChargeMovement(direction, chargeDistance, chargeMoveDuration))
+        if (!context.Movement.BeginChargeMovement(direction, chargeDistance, chargeMoveDuration))
         {
-            movement.CancelChargeMovement();
-            yield break;
+            context.Movement.CancelChargeMovement();
+            return;
         }
 
         PlayChargeEffects(context, direction);
 
-        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
+        GetRoutineRunner(context).Run(ChargeRoutine(context, direction));
+    }
 
-        while (movement.IsChargeMoving)
+    private IEnumerator ChargeRoutine(ActionContext context, Vector3 direction)
+    {
+        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
+        PlayerMovement movement = context.Movement;
+
+        while (movement != null && movement.IsChargeMoving)
         {
             if (context.Health == null || context.Health.IsDead)
                 break;
@@ -93,14 +81,27 @@ public class SwordChargeAction : ActionDefinition
             yield return null;
         }
 
-        // Release charge movement before recovery.
-        movement.CancelChargeMovement();
+        if (movement != null)
+            movement.CancelChargeMovement();
+    }
 
-        if (context.Health != null && !context.Health.IsDead)
-            PerformChargeDamage(context, direction, damagedTargets);
+    public override void OnAnimationFinished(ActionContext context)
+    {
+        CleanupCharge(context);
+    }
 
-        if (recoveryDuration > 0f)
-            yield return new WaitForSeconds(recoveryDuration);
+    public override void OnCancelled(ActionContext context)
+    {
+        if (context?.Player != null)
+            GetRoutineRunner(context).StopAllActionRoutines();
+
+        CleanupCharge(context);
+    }
+
+    private void CleanupCharge(ActionContext context)
+    {
+        if (context?.Movement != null)
+            context.Movement.CancelChargeMovement();
     }
 
     private void PlayChargeEffects(ActionContext context, Vector3 direction)
@@ -155,5 +156,10 @@ public class SwordChargeAction : ActionDefinition
                 hitPoint
             );
         }
+    }
+
+    private ActionRoutineRunner GetRoutineRunner(ActionContext context)
+    {
+        return context.Player.GetComponent<ActionRoutineRunner>();
     }
 }

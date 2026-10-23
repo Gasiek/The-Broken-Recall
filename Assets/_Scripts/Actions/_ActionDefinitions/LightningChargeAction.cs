@@ -11,7 +11,7 @@ public class LightningChargeAction : ActionDefinition
     [Header("Visual Effects")]
     [Tooltip("LineRenderer lightning attached to the weapon while charged.")]
     [SerializeField]
-    private Lightning swordLightningPrefab;
+    private LightningVfx swordLightningVfxPrefab;
 
     [Tooltip("Burst of lightning sparks spawned at the hit point when consuming the charge.")]
     [SerializeField]
@@ -28,36 +28,26 @@ public class LightningChargeAction : ActionDefinition
     [SerializeField]
     private float soundVolume = 0.8f;
 
-    public override IEnumerator Execute(ActionContext context)
+    public override void OnStarted(ActionContext context)
     {
         if (context == null || context.Player == null)
-        {
-            yield break;
-        }
+            return;
 
-        // 1. Play charge sound at the player's position
         if (chargeSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlayWorldSFX(
-                chargeSound,
-                context.Player.transform.position,
-                soundVolume
-            );
+            AudioManager.Instance.PlayWorldSFX(chargeSound, context.Player.position, soundVolume);
         }
 
-        // 2. Apply lightning charge to player's weapon
         if (context.WeaponBuffs != null)
         {
             context.WeaponBuffs.ApplyCustomBuff(
                 bonusDamage,
-                swordLightningPrefab,
+                swordLightningVfxPrefab,
                 onHitDischargeVfxPrefab,
                 dischargeSound,
                 soundVolume
             );
         }
-
-        yield return new WaitForSeconds(Duration);
     }
 
     public override string GetDescription() =>

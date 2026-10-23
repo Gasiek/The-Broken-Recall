@@ -18,6 +18,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int StunHash = Animator.StringToHash("Stun");
     private static readonly int ComboStepHash = Animator.StringToHash("BasicHitCombo");
     private static readonly int RollHash = Animator.StringToHash("Roll");
+    private static readonly int BasicHitHash = Animator.StringToHash("BasicHit");
 
     [SerializeField]
     private Animator animator;
@@ -29,15 +30,14 @@ public class PlayerAnimation : MonoBehaviour
     [Tooltip("Maximum delay in seconds between consecutive BasicHits to continue the combo.")]
     [SerializeField, Min(0.1f)]
     private float comboResetTime = 2f;
+    private int currentComboStep;
+    private float lastBasicHitFinishedTime = -999f;
+    private bool canContinueCombo;
 
     private PlayerMovement playerMovement;
     private ActionController actionController;
     private Health health;
     private DashController dashController;
-    private ActionDefinition lastAction;
-    private bool isDead;
-    private int currentComboStep;
-    private float lastBasicHitTime = -999f;
 
     public int CurrentComboStep => currentComboStep;
 
@@ -52,85 +52,103 @@ public class PlayerAnimation : MonoBehaviour
     private void OnEnable()
     {
         if (health != null)
-        {
             health.Died += HandleDeath;
-        }
 
         if (dashController != null)
-        {
             dashController.DashStarted += HandleDashStarted;
-        }
+
+        if (actionController != null)
+            actionController.ActionStarted += HandleActionStarted;
     }
 
     private void Update()
     {
-        if (animator == null || isDead)
+        if (animator == null || health.IsDead)
             return;
 
-        if (currentComboStep > 0 && Time.time - lastBasicHitTime > comboResetTime)
+        if (canContinueCombo && Time.time - lastBasicHitFinishedTime > comboResetTime)
         {
             ResetCombo();
+            canContinueCombo = false;
         }
 
         float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
         animator.SetFloat(SpeedHash, targetSpeed, dampTime, Time.deltaTime);
+    }
 
-        ActionDefinition currentAction = actionController.CurrentAction;
-        if (currentAction != lastAction)
+    private void HandleActionStarted()
+    {
+        if (animator == null || health.IsDead)
+            return;
+
+        switch (actionController.CurrentAction)
         {
-            lastAction = currentAction;
+            case BasicHitAction:
+                AdvanceCombo();
+                break;
 
-            switch (currentAction)
-            {
-                case BasicHitAction:
-                    if (Time.time - lastBasicHitTime <= comboResetTime)
-                    {
-                        currentComboStep = (currentComboStep % 3) + 1;
-                    }
-                    else
-                    {
-                        currentComboStep = 1;
-                    }
+            case BlockAction:
+                animator.SetTrigger(BlockingHash);
+                break;
 
-                    lastBasicHitTime = Time.time;
+            case TornadoAction:
+                animator.SetTrigger(TornadoHash);
+                break;
 
-                    animator.SetInteger(ComboStepHash, currentComboStep);
-                    break;
-                case BlockAction:
-                    animator.SetTrigger(BlockingHash);
-                    break;
-                case TornadoAction:
-                    animator.SetTrigger(TornadoHash);
-                    break;
-                case JumpSlamAction:
-                    animator.SetTrigger(JumpSlamHash);
-                    break;
-                case SwordChargeAction:
-                    animator.SetTrigger(SwordChargeHash);
-                    break;
-                case HealAction:
-                    animator.SetTrigger(HealHash);
-                    break;
-                case LightningChargeAction:
-                    animator.SetTrigger(ElementalChargeHash);
-                    break;
-                case PushAction:
-                    animator.SetTrigger(KickHash);
-                    break;
-                case StunAction:
-                    animator.SetTrigger(StunHash);
-                    break;
-                default:
-                    ResetAnimations();
-                    break;
-            }
+            case JumpSlamAction:
+                animator.SetTrigger(JumpSlamHash);
+                break;
+
+            case SwordChargeAction:
+                animator.SetTrigger(SwordChargeHash);
+                break;
+
+            case HealAction:
+                animator.SetTrigger(HealHash);
+                break;
+
+            case LightningChargeAction:
+                animator.SetTrigger(ElementalChargeHash);
+                break;
+
+            case PushAction:
+                animator.SetTrigger(KickHash);
+                break;
+
+            case StunAction:
+                animator.SetTrigger(StunHash);
+                break;
+
+            default:
+                ResetAnimations();
+                break;
         }
+    }
+
+    private void AdvanceCombo()
+    {
+        if (canContinueCombo && Time.time - lastBasicHitFinishedTime <= comboResetTime)
+        {
+            currentComboStep = (currentComboStep % 3) + 1;
+        }
+        else
+        {
+            currentComboStep = 1;
+        }
+
+        canContinueCombo = false;
+        animator.SetInteger(ComboStepHash, currentComboStep);
+        animator.SetTrigger(BasicHitHash);
+    }
+
+    public void BasicHitAnimationFinished()
+    {
+        lastBasicHitFinishedTime = Time.time;
+        canContinueCombo = true;
     }
 
     private void HandleDeath()
     {
-        isDead = true;
-
         if (animator == null)
             return;
 
@@ -141,7 +159,7 @@ public class PlayerAnimation : MonoBehaviour
 
     private void HandleDashStarted()
     {
-        if (animator == null || isDead)
+        if (animator == null || health.IsDead)
             return;
 
         animator.SetTrigger(RollHash);
@@ -159,8 +177,9 @@ public class PlayerAnimation : MonoBehaviour
             dashController.DashStarted -= HandleDashStarted;
         }
 
-        isDead = false;
-        lastAction = null;
+        if (actionController != null)
+            actionController.ActionStarted -= HandleActionStarted;
+
         ResetCombo();
         animator.SetFloat(SpeedHash, 0f);
         ResetAnimations();
@@ -174,11 +193,9 @@ public class PlayerAnimation : MonoBehaviour
 
     public void ResetAnimations()
     {
+        if (animator == null)
+            return;
 
-        if (currentComboStep > 0 && Time.time - lastBasicHitTime > comboResetTime)
-        {
-            ResetCombo();
-        }
         animator.ResetTrigger(BlockingHash);
         animator.ResetTrigger(TornadoHash);
         animator.ResetTrigger(JumpSlamHash);
@@ -188,6 +205,6 @@ public class PlayerAnimation : MonoBehaviour
         animator.ResetTrigger(KickHash);
         animator.ResetTrigger(DyingHash);
         animator.ResetTrigger(StunHash);
-        animator.ResetTrigger(RollHash);
+        animator.ResetTrigger(BasicHitHash);
     }
 }

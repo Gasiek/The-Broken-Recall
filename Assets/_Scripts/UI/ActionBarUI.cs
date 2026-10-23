@@ -35,11 +35,6 @@ public class ActionBarUI : MonoBehaviour
         {
             actionMemory.MemoryChanged += RefreshSlots;
         }
-
-        if (actionController != null)
-        {
-            actionController.ActionStarted += StartCooldown;
-        }
     }
 
     private void OnDisable()
@@ -52,11 +47,6 @@ public class ActionBarUI : MonoBehaviour
         if (actionMemory != null)
         {
             actionMemory.MemoryChanged -= RefreshSlots;
-        }
-
-        if (actionController != null)
-        {
-            actionController.ActionStarted -= StartCooldown;
         }
 
         if (cooldownRoutine != null)

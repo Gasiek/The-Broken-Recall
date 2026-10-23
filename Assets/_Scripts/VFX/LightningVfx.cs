@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
-public class Lightning : MonoBehaviour
+public class LightningVfx : MonoBehaviour
 {
     [Header("Anchors")]
     [SerializeField]

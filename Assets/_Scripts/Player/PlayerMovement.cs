@@ -128,6 +128,14 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public CollisionFlags MoveActionDisplacement(Vector3 displacement)
+    {
+        if (characterController == null || !characterController.enabled)
+            return CollisionFlags.None;
+
+        return characterController.Move(displacement);
+    }
+
     public bool BeginChargeMovement(Vector3 direction, float distance, float duration)
     {
         if (

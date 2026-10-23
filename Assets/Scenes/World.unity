@@ -16084,7 +16084,6 @@ GameObject:
   - component: {fileID: 1194145297}
   - component: {fileID: 1194145308}
   - component: {fileID: 1194145310}
-  - component: {fileID: 1194145311}
   - component: {fileID: 1194145314}
   - component: {fileID: 1194145313}
   - component: {fileID: 1194145312}
@@ -16095,6 +16094,7 @@ GameObject:
   - component: {fileID: 1194145319}
   - component: {fileID: 1194145321}
   - component: {fileID: 1194145322}
+  - component: {fileID: 1194145323}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -16114,7 +16114,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56a3af591c232435da53b39d6df20893, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionController
-  actionCooldown: 0.5
 --- !u!114 &1194145298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16140,11 +16139,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionCollection
   actions:
+  - definition: {fileID: 11400000, guid: 7d50f9d3108ca429b9d3c40196c6e008, type: 2}
   - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
-  - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
+  - definition: {fileID: 11400000, guid: e7f8a9b0c1d234567890abcdef123456, type: 2}
+  - definition: {fileID: 11400000, guid: c1a2b3d4e5f60718293a4b5c6d7e8f99, type: 2}
 --- !u!114 &1194145300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16215,7 +16213,7 @@ Transform:
   m_GameObject: {fileID: 1194145296}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 37.1, y: 2, z: -62.3}
+  m_LocalPosition: {x: 37.1, y: 2, z: -64.381}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -16490,30 +16488,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2eab0e1c90a574e43aa59d5617841a6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DashController
---- !u!114 &1194145311
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1194145296}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fae1c50bf0827419999bbcaec30035fc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerActionVisuals
-  sword: {fileID: 0}
-  pushRotation: {x: 90, y: 0, z: 0}
-  pushOffset: {x: 0, y: 0.5, z: 1}
-  pushTransitionDuration: 0.05
-  pushDuration: 0.2
-  basicHitRotation: {x: 65, y: 0, z: 20}
-  basicHitSwingDuration: 0.2
-  blockRotation: {x: 0, y: 0, z: 30}
-  blockPosition: {x: -0.2, y: 0, z: 0.65}
-  blockTransitionDuration: 0.15
-  chargeRotation: {x: -30, y: 0, z: 15}
-  chargeOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &1194145312
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16565,7 +16539,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   definition: {fileID: 11400000, guid: 1aeebf283e25249ccb30647700eaeefa, type: 2}
-  weapon: {fileID: 427455572}
 --- !u!114 &1194145316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16721,6 +16694,7 @@ MonoBehaviour:
   vfxRotationOffset: {x: 90, y: 0, z: 0}
   vfxPositionOffset: {x: 0, y: 0.15, z: 0}
   vfxScale: {x: 1, y: 0.5, z: 1}
+  weapon: {fileID: 427455572}
 --- !u!114 &1194145320
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16761,7 +16735,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimation
   animator: {fileID: 1846121259}
   dampTime: 0.15
-  comboResetTime: 0.8
+  comboResetTime: 0.15
+--- !u!114 &1194145323
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1194145296}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 000cde815f1e842e5aadb040107cf1bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActionRoutineRunner
 --- !u!1 &1243383604
 GameObject:
   m_ObjectHideFlags: 0
@@ -20222,6 +20208,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 621060780001979805, guid: da8d287fca6084a0c9f6172f99763e00, type: 3}
   m_PrefabInstance: {fileID: 1594114453}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1834060944 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6721514194412353441, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
+  m_PrefabInstance: {fileID: 1846121257}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1835821087
 GameObject:
   m_ObjectHideFlags: 0
@@ -20408,7 +20399,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6547680489258809703, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 427455572}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6721514194412353441, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1846121260}
   m_SourcePrefab: {fileID: 100100000, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
 --- !u!4 &1846121258 stripped
 Transform:
@@ -20420,6 +20414,20 @@ Animator:
   m_CorrespondingSourceObject: {fileID: 66535795799635809, guid: dd2781eefba618e47aec1156ef835d2b, type: 3}
   m_PrefabInstance: {fileID: 1846121257}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1846121260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834060944}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66a9517d4551b4c66a85aea2d24a55b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
+  actionController: {fileID: 1194145297}
+  playerAnimation: {fileID: 1194145322}
 --- !u!1001 &1894236628
 PrefabInstance:
   m_ObjectHideFlags: 0

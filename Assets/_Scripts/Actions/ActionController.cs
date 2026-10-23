@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerStateMachine))]
@@ -9,26 +8,22 @@ using UnityEngine;
 [RequireComponent(typeof(Health))]
 public class ActionController : MonoBehaviour
 {
-    [Header("Action Settings")]
-    [SerializeField, Min(0f)]
-    private float actionCooldown = 0.5f;
-
     private PlayerStateMachine stateMachine;
     private PlayerMovement playerMovement;
     private ActionMemory actionMemory;
     private Health health;
     private WeaponBuffManager weaponBuffs;
 
-    private float nextActionTime;
-    private Coroutine activeActionRoutine;
-    private Coroutine actionExecutionRoutine;
     private bool isExecutingAction;
+    private bool actionFinished;
+
     private ActionDefinition currentAction;
+    private ActionContext currentContext;
 
     public ActionDefinition CurrentAction => currentAction;
     public bool IsExecutingAction => isExecutingAction;
 
-    public event Action<float> ActionStarted;
+    public event Action ActionStarted;
 
     private void Awake()
     {
@@ -41,10 +36,8 @@ public class ActionController : MonoBehaviour
 
     public void ExecuteAction(int slot)
     {
-        if (isExecutingAction || !stateMachine.CanAct || Time.time < nextActionTime)
-        {
+        if (isExecutingAction || !stateMachine.CanAct)
             return;
-        }
 
         ActionCardInstance card = actionMemory.GetAction(slot);
 
@@ -56,15 +49,6 @@ public class ActionController : MonoBehaviour
 
         ActionDefinition action = card.Definition;
 
-        isExecutingAction = true;
-        currentAction = action;
-        nextActionTime = Time.time + actionCooldown;
-
-        ActionStarted?.Invoke(actionCooldown);
-
-        actionMemory.PutOnCooldown(card);
-        actionMemory.ReplaceAction(slot);
-
         ActionContext context = new ActionContext(
             transform,
             playerMovement,
@@ -73,41 +57,72 @@ public class ActionController : MonoBehaviour
             weaponBuffs
         );
 
-        activeActionRoutine = StartCoroutine(ExecuteActionRoutine(action, context));
+        // Establish the active execution before invoking callbacks.
+        currentAction = action;
+        currentContext = context;
+        isExecutingAction = true;
+        actionFinished = false;
+
+        ActionStarted?.Invoke();
+
+        actionMemory.PutOnCooldown(card);
+        actionMemory.ReplaceAction(slot);
+
+        // Start any immediate action effects.
+        action.OnStarted(context);
     }
 
-    private IEnumerator ExecuteActionRoutine(ActionDefinition action, ActionContext context)
+    // Called by PlayerAnimationEvents at the appropriate
+    // frame of the active animation.
+    public void HandleAnimationImpact()
     {
-        bool executionFinished = false;
+        if (!isExecutingAction || actionFinished || currentAction == null || currentContext == null)
+        {
+            return;
+        }
 
-        actionExecutionRoutine = StartCoroutine(
-            RunAction(action, context, () => executionFinished = true)
-        );
-
-        // Temporary acting-state duration until animation events
-        // become responsible for signaling action completion.
-        yield return new WaitForSeconds(action.Duration);
-
-        // Never allow another action while the previous action's
-        // gameplay coroutine is still running.
-        while (!executionFinished)
-            yield return null;
-
-        FinishCurrentAction();
+        currentAction.OnAnimationImpact(currentContext);
     }
 
-    private IEnumerator RunAction(ActionDefinition action, ActionContext context, Action onFinished)
+    public void HandleAnimationFinished()
     {
-        yield return action.Execute(context);
-        onFinished?.Invoke();
+        FinishCurrentAction(null);
     }
 
-    private void FinishCurrentAction()
+    // Used by actions that finish through a timer rather than
+    // an animation event.
+    public void CompleteTimedAction(ActionContext expectedContext)
     {
-        actionExecutionRoutine = null;
-        activeActionRoutine = null;
-        isExecutingAction = false;
+        if (expectedContext == null)
+            return;
+
+        FinishCurrentAction(expectedContext);
+    }
+
+    private void FinishCurrentAction(ActionContext expectedContext)
+    {
+        if (!isExecutingAction || actionFinished || currentAction == null || currentContext == null)
+        {
+            return;
+        }
+
+        // A timed action may only finish the execution that
+        // started its timer, never a newer execution.
+        if (expectedContext != null && !ReferenceEquals(currentContext, expectedContext))
+        {
+            return;
+        }
+
+        actionFinished = true;
+
+        ActionDefinition finishedAction = currentAction;
+        ActionContext finishedContext = currentContext;
+
         currentAction = null;
+        currentContext = null;
+        isExecutingAction = false;
+
+        finishedAction.OnAnimationFinished(finishedContext);
 
         stateMachine.FinishActing();
     }
@@ -119,24 +134,30 @@ public class ActionController : MonoBehaviour
 
     public void CancelCurrentAction()
     {
-        if (actionExecutionRoutine != null)
-        {
-            StopCoroutine(actionExecutionRoutine);
-            actionExecutionRoutine = null;
-        }
+        ActionDefinition cancelledAction = currentAction;
+        ActionContext cancelledContext = currentContext;
 
-        if (activeActionRoutine != null)
-        {
-            StopCoroutine(activeActionRoutine);
-            activeActionRoutine = null;
-        }
+        bool hadActiveAction = isExecutingAction;
 
-        // Always restore movement, even if no action coroutine is running.
-        playerMovement.CancelChargeMovement();
-        playerMovement.SetMovementOverridden(false);
-
-        isExecutingAction = false;
+        // Invalidate the execution before cleanup.
         currentAction = null;
+        currentContext = null;
+        isExecutingAction = false;
+        actionFinished = true;
+
+        if (hadActiveAction && cancelledAction != null && cancelledContext != null)
+        {
+            cancelledAction.OnCancelled(cancelledContext);
+        }
+
+        // Always restore movement, even if no action
+        // is currently executing.
+        if (playerMovement != null)
+        {
+            playerMovement.CancelChargeMovement();
+            playerMovement.SetMovementOverridden(false);
+        }
+
         stateMachine?.FinishActing();
     }
 }
