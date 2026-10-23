@@ -2,61 +2,133 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
 public class PushReceiver : MonoBehaviour, IPushable
 {
-    [SerializeField] private float pushDuration = 0.2f;
+    [Header("Push Settings")]
+    [SerializeField, Min(0.01f)]
+    private float pushDuration = 0.2f;
 
     private NavMeshAgent agent;
+    private CharacterController characterController;
+    private PlayerMovement playerMovement;
+
     private Coroutine pushCoroutine;
+    private bool previousAgentStopped;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        characterController = GetComponent<CharacterController>();
+        playerMovement = GetComponent<PlayerMovement>();
+
+        if (agent == null && characterController == null)
+        {
+            Debug.LogError(
+                $"{name}: PushReceiver requires either a NavMeshAgent "
+                    + "or a CharacterController.",
+                this
+            );
+        }
     }
 
     public void Push(Vector3 direction, float distance)
     {
         direction.y = 0f;
 
-        if (direction.sqrMagnitude <= 0.001f)
-        {
+        if (direction.sqrMagnitude <= 0.001f || distance <= 0f)
             return;
-        }
+
+        if (pushCoroutine != null)
+            StopActivePush();
 
         direction.Normalize();
 
-        if (pushCoroutine != null)
-        {
-            StopCoroutine(pushCoroutine);
-        }
-
-        pushCoroutine = StartCoroutine(
-            PushRoutine(direction, distance)
-        );
+        pushCoroutine = StartCoroutine(PushRoutine(direction, distance));
     }
 
-    private IEnumerator PushRoutine(
-        Vector3 direction,
-        float distance)
+    private IEnumerator PushRoutine(Vector3 direction, float distance)
     {
-        agent.isStopped = true;
+        bool useAgent = agent != null && agent.enabled && agent.isOnNavMesh;
 
-        float elapsed = 0f;
-        float speed = distance / pushDuration;
+        bool useCharacterController =
+            !useAgent && characterController != null && characterController.enabled;
 
-        while (elapsed < pushDuration)
+        if (!useAgent && !useCharacterController)
         {
-            agent.Move(
-                direction * speed * Time.deltaTime
-            );
+            pushCoroutine = null;
+            yield break;
+        }
 
-            elapsed += Time.deltaTime;
+        if (useAgent)
+        {
+            previousAgentStopped = agent.isStopped;
+            agent.isStopped = true;
+        }
+        else if (playerMovement != null)
+        {
+            playerMovement.SetMovementOverridden(true);
+        }
 
+        float duration = Mathf.Max(0.01f, pushDuration);
+        float elapsed = 0f;
+        float speed = distance / duration;
+
+        while (elapsed < duration)
+        {
+            float deltaTime = Mathf.Min(Time.deltaTime, duration - elapsed);
+
+            if (useAgent)
+            {
+                if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+                    break;
+
+                agent.Move(direction * speed * deltaTime);
+            }
+            else
+            {
+                if (characterController == null || !characterController.enabled)
+                    break;
+
+                characterController.Move(direction * speed * deltaTime);
+            }
+
+            elapsed += deltaTime;
             yield return null;
         }
 
-        agent.isStopped = false;
+        FinishPush(useAgent);
+    }
+
+    private void FinishPush(bool useAgent)
+    {
+        if (useAgent)
+        {
+            if (agent != null && agent.enabled)
+                agent.isStopped = previousAgentStopped;
+        }
+        else if (playerMovement != null)
+        {
+            playerMovement.SetMovementOverridden(false);
+        }
+
         pushCoroutine = null;
+    }
+
+    private void StopActivePush()
+    {
+        StopCoroutine(pushCoroutine);
+        pushCoroutine = null;
+
+        if (agent != null && agent.enabled)
+            agent.isStopped = previousAgentStopped;
+
+        if (playerMovement != null)
+            playerMovement.SetMovementOverridden(false);
+    }
+
+    private void OnDisable()
+    {
+        if (pushCoroutine != null)
+            StopActivePush();
     }
 }

@@ -1,13 +1,13 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Player))]
-public class InteractionController : MonoBehaviour
+public sealed class InteractionController : MonoBehaviour
 {
     [Header("Interaction")]
-    [SerializeField]
+    [SerializeField, Min(0f)]
     private float interactionDistance = 1.5f;
 
-    [SerializeField]
+    [SerializeField, Min(0.1f)]
     private float interactionRadius = 1.8f;
 
     [SerializeField]
@@ -17,101 +17,162 @@ public class InteractionController : MonoBehaviour
     [SerializeField]
     private InteractionPromptUI interactionPrompt;
 
+    private const float OriginHeight = 1f;
+    private const int InitialColliderCapacity = 32;
+
     private Player player;
+    private Collider[] colliderResults = new Collider[InitialColliderCapacity];
 
     public IInteractable CurrentInteractable { get; private set; }
 
     private void Awake()
     {
         player = GetComponent<Player>();
+    }
 
-        if (interactionPrompt == null)
-        {
-            Debug.LogWarning("[InteractionController] No InteractionPromptUI assigned.", this);
-        }
+    private void OnEnable()
+    {
+        ClearCurrentInteractable();
+    }
+
+    private void OnDisable()
+    {
+        ClearCurrentInteractable();
+    }
+
+    /// <summary>
+    /// Connects this player to the interaction prompt UI
+    /// belonging to the currently loaded scene.
+    /// </summary>
+    public void SetInteractionPrompt(InteractionPromptUI prompt)
+    {
+        if (interactionPrompt == prompt)
+            return;
+
+        interactionPrompt?.Hide();
+        interactionPrompt = prompt;
+
+        if (CurrentInteractable != null && interactionPrompt != null)
+            interactionPrompt.Show();
     }
 
     private void Update()
     {
+        if (player == null || !player.isActiveAndEnabled)
+        {
+            ClearCurrentInteractable();
+            return;
+        }
+
         FindInteractable();
     }
 
     private void FindInteractable()
     {
-        Vector3 origin = transform.position + Vector3.up * 1.0f;
+        Vector3 origin = transform.position + Vector3.up * OriginHeight;
+        Vector3 center = origin + transform.forward * interactionDistance;
 
-        Vector3 interactionCenter = origin + transform.forward * interactionDistance;
-
-        Collider[] colliders = Physics.OverlapSphere(
-            interactionCenter,
+        int count = Physics.OverlapSphereNonAlloc(
+            center,
             interactionRadius,
+            colliderResults,
             interactionLayer
         );
 
-        IInteractable newInteractable = null;
-        float closestDistance = float.MaxValue;
-
-        foreach (Collider hit in colliders)
+        // Expand the buffer if it fills, so potential targets aren't missed.
+        if (count == colliderResults.Length)
         {
-            IInteractable interactable = hit.GetComponentInParent<IInteractable>();
+            colliderResults = Physics.OverlapSphere(center, interactionRadius, interactionLayer);
 
-            if (interactable == null || !interactable.CanInteract(player))
+            count = colliderResults.Length;
+        }
+
+        IInteractable bestTarget = null;
+        float closestDistanceSquared = float.MaxValue;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider hit = colliderResults[i];
+
+            if (hit == null)
                 continue;
 
-            float distance = Vector3.Distance(
-                interactionCenter,
-                hit.ClosestPoint(interactionCenter)
-            );
+            IInteractable interactable = hit.GetComponent<IInteractable>();
 
-            if (distance < closestDistance)
+            if (interactable == null)
+                continue;
+
+            if (!interactable.CanInteract(player))
+                continue;
+
+            Vector3 closestPoint = hit.ClosestPoint(center);
+            float distanceSquared = (closestPoint - center).sqrMagnitude;
+
+            if (distanceSquared < closestDistanceSquared)
             {
-                closestDistance = distance;
-                newInteractable = interactable;
+                closestDistanceSquared = distanceSquared;
+                bestTarget = interactable;
             }
         }
 
-        if (newInteractable == CurrentInteractable)
+        SetCurrentInteractable(bestTarget);
+    }
+
+    public void Interact()
+    {
+        if (player == null || !player.isActiveAndEnabled)
             return;
 
-        CurrentInteractable = newInteractable;
+        IInteractable target = CurrentInteractable;
+
+        if (target == null)
+        {
+            ClearCurrentInteractable();
+            return;
+        }
+
+        // Recheck because the target or player's state may have changed
+        // since the most recent detection scan.
+        if (!target.CanInteract(player))
+        {
+            ClearCurrentInteractable();
+            return;
+        }
+
+        target.Interact(player);
+
+        // Refresh detection next frame in case the interaction changed
+        // or consumed the target.
+        ClearCurrentInteractable();
+    }
+
+    private void SetCurrentInteractable(IInteractable newTarget)
+    {
+        CurrentInteractable = newTarget;
 
         if (interactionPrompt == null)
             return;
 
-        if (CurrentInteractable != null)
+        if (newTarget != null)
             interactionPrompt.Show();
         else
             interactionPrompt.Hide();
     }
 
-    public void Interact()
+    private void ClearCurrentInteractable()
     {
-        if (player == null || CurrentInteractable == null)
-            return;
-
-        // The player's state might have changed since target detection.
-        if (!CurrentInteractable.CanInteract(player))
-        {
-            CurrentInteractable = null;
-
-            if (interactionPrompt != null)
-                interactionPrompt.Hide();
-
-            return;
-        }
-
-        CurrentInteractable.Interact(player);
+        CurrentInteractable = null;
+        interactionPrompt?.Hide();
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
 
-        Vector3 origin = transform.position + Vector3.up * 1.0f;
+        Vector3 origin = transform.position + Vector3.up * OriginHeight;
+        Vector3 center = origin + transform.forward * interactionDistance;
 
-        Vector3 interactionCenter = origin + transform.forward * interactionDistance;
-
-        Gizmos.DrawWireSphere(interactionCenter, interactionRadius);
-        Gizmos.DrawLine(origin, interactionCenter);
+        Gizmos.DrawWireSphere(center, interactionRadius);
+        Gizmos.DrawLine(origin, center);
     }
 }

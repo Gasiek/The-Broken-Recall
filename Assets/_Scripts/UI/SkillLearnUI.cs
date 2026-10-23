@@ -3,98 +3,141 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-public class SkillLearnUI : MonoBehaviour
+[RequireComponent(typeof(PanelRenderer))]
+public sealed class SkillLearnUI : MonoBehaviour
 {
-    [SerializeField]
-    private CameraFollow cameraFollow;
-
-    [SerializeField]
-    private PlayerInput playerInput;
-
     [SerializeField]
     private VisualTreeAsset cardTemplate;
 
     private PanelRenderer panelRenderer;
+    private PlayerInput playerInput;
+
     private VisualElement backdrop;
     private VisualElement cardContainer;
     private Button cancelButton;
 
     private TeacherNPC currentTeacher;
     private bool isOpen;
+    private bool cameraPausedByThisPanel;
+    private float previousTimeScale = 1f;
+    private string previousActionMap;
+
+    private void Awake()
+    {
+        panelRenderer = GetComponent<PanelRenderer>();
+    }
 
     private void OnEnable()
     {
-        panelRenderer = GetComponent<PanelRenderer>();
+        if (panelRenderer == null)
+            panelRenderer = GetComponent<PanelRenderer>();
 
-        if (panelRenderer != null)
-        {
-            panelRenderer.RegisterUIReloadCallback(OnUIReload);
-        }
+        panelRenderer.RegisterUIReloadCallback(OnUIReload);
     }
 
     private void OnDisable()
     {
         if (panelRenderer != null)
-        {
             panelRenderer.UnregisterUIReloadCallback(OnUIReload);
-        }
+
+        ReleasePause();
+
+        if (cancelButton != null)
+            cancelButton.clicked -= HandleCancelClicked;
+
+        backdrop = null;
+        cardContainer = null;
+        cancelButton = null;
+    }
+
+    /// <summary>
+    /// Called by SceneContext after the current player
+    /// have been connected.
+    /// </summary>
+    public void BindRuntimeReferences(
+        PlayerInput currentPlayerInput
+    )
+    {
+        playerInput = currentPlayerInput;
     }
 
     private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
     {
+        if (isOpen)
+            Close();
+
+        if (cancelButton != null)
+            cancelButton.clicked -= HandleCancelClicked;
+
         backdrop = root.Q<VisualElement>("Backdrop");
         cardContainer = root.Q<VisualElement>("CardContainer");
         cancelButton = root.Q<Button>("CancelButton");
 
-        if (cancelButton != null)
+        if (backdrop == null || cardContainer == null || cancelButton == null)
         {
-            cancelButton.clicked += HandleCancelClicked;
+            Debug.LogError(
+                "[SkillLearnUI] UXML must contain Backdrop, CardContainer, " + "and CancelButton.",
+                this
+            );
+
+            Hide();
+            return;
         }
 
+        cancelButton.clicked += HandleCancelClicked;
         Hide();
     }
 
     public void Show(TeacherNPC teacher, List<ActionDefinition> choices)
     {
         if (isOpen)
-        {
             return;
-        }
 
         if (teacher == null || choices == null || choices.Count == 0)
         {
-            Debug.LogWarning("Cannot show SkillLearnUI without a teacher and action choices.");
+            Debug.LogWarning(
+                "[SkillLearnUI] Cannot open without a teacher and action choices.",
+                this
+            );
             return;
         }
 
-        if (cameraFollow == null || playerInput == null)
+        if (playerInput == null)
         {
-            Debug.LogWarning("SkillLearnUI is missing CameraFollow or PlayerInput.");
+            Debug.LogWarning(
+                "[SkillLearnUI] Runtime references have not been bound. "
+                    + "Check SceneContext and SceneTransitionManager setup.",
+                this
+            );
             return;
         }
 
         if (cardTemplate == null)
         {
-            Debug.LogWarning("SkillLearnUI is missing cardTemplate reference.");
+            Debug.LogWarning("[SkillLearnUI] Card template is not assigned.", this);
             return;
         }
 
         if (backdrop == null || cardContainer == null || cancelButton == null)
         {
-            Debug.LogWarning("SkillLearnUI has not initialized its UI elements.");
+            Debug.LogWarning("[SkillLearnUI] UI elements have not initialized.", this);
             return;
         }
 
         currentTeacher = teacher;
-
-        // Populate the 3 action cards
         PopulateCards(choices);
+
+        previousTimeScale = Time.timeScale;
+        previousActionMap =
+            playerInput.currentActionMap != null ? playerInput.currentActionMap.name : null;
 
         isOpen = true;
         Time.timeScale = 0f;
 
         playerInput.SwitchCurrentActionMap("UI");
-        cameraFollow.OnPause();
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = true;
+        cameraPausedByThisPanel = true;
 
         backdrop.style.display = DisplayStyle.Flex;
         backdrop.style.visibility = Visibility.Visible;
@@ -106,21 +149,20 @@ public class SkillLearnUI : MonoBehaviour
     {
         cardContainer.Clear();
 
-        foreach (var actionDef in choices)
+        foreach (ActionDefinition actionDef in choices)
         {
             if (actionDef == null)
                 continue;
 
             VisualElement cardElement = cardTemplate.Instantiate();
+
             Button button = cardElement.Q<Button>("ActionButton");
             Label nameLabel = cardElement.Q<Label>("Name");
             Image iconImage = cardElement.Q<Image>("Icon");
             Label descLabel = cardElement.Q<Label>("Description");
 
             if (nameLabel != null)
-            {
                 nameLabel.text = actionDef.DisplayName;
-            }
 
             if (iconImage != null)
             {
@@ -128,9 +170,7 @@ public class SkillLearnUI : MonoBehaviour
             }
 
             if (descLabel != null)
-            {
                 descLabel.text = actionDef.GetDescription();
-            }
 
             if (button != null)
             {
@@ -144,10 +184,8 @@ public class SkillLearnUI : MonoBehaviour
 
     private void OnActionSelected(ActionDefinition selectedAction)
     {
-        if (currentTeacher == null || selectedAction == null)
-        {
+        if (!isOpen || currentTeacher == null || selectedAction == null)
             return;
-        }
 
         currentTeacher.LearnAction(selectedAction);
         Close();
@@ -161,9 +199,7 @@ public class SkillLearnUI : MonoBehaviour
     public void Hide()
     {
         if (backdrop == null)
-        {
             return;
-        }
 
         backdrop.style.display = DisplayStyle.None;
         backdrop.style.visibility = Visibility.Hidden;
@@ -174,46 +210,33 @@ public class SkillLearnUI : MonoBehaviour
         Hide();
 
         if (cardContainer != null)
-        {
             cardContainer.Clear();
-        }
 
         currentTeacher = null;
         isOpen = false;
 
-        Time.timeScale = 1f;
-
-        if (playerInput != null)
-        {
-            playerInput.SwitchCurrentActionMap("Player");
-        }
-
-        if (cameraFollow != null)
-        {
-            cameraFollow.OnResume();
-        }
+        ReleasePause();
     }
 
-    private void OnDestroy()
+    private void ReleasePause()
     {
-        if (cancelButton != null)
-        {
-            cancelButton.clicked -= HandleCancelClicked;
-        }
-
+        if (!isOpen && !cameraPausedByThisPanel && previousActionMap == null)
+            return;
         if (isOpen)
+            isOpen = false;
+
+        Time.timeScale = previousTimeScale;
+
+        if (playerInput != null && !string.IsNullOrEmpty(previousActionMap))
+            playerInput.SwitchCurrentActionMap(previousActionMap);
+
+        if (cameraPausedByThisPanel)
         {
-            Time.timeScale = 1f;
-
-            if (playerInput != null)
-            {
-                playerInput.SwitchCurrentActionMap("Player");
-            }
-
-            if (cameraFollow != null)
-            {
-                cameraFollow.OnResume();
-            }
+            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
+            UnityEngine.Cursor.visible = false;
         }
+
+        cameraPausedByThisPanel = false;
+        previousActionMap = null;
     }
 }

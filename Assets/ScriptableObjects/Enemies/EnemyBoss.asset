@@ -18,3 +18,5 @@ MonoBehaviour:
   attacks:
   - {fileID: 11400000, guid: 885d6160fefd341f7a2a6a716f84ad4b, type: 2}
   - {fileID: 11400000, guid: 7fb87242c58834e179c90a80af45fdbe, type: 2}
+  generalAttackCooldown: 0.5
+  superAttackChance: 20

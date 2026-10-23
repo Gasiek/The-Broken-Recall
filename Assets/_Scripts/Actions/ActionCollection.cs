@@ -20,7 +20,7 @@ public class ActionCollection : MonoBehaviour
     {
         if (definition == null)
         {
-            Debug.LogWarning("Tried to add a null action definition.");
+            Debug.LogWarning("[ActionCollection] Cannot add a null definition.", this);
             return;
         }
 
@@ -32,13 +32,13 @@ public class ActionCollection : MonoBehaviour
     {
         if (card == null || card.Definition == null)
         {
-            Debug.LogWarning("Tried to add an invalid action card.");
+            Debug.LogWarning("[ActionCollection] Cannot add an invalid card.", this);
             return false;
         }
 
         if (actions.Contains(card))
         {
-            Debug.LogWarning("This card instance is already in the collection.");
+            Debug.LogWarning("[ActionCollection] Card is already in the collection.", this);
             return false;
         }
 
@@ -49,28 +49,34 @@ public class ActionCollection : MonoBehaviour
 
     public bool Remove(ActionCardInstance card)
     {
-        if (card == null)
-        {
-            return false;
-        }
-
         bool removed = actions.Remove(card);
 
         if (removed)
-        {
             Changed?.Invoke();
-        }
 
         return removed;
+    }
+
+    public void ReplaceAll(IEnumerable<ActionCardInstance> cards)
+    {
+        actions.Clear();
+
+        if (cards != null)
+        {
+            foreach (ActionCardInstance card in cards)
+            {
+                if (card != null && card.Definition != null)
+                    actions.Add(card);
+            }
+        }
+
+        Changed?.Invoke();
     }
 
     public ActionCardInstance GetRandomAction()
     {
         if (actions.Count == 0)
-        {
-            Debug.LogWarning("Cannot get a random action: collection is empty.");
             return null;
-        }
 
         return actions[UnityEngine.Random.Range(0, actions.Count)];
     }

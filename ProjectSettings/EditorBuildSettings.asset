@@ -6,7 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SmallPlayground.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/Scenes/Village.unity
+    guid: 1c85d7c0a2e794633a2c69211dc47c95
+  - enabled: 1
+    path: Assets/Scenes/Outsides.unity
+    guid: d25e90d6a0e9f46ee8da2f5591ea9c1d
+  - enabled: 1
+    path: Assets/Scenes/EnemyCamp.unity
+    guid: f16db324850904100afe7ba32adf7b8d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

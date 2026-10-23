@@ -26,6 +26,7 @@ public class EnemyStateMachine : MonoBehaviour
     private EnemyAnimation enemyAnimation;
 
     private readonly List<IEnemyAttack> attacks = new();
+
     private IEnemyAttack activeAttack;
 
     [SerializeField]
@@ -37,6 +38,12 @@ public class EnemyStateMachine : MonoBehaviour
 
     [SerializeField]
     private Transform projectileSpawnPoint;
+
+    [SerializeField]
+    private float rotationSpeed = 360f;
+
+    private float nextGeneralAttackTime;
+
     public EnemyState CurrentState { get; private set; }
 
     private void Awake()
@@ -50,6 +57,36 @@ public class EnemyStateMachine : MonoBehaviour
         InitializeAttacks();
 
         CurrentState = EnemyState.Idle;
+    }
+
+    private void OnEnable()
+    {
+        if (enemy != null)
+            enemy.Died += HandleDeath;
+
+        if (statusEffects != null)
+            statusEffects.StunStateChanged += HandleStunStateChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (enemy != null)
+            enemy.Died -= HandleDeath;
+
+        if (statusEffects != null)
+            statusEffects.StunStateChanged -= HandleStunStateChanged;
+    }
+
+    private void Start()
+    {
+        if (statusEffects.IsStunned)
+        {
+            ChangeState(EnemyState.Stunned);
+            return;
+        }
+
+        if (CurrentState == EnemyState.Idle && !aggro.HasTarget)
+            ChangeState(EnemyState.Patrolling);
     }
 
     private void InitializeAttacks()
@@ -83,38 +120,11 @@ public class EnemyStateMachine : MonoBehaviour
                 enemyAnimation
             );
 
-            if (attack != null)
-                attacks.Add(attack);
+            if (attack == null)
+                continue;
+
+            attacks.Add(attack);
         }
-    }
-
-    private void OnEnable()
-    {
-        if (enemy != null)
-            enemy.Died += HandleDeath;
-
-        if (statusEffects != null)
-            statusEffects.StunStateChanged += HandleStunStateChanged;
-    }
-
-    private void OnDisable()
-    {
-        if (enemy != null)
-            enemy.Died -= HandleDeath;
-
-        if (statusEffects != null)
-            statusEffects.StunStateChanged -= HandleStunStateChanged;
-    }
-
-    private void Start()
-    {
-        if (statusEffects.IsStunned)
-        {
-            ChangeState(EnemyState.Stunned);
-            return;
-        }
-        if (CurrentState == EnemyState.Idle && !aggro.HasTarget)
-            ChangeState(EnemyState.Patrolling);
     }
 
     public void Initialize(Transform target)
@@ -139,7 +149,13 @@ public class EnemyStateMachine : MonoBehaviour
         if (CurrentState != EnemyState.Attacking || activeAttack == null)
             return;
 
+        if (!activeAttack.IsAttacking)
+            return;
+
         activeAttack.AnimationAttackFinished();
+
+        // Start the general cooldown after the attack animation finishes.
+        nextGeneralAttackTime = Time.time + enemy.Definition.GeneralAttackCooldown;
     }
 
     private void Update()
@@ -167,8 +183,6 @@ public class EnemyStateMachine : MonoBehaviour
                 break;
 
             case EnemyState.Stunned:
-                break;
-
             case EnemyState.Dead:
                 break;
         }
@@ -192,8 +206,7 @@ public class EnemyStateMachine : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-        // First check whether any attack is in range,
-        // regardless of whether its cooldown has finished.
+        // Check whether any attack is in range, even if it is on cooldown.
         bool anyAttackInRange = false;
 
         foreach (IEnemyAttack attack in attacks)
@@ -212,9 +225,13 @@ public class EnemyStateMachine : MonoBehaviour
         {
             enemy.Agent.isStopped = true;
             enemyAnimation.SetLocomotion(0f);
-            FaceTarget(target);
 
-            // An attack is in range. Wait if all attacks are on cooldown.
+            if (!IsFacingTarget(target))
+            {
+                FaceTargetSmoothly(target);
+                return;
+            }
+
             IEnemyAttack attackToUse = SelectAttack(distanceToTarget);
 
             if (attackToUse == null)
@@ -244,7 +261,12 @@ public class EnemyStateMachine : MonoBehaviour
 
     private IEnemyAttack SelectAttack(float distanceToTarget)
     {
-        IEnemyAttack bestAttack = null;
+        // Prevent starting any attack during the general cooldown.
+        if (Time.time < nextGeneralAttackTime)
+            return null;
+
+        IEnemyAttack bestNormalAttack = null;
+        IEnemyAttack availableSuperAttack = null;
 
         foreach (IEnemyAttack attack in attacks)
         {
@@ -254,15 +276,50 @@ public class EnemyStateMachine : MonoBehaviour
             if (!IsAttackInRange(attack, distanceToTarget))
                 continue;
 
-            // Prefer the attack with the shorter maximum range.
-            // This normally favors melee when both attacks are eligible.
-            if (bestAttack == null || attack.AttackRange < bestAttack.AttackRange)
+            if (attack.IsSuperAttack)
             {
-                bestAttack = attack;
+                if (availableSuperAttack == null)
+                    availableSuperAttack = attack;
+            }
+            else
+            {
+                if (bestNormalAttack == null || attack.AttackRange < bestNormalAttack.AttackRange)
+                {
+                    bestNormalAttack = attack;
+                }
             }
         }
 
-        return bestAttack;
+        // No eligible super attack: use a normal attack if possible.
+        if (availableSuperAttack == null)
+        {
+            if (bestNormalAttack == null)
+                Debug.Log($"{name}: No attack available at distance {distanceToTarget:F2}.", this);
+
+            return bestNormalAttack;
+        }
+
+        // A super attack is the only available option.
+        if (bestNormalAttack == null)
+        {
+            Debug.Log(
+                $"{name}: Selecting super attack '{availableSuperAttack.Definition.name}'.",
+                this
+            );
+            return availableSuperAttack;
+        }
+
+        // Both are available: roll the configured chance.
+        float chance = enemy.Definition.SuperAttackChance;
+
+        if (Random.Range(0f, 100f) < chance)
+        {
+            Debug.Log($"{name}: Super attack selected (chance {chance}%).", this);
+            return availableSuperAttack;
+        }
+
+        Debug.Log($"{name}: Normal attack selected (super chance {chance}%).", this);
+        return bestNormalAttack;
     }
 
     private void UpdateAttacking()
@@ -270,6 +327,7 @@ public class EnemyStateMachine : MonoBehaviour
         if (activeAttack == null || !activeAttack.IsAttacking)
         {
             activeAttack = null;
+
             ChangeState(aggro.HasTarget ? EnemyState.Chasing : EnemyState.Returning);
         }
     }
@@ -427,6 +485,7 @@ public class EnemyStateMachine : MonoBehaviour
         if (!aggro.HasTarget || activeAttack == null)
         {
             activeAttack = null;
+
             ChangeState(aggro.HasTarget ? EnemyState.Chasing : EnemyState.Returning);
         }
     }
@@ -479,7 +538,7 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void EnterStunned()
     {
-        // Cancel gameplay attack first, so its impact callback cannot deal damage.
+        // Cancel the current attack so it cannot deal damage after being stunned.
         if (activeAttack != null)
         {
             activeAttack.CancelAttack();
@@ -519,7 +578,7 @@ public class EnemyStateMachine : MonoBehaviour
         ChangeState(EnemyState.Dead);
     }
 
-    // Called by EnemyAnimationEvents at the end of the death clip.
+    // Called by EnemyAnimationEvents at the end of the death animation.
     public void FinishDeath()
     {
         if (CurrentState != EnemyState.Dead)
@@ -528,7 +587,28 @@ public class EnemyStateMachine : MonoBehaviour
         Destroy(gameObject, destroyDelay);
     }
 
-    private void FaceTarget(Transform target)
+    private bool IsAttackInRange(IEnemyAttack attack, float distanceToTarget)
+    {
+        return distanceToTarget >= attack.MinimumRange && distanceToTarget <= attack.AttackRange;
+    }
+
+    private bool IsFacingTarget(Transform target, float angleTolerance = 8f)
+    {
+        if (target == null)
+            return false;
+
+        Vector3 direction = target.position - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.001f)
+            return true;
+
+        float angle = Vector3.Angle(transform.forward, direction.normalized);
+
+        return angle <= angleTolerance;
+    }
+
+    private void FaceTargetSmoothly(Transform target)
     {
         if (target == null)
             return;
@@ -536,14 +616,15 @@ public class EnemyStateMachine : MonoBehaviour
         Vector3 direction = target.position - transform.position;
         direction.y = 0f;
 
-        if (direction.sqrMagnitude <= 0.001f)
+        if (direction.sqrMagnitude < 0.001f)
             return;
 
-        transform.rotation = Quaternion.LookRotation(direction);
-    }
+        Quaternion targetRotation = Quaternion.LookRotation(direction);
 
-    private bool IsAttackInRange(IEnemyAttack attack, float distanceToTarget)
-    {
-        return distanceToTarget >= attack.MinimumRange && distanceToTarget <= attack.AttackRange;
+        transform.rotation = Quaternion.RotateTowards(
+            transform.rotation,
+            targetRotation,
+            rotationSpeed * Time.deltaTime
+        );
     }
 }

@@ -6,10 +6,10 @@ public class Health : MonoBehaviour, IDamageable
     private int maxHealth;
     private int currentHealth;
     private bool isInitialized;
+    private bool deathEventRaised;
 
     public int CurrentHealth => currentHealth;
     public int MaxHealth => maxHealth;
-
     public bool IsInvincible { get; private set; }
     public bool IsDead => isInitialized && currentHealth <= 0;
 
@@ -21,21 +21,47 @@ public class Health : MonoBehaviour, IDamageable
 
     public void Initialize(int newMaxHealth)
     {
+        if (isInitialized)
+        {
+            Debug.LogWarning(
+                "[Health] Initialize was called more than once. "
+                    + "Use RestoreHealth to set health after initialization.",
+                this
+            );
+            return;
+        }
+
         maxHealth = Mathf.Max(1, newMaxHealth);
         currentHealth = maxHealth;
         IsInvincible = false;
         isInitialized = true;
+        deathEventRaised = false;
 
         HealthChanged?.Invoke();
     }
 
-    /// <summary>
-    /// Applies damage and returns the actual damage dealt.
-    /// Returns zero if damage is invalid, blocked, or the target is dead.
-    /// </summary>
+    public void RestoreHealth(int savedHealth)
+    {
+        if (!isInitialized)
+        {
+            Debug.LogError("[Health] Initialize health before restoring it.", this);
+            return;
+        }
+
+        currentHealth = Mathf.Clamp(savedHealth, 0, maxHealth);
+
+        if (currentHealth > 0)
+            deathEventRaised = false;
+
+        HealthChanged?.Invoke();
+
+        if (currentHealth <= 0)
+            Die();
+    }
+
     public int TakeDamage(int amount)
     {
-        if (!isInitialized || amount <= 0 || IsDead)
+        if (!isInitialized || IsDead || amount <= 0)
             return 0;
 
         if (IsInvincible)
@@ -44,49 +70,34 @@ public class Health : MonoBehaviour, IDamageable
             return 0;
         }
 
-        int previousHealth = currentHealth;
-        currentHealth = Mathf.Max(0, currentHealth - amount);
-
-        int actualDamage = previousHealth - currentHealth;
-
-        if (actualDamage <= 0)
-            return 0;
-
-        Debug.Log(
-            $"{gameObject.name} took {actualDamage} damage. "
-                + $"Health: {currentHealth}/{maxHealth}"
-        );
+        int actualDamage = Mathf.Min(amount, currentHealth);
+        currentHealth -= actualDamage;
 
         DamageReceived?.Invoke(actualDamage);
         HealthChanged?.Invoke();
 
-        if (IsDead)
-        {
+        if (currentHealth <= 0)
             Die();
-        }
 
         return actualDamage;
     }
 
     public void Heal(int amount)
     {
-        if (!isInitialized || amount <= 0 || IsDead)
+        if (!isInitialized || IsDead || amount <= 0)
             return;
 
         int previousHealth = currentHealth;
-        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        int missingHealth = maxHealth - currentHealth;
 
-        int actualHealing = currentHealth - previousHealth;
+        currentHealth = amount >= missingHealth ? maxHealth : currentHealth + amount;
 
-        if (actualHealing <= 0)
+        int healedAmount = currentHealth - previousHealth;
+
+        if (healedAmount <= 0)
             return;
 
-        Debug.Log(
-            $"{gameObject.name} healed for {actualHealing}. "
-                + $"Health: {currentHealth}/{maxHealth}"
-        );
-
-        HealthRestored?.Invoke(actualHealing);
+        HealthRestored?.Invoke(healedAmount);
         HealthChanged?.Invoke();
     }
 
@@ -102,7 +113,12 @@ public class Health : MonoBehaviour, IDamageable
 
     private void Die()
     {
+        if (!isInitialized || currentHealth > 0 || deathEventRaised)
+            return;
+
+        deathEventRaised = true;
+
         Died?.Invoke();
-        Debug.Log($"{gameObject.name} died.");
+        Debug.Log($"{gameObject.name} has died.", this);
     }
 }

@@ -83,7 +83,6 @@ GameObject:
   - component: {fileID: 4622300506644177846}
   - component: {fileID: 244256699961494480}
   - component: {fileID: 6281652010397323334}
-  - component: {fileID: 7857942963183297402}
   - component: {fileID: 6033010264494890168}
   - component: {fileID: 2031304770200489341}
   - component: {fileID: -196632083092022130}
@@ -210,21 +209,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 690dbc08f6121453db891bc48c925ee1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStateMachine
---- !u!114 &7857942963183297402
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3603842340316313691}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 130f8b2d3aa2d42c0bb11b9b5a61532c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
-  targetLayer:
-    serializedVersion: 2
-    m_Bits: 128
+  destroyDelay: 10
+  attackOrigin: {fileID: 0}
+  projectileSpawnPoint: {fileID: 0}
+  rotationSpeed: 720
 --- !u!114 &6033010264494890168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,6 +400,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimation
   animator: {fileID: 0}
+  speedSmoothTime: 0.15
 --- !u!1 &8429344976343167520
 GameObject:
   m_ObjectHideFlags: 0

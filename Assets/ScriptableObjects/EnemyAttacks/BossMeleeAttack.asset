@@ -18,7 +18,11 @@ MonoBehaviour:
   attackRange: 3
   animationTrigger: AttackMelee
   attackRadius: 1.5
+  meleeImpactSound: {fileID: 8300000, guid: 9201dc35b24dc426c99d1b485f76bbd7, type: 3}
+  meleeImpactSoundVolume: 1
   minimumRange: 0
   projectilePrefab: {fileID: 0}
   projectileSpeed: 10
   projectileLifetime: 5
+  projectileLaunchSound: {fileID: 0}
+  projectileLaunchSoundVolume: 1

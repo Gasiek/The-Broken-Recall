@@ -47,7 +47,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (playerDefinition == null)
             Debug.LogError($"{name}: No PlayerDefinition assigned.", this);
+    }
 
+    private void Start()
+    {
         if (movementReference == null)
             Debug.LogError($"{name}: No movement reference assigned.", this);
     }
@@ -234,6 +237,16 @@ public class PlayerMovement : MonoBehaviour
     public void SetSpeedMultiplier(float multiplier)
     {
         currentSpeedMultiplier = Mathf.Max(0f, multiplier);
+    }
+
+    public void SetMovementReference(Transform reference)
+    {
+        movementReference = reference;
+
+        if (movementReference == null)
+        {
+            Debug.LogError($"{name}: Failed to assign the camera movement reference.", this);
+        }
     }
 
     public void ResetSpeedMultiplier()

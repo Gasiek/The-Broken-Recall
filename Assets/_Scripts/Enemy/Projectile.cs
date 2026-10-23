@@ -11,6 +11,15 @@ public class Projectile : MonoBehaviour
     [SerializeField]
     private float gizmoDirectionLength = 1f;
 
+    [SerializeField]
+    private ParticleSystem destructionParticlesPrefab;
+
+    [SerializeField]
+    private AudioClip destructionSound;
+
+    [SerializeField, Range(0f, 1f)]
+    private float destructionSoundVolume = 1f;
+
     private Vector3 direction;
 
     private float speed;
@@ -62,6 +71,17 @@ public class Projectile : MonoBehaviour
 
     private void HandleHit(RaycastHit hit)
     {
+        VfxSpawner.SpawnOneShot(
+            destructionParticlesPrefab,
+            hit.point,
+            Quaternion.LookRotation(hit.normal)
+        );
+
+        if (destructionSound != null && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayWorldSFX(destructionSound, hit.point, destructionSoundVolume);
+        }
+
         IDamageable damageable = hit.collider.GetComponent<IDamageable>();
 
         if (damageable != null)

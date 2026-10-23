@@ -3,11 +3,10 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(CardsMenuUI))]
+[RequireComponent(typeof(PauseController))]
 public class PauseMenuUI : MonoBehaviour
 {
-    [SerializeField]
     private PauseController pauseController;
-
     private CardsMenuUI cardsMenuUI;
     private PanelRenderer panelRenderer;
 
@@ -20,8 +19,31 @@ public class PauseMenuUI : MonoBehaviour
 
     public event Action CardsClicked;
 
+    public void ScheduleCancel()
+    {
+        if (pauseMenu == null)
+            return;
+
+        pauseMenu.schedule.Execute(HandleCancel);
+    }
+
+    public void HandleCancel()
+    {
+        if (cardsMenuUI != null && cardsMenuUI.IsVisible)
+        {
+            ShowMainMenu();
+            return;
+        }
+
+        if (pauseController != null && pauseController.IsPaused)
+        {
+            pauseController.Resume();
+        }
+    }
+
     private void Awake()
     {
+        pauseController = GetComponent<PauseController>();
         cardsMenuUI = GetComponent<CardsMenuUI>();
     }
 
@@ -70,19 +92,13 @@ public class PauseMenuUI : MonoBehaviour
         quitButton = root.Q<Button>("QuitButton");
 
         if (resumeButton != null)
-        {
             resumeButton.clicked += HandleResumeClicked;
-        }
 
         if (cardsButton != null)
-        {
             cardsButton.clicked += HandleCardsClicked;
-        }
 
         if (quitButton != null)
-        {
             quitButton.clicked += HandleQuitClicked;
-        }
 
         cardsMenuUI.Initialize(root, HandleCardsBackClicked);
 
@@ -92,19 +108,13 @@ public class PauseMenuUI : MonoBehaviour
     private void UnbindUI()
     {
         if (resumeButton != null)
-        {
             resumeButton.clicked -= HandleResumeClicked;
-        }
 
         if (cardsButton != null)
-        {
             cardsButton.clicked -= HandleCardsClicked;
-        }
 
         if (quitButton != null)
-        {
             quitButton.clicked -= HandleQuitClicked;
-        }
 
         resumeButton = null;
         cardsButton = null;
@@ -122,7 +132,6 @@ public class PauseMenuUI : MonoBehaviour
         }
 
         ShowMainMenu();
-
         resumeButton?.Focus();
     }
 
@@ -131,9 +140,7 @@ public class PauseMenuUI : MonoBehaviour
         cardsMenuUI?.Hide();
 
         if (pauseMenu != null)
-        {
             pauseMenu.style.display = DisplayStyle.None;
-        }
 
         ShowMainMenu();
     }
@@ -143,17 +150,13 @@ public class PauseMenuUI : MonoBehaviour
         cardsMenuUI?.Hide();
 
         if (mainMenuContainer != null)
-        {
             mainMenuContainer.style.display = DisplayStyle.Flex;
-        }
     }
 
     public void ShowCardsMenu()
     {
         if (mainMenuContainer != null)
-        {
             mainMenuContainer.style.display = DisplayStyle.None;
-        }
 
         cardsMenuUI?.Show();
     }

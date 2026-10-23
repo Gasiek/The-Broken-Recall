@@ -6,13 +6,46 @@ public class PauseController : MonoBehaviour
     [SerializeField]
     private PauseMenuUI pauseMenuUI;
 
-    [SerializeField]
-    private CameraFollow cameraFollow;
-    [SerializeField]
     private PlayerInput playerInput;
 
     public bool IsPaused { get; private set; }
+    public PauseMenuUI PauseMenuUI => pauseMenuUI;
 
+    public void BindPlayer(PlayerInput input)
+    {
+        if (input == null)
+        {
+            Debug.LogError("PauseController cannot bind: PlayerInput is null.", this);
+            return;
+        }
+
+        if (playerInput != null && playerInput != input)
+        {
+            UnbindPlayer();
+        }
+
+        playerInput = input;
+    }
+
+    public void UnbindPlayer(PlayerInput input)
+    {
+        if (playerInput != input)
+        {
+            return;
+        }
+
+        UnbindPlayer();
+    }
+
+    public void UnbindPlayer()
+    {
+        if (IsPaused)
+        {
+            Resume();
+        }
+
+        playerInput = null;
+    }
 
     public void OnPause(InputAction.CallbackContext context)
     {
@@ -21,11 +54,6 @@ public class PauseController : MonoBehaviour
             return;
         }
 
-        TogglePause();
-    }
-
-    private void TogglePause()
-    {
         if (IsPaused)
         {
             Resume();
@@ -44,14 +72,17 @@ public class PauseController : MonoBehaviour
         }
 
         IsPaused = true;
-
         Time.timeScale = 0f;
 
-        playerInput.SwitchCurrentActionMap("UI");
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
-        cameraFollow.OnPause();
+        if (playerInput != null)
+        {
+            playerInput.SwitchCurrentActionMap("UI");
+        }
 
-        pauseMenuUI.Show();
+        pauseMenuUI?.Show();
     }
 
     public void Resume()
@@ -62,19 +93,24 @@ public class PauseController : MonoBehaviour
         }
 
         IsPaused = false;
-
         Time.timeScale = 1f;
 
-        playerInput.SwitchCurrentActionMap("Player");
+        if (playerInput != null)
+        {
+            playerInput.SwitchCurrentActionMap("Player");
+        }
 
-        cameraFollow.OnResume();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
 
-        pauseMenuUI.Hide();
+        pauseMenuUI?.Hide();
     }
 
     public void Quit()
     {
         Time.timeScale = 1f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -85,6 +121,11 @@ public class PauseController : MonoBehaviour
 
     private void OnDestroy()
     {
-        Time.timeScale = 1f;
+        if (IsPaused)
+        {
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
     }
 }

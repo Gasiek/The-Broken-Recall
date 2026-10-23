@@ -8,6 +8,7 @@ public interface IEnemyAttack
     float MinimumRange { get; }
 
     bool IsAttacking { get; }
+    bool IsSuperAttack { get; }
     bool CanAttack { get; }
 
     bool TryStartAttack(Transform target);
