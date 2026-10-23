@@ -25,6 +25,13 @@ public class RangedAttackRuntime : EnemyAttackRuntime
         }
 
         Vector3 spawnPosition = projectileSpawnPoint.position;
+        Vector3 aimPoint = target.position;
+
+        Player player = target.GetComponent<Player>();
+
+        if (player != null)
+            aimPoint = player.AimPosition;
+
         Vector3 direction;
 
         switch (Definition.AimMode)
@@ -39,7 +46,7 @@ public class RangedAttackRuntime : EnemyAttackRuntime
 
                 forward.Normalize();
 
-                Vector3 toTarget = target.position - spawnPosition;
+                Vector3 toTarget = aimPoint - spawnPosition;
 
                 float horizontalDistance = Vector3.Dot(
                     new Vector3(toTarget.x, 0f, toTarget.z),
@@ -59,7 +66,7 @@ public class RangedAttackRuntime : EnemyAttackRuntime
 
             case ProjectileAimMode.Target:
             default:
-                direction = target.position - spawnPosition;
+                direction = aimPoint - spawnPosition;
                 break;
         }
 

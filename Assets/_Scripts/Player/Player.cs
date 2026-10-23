@@ -6,6 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(ActionCollection))]
 [RequireComponent(typeof(ActionMemory))]
 [RequireComponent(typeof(WeaponBuffManager))]
+[RequireComponent(typeof(CharacterController))]
 public sealed class Player : MonoBehaviour
 {
     [SerializeField]
@@ -17,6 +18,9 @@ public sealed class Player : MonoBehaviour
     public ActionCollection ActionCollection { get; private set; }
     public ActionMemory ActionMemory { get; private set; }
     public WeaponBuffManager WeaponBuffs { get; private set; }
+    public CharacterController CharacterController { get; private set; }
+    public Vector3 AimPosition =>
+        CharacterController.transform.TransformPoint(CharacterController.center);
 
     private bool initialized;
 
@@ -27,6 +31,7 @@ public sealed class Player : MonoBehaviour
         ActionCollection = GetComponent<ActionCollection>();
         ActionMemory = GetComponent<ActionMemory>();
         WeaponBuffs = GetComponent<WeaponBuffManager>();
+        CharacterController = GetComponent<CharacterController>();
 
         if (definition == null)
         {
