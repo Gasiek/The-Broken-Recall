@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "BasicHitAction", menuName = "RPG/Actions/Basic Hit")]
@@ -6,12 +7,12 @@ public class BasicHitAction : ActionDefinition
     [SerializeField]
     private int damage = 10;
 
+    [Header("Hitbox")]
     [SerializeField]
-    private float attackRange = 1.5f;
+    private float hitboxOffset = 0.8f;
 
-    [Tooltip("The radius of the sphere cast for the attack.")]
     [SerializeField]
-    private float attackRadius = 0.35f;
+    private float hitboxRadius = 1.1f;
 
     [SerializeField]
     private LayerMask targetLayer;
@@ -23,35 +24,38 @@ public class BasicHitAction : ActionDefinition
 
     private void DealDamage(ActionContext context)
     {
-        Vector3 origin = context.Player.position;
-        Vector3 direction = context.Player.forward;
-
-        if (
-            !Physics.SphereCast(
-                origin,
-                attackRadius,
-                direction,
-                out RaycastHit hit,
-                attackRange,
-                targetLayer
-            )
-        )
-        {
-            return;
-        }
-
-        IDamageable damageable = hit.collider.GetComponent<IDamageable>();
-
-        if (damageable == null)
+        if (context == null || context.Player == null)
             return;
 
-        CombatResolver.ResolveAttackHit(
-            context.Player.gameObject,
-            context.WeaponBuffs,
-            damageable,
-            damage,
-            hit.point
+        Collider[] hits = ActionHitDetector.DetectForward(
+            context.Player,
+            hitboxOffset,
+            hitboxRadius,
+            targetLayer
         );
+
+        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
+
+        foreach (Collider hit in hits)
+        {
+            if (hit == null)
+                continue;
+
+            IDamageable damageable = hit.GetComponent<IDamageable>();
+
+            if (damageable == null || !damagedTargets.Add(damageable))
+                continue;
+
+            Vector3 hitPoint = hit.ClosestPoint(context.Player.AimPosition);
+
+            CombatResolver.ResolveAttackHit(
+                context.Player.gameObject,
+                context.WeaponBuffs,
+                damageable,
+                damage,
+                hitPoint
+            );
+        }
     }
 
     public override string GetDescription() =>

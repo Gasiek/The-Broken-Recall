@@ -5,19 +5,21 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "SwordChargeAction", menuName = "RPG/Actions/Sword Charge")]
 public class SwordChargeAction : ActionDefinition
 {
-    [Header("Charge Combat")]
+    [Header("Combat")]
     [SerializeField]
     private int damage = 25;
 
-    [Tooltip("Radius around the front of the player used to detect targets.")]
+    [Header("Charge Hitbox")]
     [SerializeField]
-    private float hitRadius = 1.1f;
+    private float hitboxOffset = 0.8f;
+
+    [SerializeField]
+    private float hitboxRadius = 1.1f;
 
     [SerializeField]
     private LayerMask targetLayer;
 
     [Header("Charge Motion & Timing")]
-
     [SerializeField]
     private float chargeMoveDuration = 1.0f;
 
@@ -47,8 +49,7 @@ public class SwordChargeAction : ActionDefinition
         if (context.Health == null || context.Health.IsDead)
             return;
 
-        Vector3 direction = context.Player.forward;
-        direction.y = 0f;
+        Vector3 direction = Vector3.ProjectOnPlane(context.Player.transform.forward, Vector3.up);
 
         if (direction.sqrMagnitude < 0.001f)
             return;
@@ -68,7 +69,10 @@ public class SwordChargeAction : ActionDefinition
 
     private IEnumerator ChargeRoutine(ActionContext context, Vector3 direction)
     {
+        // Keep this set for the entire charge so targets cannot be hit
+        // repeatedly on successive frames or through multiple colliders.
         HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
+
         PlayerMovement movement = context.Movement;
 
         while (movement != null && movement.IsChargeMoving)
@@ -108,14 +112,14 @@ public class SwordChargeAction : ActionDefinition
     {
         if (dashSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlayWorldSFX(dashSound, context.Player.position, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(dashSound, context.Player.transform.position, soundVolume);
         }
 
         if (dashTrailVfxPrefab != null)
         {
             VfxSpawner.SpawnOneShot(
                 dashTrailVfxPrefab,
-                context.Player.position + Vector3.up * 0.5f,
+                context.Player.transform.position + Vector3.up * 0.5f,
                 Quaternion.LookRotation(direction)
             );
         }
@@ -127,11 +131,13 @@ public class SwordChargeAction : ActionDefinition
         HashSet<IDamageable> damagedTargets
     )
     {
-        Vector3 checkOrigin = context.Player.position + chargeDirection * 0.8f + Vector3.up * 0.8f;
+        if (context.Player == null)
+            return;
 
-        Collider[] hits = Physics.OverlapSphere(
-            checkOrigin,
-            hitRadius,
+        Collider[] hits = ActionHitDetector.DetectForward(
+            context.Player,
+            hitboxOffset,
+            hitboxRadius,
             targetLayer,
             QueryTriggerInteraction.Ignore
         );
@@ -146,7 +152,7 @@ public class SwordChargeAction : ActionDefinition
             if (damageable == null || !damagedTargets.Add(damageable))
                 continue;
 
-            Vector3 hitPoint = hitCol.ClosestPoint(checkOrigin);
+            Vector3 hitPoint = hitCol.ClosestPoint(context.Player.AimPosition);
 
             CombatResolver.ResolveAttackHit(
                 context.Player.gameObject,

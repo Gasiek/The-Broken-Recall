@@ -35,7 +35,7 @@ public class LightningChargeAction : ActionDefinition
 
         if (chargeSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlayWorldSFX(chargeSound, context.Player.position, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(chargeSound, context.Player.transform.position, soundVolume);
         }
 
         if (context.WeaponBuffs != null)

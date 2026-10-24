@@ -1,15 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "StunAction", menuName = "RPG/Actions/Stun")]
 public class StunAction : ActionDefinition
 {
-    [Header("Attack Range & Target")]
+    [Header("Hitbox")]
     [SerializeField]
-    private float attackRange = 1.6f;
+    private float hitboxOffset = 0.8f;
 
-    [Tooltip("Radius of the sphere cast for detecting the hit enemy in front.")]
     [SerializeField]
-    private float attackRadius = 0.5f;
+    private float hitboxRadius = 1.1f;
 
     [SerializeField]
     private LayerMask targetLayer;
@@ -27,12 +27,11 @@ public class StunAction : ActionDefinition
     [SerializeField]
     private float soundVolume = 0.9f;
 
-    public float AttackRange => attackRange;
     public float StunDuration => stunStatusEffect != null ? stunStatusEffect.Duration : 0f;
 
     public override void OnAnimationImpact(ActionContext context)
     {
-        if (context == null || context.Player == null)
+        if (context?.Player == null)
             return;
 
         PerformStunStrike(context);
@@ -40,39 +39,34 @@ public class StunAction : ActionDefinition
 
     private void PerformStunStrike(ActionContext context)
     {
-        Vector3 origin = context.Player.position + Vector3.up * 0.8f;
-        Vector3 direction = context.Player.forward;
+        Collider[] hits = ActionHitDetector.DetectForward(
+            context.Player,
+            hitboxOffset,
+            hitboxRadius,
+            targetLayer,
+            QueryTriggerInteraction.Ignore
+        );
 
-        if (
-            !Physics.SphereCast(
-                origin,
-                attackRadius,
-                direction,
-                out RaycastHit hit,
-                attackRange,
-                targetLayer,
-                QueryTriggerInteraction.Ignore
-            )
-        )
+        HashSet<StatusEffectManager> stunnedTargets = new HashSet<StatusEffectManager>();
+
+        foreach (Collider hit in hits)
         {
-            return;
-        }
+            if (hit == null)
+                continue;
 
-        ApplyStun(hit.collider.gameObject);
+            StatusEffectManager statusManager = hit.GetComponent<StatusEffectManager>();
+
+            if (statusManager == null || !stunnedTargets.Add(statusManager))
+                continue;
+
+            ApplyStun(hit.gameObject, statusManager);
+        }
     }
 
-    private void ApplyStun(GameObject targetObj)
+    private void ApplyStun(GameObject targetObj, StatusEffectManager statusManager)
     {
-        if (targetObj == null)
-        {
+        if (targetObj == null || statusManager == null)
             return;
-        }
-
-        StatusEffectManager statusManager = targetObj.GetComponent<StatusEffectManager>();
-        if (statusManager == null)
-        {
-            return;
-        }
 
         if (stunStatusEffect != null)
         {
@@ -80,7 +74,9 @@ public class StunAction : ActionDefinition
         }
         else
         {
-            Debug.LogWarning("No stun status effect applied.");
+            Debug.LogWarning("StunAction has no stun status effect assigned.", this);
+
+            return;
         }
 
         if (stunSound != null && AudioManager.Instance != null)

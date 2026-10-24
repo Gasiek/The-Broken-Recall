@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PushAction", menuName = "RPG/Actions/Push")]
@@ -7,12 +8,12 @@ public class PushAction : ActionDefinition
     [SerializeField]
     private int damage = 10;
 
+    [Header("Hitbox")]
     [SerializeField]
-    private float attackRange = 1.5f;
+    private float hitboxOffset = 0.8f;
 
-    [Tooltip("The radius of the sphere cast for the attack.")]
     [SerializeField]
-    private float attackRadius = 0.35f;
+    private float hitboxRadius = 1.1f;
 
     [SerializeField]
     private float knockbackDistance = 2f;
@@ -30,41 +31,47 @@ public class PushAction : ActionDefinition
 
     private void DealDamageAndPush(ActionContext context)
     {
-        Vector3 origin = context.Player.position;
-        Vector3 direction = context.Player.forward;
-
-        if (
-            !Physics.SphereCast(
-                origin,
-                attackRadius,
-                direction,
-                out RaycastHit hit,
-                attackRange,
-                targetLayer
-            )
-        )
-        {
+        if (context == null || context.Player == null)
             return;
-        }
 
-        IDamageable damageable = hit.collider.GetComponent<IDamageable>();
+        Collider[] hits = ActionHitDetector.DetectForward(
+            context.Player,
+            hitboxOffset,
+            hitboxRadius,
+            targetLayer
+        );
 
-        if (damageable != null)
+        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
+        HashSet<IPushable> pushedTargets = new HashSet<IPushable>();
+
+        Vector3 pushDirection = Vector3
+            .ProjectOnPlane(context.Player.transform.forward, Vector3.up)
+            .normalized;
+
+        foreach (Collider hit in hits)
         {
-            CombatResolver.ResolveAttackHit(
-                context.Player.gameObject,
-                context.WeaponBuffs,
-                damageable,
-                damage,
-                hit.point
-            );
-        }
+            if (hit == null)
+                continue;
 
-        IPushable pushable = hit.collider.GetComponent<IPushable>();
+            IDamageable damageable = hit.GetComponent<IDamageable>();
 
-        if (pushable != null)
-        {
-            pushable.Push(direction, knockbackDistance);
+            if (damageable != null && damagedTargets.Add(damageable))
+            {
+                CombatResolver.ResolveAttackHit(
+                    context.Player.gameObject,
+                    context.WeaponBuffs,
+                    damageable,
+                    damage,
+                    hit.ClosestPoint(context.Player.transform.position)
+                );
+            }
+
+            IPushable pushable = hit.GetComponent<IPushable>();
+
+            if (pushable != null && pushedTargets.Add(pushable))
+            {
+                pushable.Push(pushDirection, knockbackDistance);
+            }
         }
     }
 

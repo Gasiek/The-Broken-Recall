@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "JumpSlamAction", menuName = "RPG/Actions/Jump Slam")]
 public class JumpSlamAction : ActionDefinition
@@ -9,8 +10,12 @@ public class JumpSlamAction : ActionDefinition
     [SerializeField]
     private int damage = 25;
 
+    [Header("Hitbox")]
     [SerializeField]
-    private float slamRadius = 3.5f;
+    private float hitboxOffset = 0.7f;
+
+    [SerializeField]
+    private float hitboxRadius = 3.5f;
 
     [SerializeField]
     private float knockbackDistance = 3.5f;
@@ -48,7 +53,11 @@ public class JumpSlamAction : ActionDefinition
 
         if (jumpSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlayWorldSFX(jumpSound, context.Player.position, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(
+                jumpSound,
+                context.Player.transform.position,
+                soundVolume
+            );
         }
 
         GetRoutineRunner(context).Run(JumpRoutine(context));
@@ -60,10 +69,9 @@ public class JumpSlamAction : ActionDefinition
             yield break;
 
         PlayerMovement movement = context.Movement;
-        Transform playerTransform = context.Player;
+        Transform playerTransform = context.Player.transform;
 
-        Vector3 forwardDir = playerTransform.forward;
-        forwardDir.y = 0f;
+        Vector3 forwardDir = Vector3.ProjectOnPlane(playerTransform.forward, Vector3.up);
 
         if (forwardDir.sqrMagnitude < 0.001f)
             yield break;
@@ -113,7 +121,6 @@ public class JumpSlamAction : ActionDefinition
 
             CollisionFlags flags = movement.MoveActionDisplacement(displacement);
 
-            // Stop the scripted leap if a ceiling or wall blocks it.
             if ((flags & CollisionFlags.Above) != 0 || (flags & CollisionFlags.Sides) != 0)
             {
                 yield break;
@@ -126,16 +133,26 @@ public class JumpSlamAction : ActionDefinition
 
     private void OnSlamImpact(ActionContext context)
     {
-        Vector3 impactPosition = context.Player.position + context.Player.forward * 0.7f;
+        Vector3 forward = Vector3.ProjectOnPlane(context.Player.transform.forward, Vector3.up).normalized;
+
+        Vector3 impactPosition = context.Player.transform.position + forward * hitboxOffset;
 
         if (slamSound != null && AudioManager.Instance != null)
         {
             AudioManager.Instance.PlayWorldSFX(slamSound, impactPosition, soundVolume);
         }
 
-        VfxSpawner.SpawnOneShot(slamVfxPrefab, impactPosition, Quaternion.identity);
+        if (slamVfxPrefab != null)
+        {
+            VfxSpawner.SpawnOneShot(slamVfxPrefab, impactPosition, Quaternion.identity);
+        }
 
-        Collider[] hits = Physics.OverlapSphere(impactPosition, slamRadius, targetLayer);
+        Collider[] hits = ActionHitDetector.DetectRadial(
+            impactPosition,
+            hitboxRadius,
+            targetLayer,
+            QueryTriggerInteraction.Ignore
+        );
 
         HashSet<IDamageable> damagedEntities = new HashSet<IDamageable>();
 
@@ -143,6 +160,9 @@ public class JumpSlamAction : ActionDefinition
 
         foreach (Collider hit in hits)
         {
+            if (hit == null)
+                continue;
+
             IDamageable damageable = hit.GetComponent<IDamageable>();
 
             if (damageable != null && damagedEntities.Add(damageable))
@@ -152,7 +172,7 @@ public class JumpSlamAction : ActionDefinition
                     context.WeaponBuffs,
                     damageable,
                     damage,
-                    impactPosition
+                    hit.ClosestPoint(impactPosition)
                 );
             }
 
@@ -165,9 +185,13 @@ public class JumpSlamAction : ActionDefinition
                 pushDir.y = 0f;
 
                 if (pushDir.sqrMagnitude < 0.001f)
-                    pushDir = context.Player.forward;
+                {
+                    pushDir = forward;
+                }
                 else
+                {
                     pushDir.Normalize();
+                }
 
                 pushable.Push(pushDir, knockbackDistance);
             }
@@ -176,7 +200,7 @@ public class JumpSlamAction : ActionDefinition
 
     public override void OnAnimationImpact(ActionContext context)
     {
-        if (context == null || context.Player == null)
+        if (context?.Player == null)
             return;
 
         OnSlamImpact(context);
@@ -202,7 +226,7 @@ public class JumpSlamAction : ActionDefinition
     }
 
     public override string GetDescription() =>
-        $"Leaps into the air and slams down, dealing {damage} damage within a {slamRadius:0.#}m radius and knocking enemies back {knockbackDistance:0.#}m.";
+        $"Leaps into the air and slams down, dealing {damage} damage within a {hitboxRadius:0.#}m radius and knocking enemies back {knockbackDistance:0.#}m.";
 
     private ActionRoutineRunner GetRoutineRunner(ActionContext context)
     {

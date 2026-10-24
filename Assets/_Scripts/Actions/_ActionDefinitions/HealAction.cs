@@ -24,13 +24,13 @@ public class HealAction : ActionDefinition
 
         if (healVfxPrefab != null && context.Player != null)
         {
-            Vector3 spawnPosition = context.Player.position + vfxOffset;
+            Vector3 spawnPosition = context.Player.transform.position + vfxOffset;
 
             VfxSpawner.SpawnOneShot(
                 healVfxPrefab,
                 spawnPosition,
-                context.Player.rotation,
-                context.Player
+                context.Player.transform.rotation,
+                context.Player.transform
             );
         }
     }

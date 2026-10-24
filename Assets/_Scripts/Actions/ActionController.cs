@@ -10,6 +10,7 @@ public class ActionController : MonoBehaviour
 {
     private PlayerStateMachine stateMachine;
     private PlayerMovement playerMovement;
+    private Player player;
     private ActionMemory actionMemory;
     private Health health;
     private WeaponBuffManager weaponBuffs;
@@ -29,6 +30,7 @@ public class ActionController : MonoBehaviour
     {
         stateMachine = GetComponent<PlayerStateMachine>();
         playerMovement = GetComponent<PlayerMovement>();
+        player = GetComponent<Player>();
         actionMemory = GetComponent<ActionMemory>();
         health = GetComponent<Health>();
         weaponBuffs = GetComponent<WeaponBuffManager>();
@@ -50,7 +52,7 @@ public class ActionController : MonoBehaviour
         ActionDefinition action = card.Definition;
 
         ActionContext context = new ActionContext(
-            transform,
+            player,
             playerMovement,
             health,
             action,

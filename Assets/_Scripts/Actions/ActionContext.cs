@@ -2,14 +2,14 @@ using UnityEngine;
 
 public class ActionContext
 {
-    public Transform Player { get; }
+    public Player Player { get; }
     public PlayerMovement Movement { get; }
     public Health Health { get; }
     public ActionDefinition Action { get; }
     public WeaponBuffManager WeaponBuffs { get; }
 
     public ActionContext(
-        Transform player,
+        Player player,
         PlayerMovement movement,
         Health health,
         ActionDefinition action,

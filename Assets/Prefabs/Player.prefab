@@ -63,6 +63,7 @@ GameObject:
   - component: {fileID: -7989781241684946519}
   - component: {fileID: 1194145322}
   - component: {fileID: 1194145323}
+  - component: {fileID: -6842629579866276745}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -655,6 +656,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 000cde815f1e842e5aadb040107cf1bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionRoutineRunner
+--- !u!114 &-6842629579866276745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8871950886247871719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa4e96c0eb6724d48af1c30cc563f587, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActionHitDetectorGizmos
+  showForwardDetector: 1
+  forwardOffset: 1.5
+  forwardRadius: 0.5
+  showRadialDetector: 0
+  radialRadius: 3.5
+  radialOffset: {x: 0, y: 0, z: 0}
+  onlyWhenSelected: 0
 --- !u!1001 &48636446
 PrefabInstance:
   m_ObjectHideFlags: 0
