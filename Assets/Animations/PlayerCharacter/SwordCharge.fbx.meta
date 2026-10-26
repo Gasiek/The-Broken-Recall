@@ -35,7 +35,7 @@ ModelImporter:
       name: Charge
       takeName: mixamo.com
       internalID: -203655887218126122
-      firstFrame: 16
+      firstFrame: 15
       lastFrame: 51
       wrapMode: 0
       orientationOffsetY: 0
@@ -56,7 +56,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000u
       curves: []
       events:
-      - time: 0.35925725
+      - time: 0.38709947
         functionName: ActionImpact
         data: 
         objectReferenceParameter: {instanceID: 0}
