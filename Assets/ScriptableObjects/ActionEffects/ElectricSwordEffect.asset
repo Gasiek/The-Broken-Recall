@@ -17,7 +17,7 @@ MonoBehaviour:
   duration: 10
   speedMultiplier: 1
   damageMultiplier: 1
-  bonusDamage: 40
+  bonusDamage: 20
   visuals:
   - prefab: {fileID: 765697267218292142, guid: b4dcc6304332d43608df0c85e7f5dd50, type: 3}
     attachment: 1

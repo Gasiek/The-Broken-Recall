@@ -61,6 +61,8 @@ public class EnemyStateMachine : MonoBehaviour
 
     private void OnEnable()
     {
+        if (aggro != null)
+            aggro.TargetLost += HandleTargetLost;
         if (enemy != null)
             enemy.Died += HandleDeath;
 
@@ -72,6 +74,11 @@ public class EnemyStateMachine : MonoBehaviour
     {
         if (enemy != null)
             enemy.Died -= HandleDeath;
+
+        if (aggro != null)
+            aggro.TargetLost -= HandleTargetLost;
+
+        enemy.Died -= HandleDeath;
 
         if (characterEffects != null)
             characterEffects.StunStateChanged -= HandleStunStateChanged;
@@ -87,6 +94,27 @@ public class EnemyStateMachine : MonoBehaviour
 
         if (CurrentState == EnemyState.Idle && !aggro.HasTarget)
             ChangeState(EnemyState.Patrolling);
+    }
+
+    private void HandleTargetLost()
+    {
+        if (CurrentState == EnemyState.Dead || CurrentState == EnemyState.Stunned)
+            return;
+
+        // Stop an attack immediately if the target died mid-attack.
+        if (activeAttack != null)
+        {
+            activeAttack.CancelAttack();
+            activeAttack = null;
+        }
+
+        if (enemy.Agent != null)
+        {
+            enemy.Agent.isStopped = false;
+            enemy.Agent.ResetPath();
+        }
+
+        ChangeState(HasReachedHome() ? EnemyState.Patrolling : EnemyState.Returning);
     }
 
     private void InitializeAttacks()
