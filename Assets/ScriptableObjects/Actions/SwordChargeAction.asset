@@ -24,7 +24,7 @@ MonoBehaviour:
   dealDamage: 1
   damage: 25
   effectsToApply: []
-  chargeMoveDuration: 0.2
+  chargeMoveDuration: 0.3
   chargeDistance: 4
   dashSound: {fileID: 8300000, guid: 609d1590d78734a8385836d0360d95d1, type: 3}
   soundVolume: 0.9
