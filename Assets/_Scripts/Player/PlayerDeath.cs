@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Health))]
 [RequireComponent(typeof(PlayerStateMachine))]
@@ -41,8 +40,16 @@ public class PlayerDeath : MonoBehaviour
 
     private IEnumerator RestartSceneAfterDelay()
     {
-        yield return new WaitForSeconds(restartDelay);
+        yield return new WaitForSecondsRealtime(restartDelay);
 
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneTransitionManager manager = SceneTransitionManager.Instance;
+
+        if (manager == null)
+        {
+            Debug.LogError("Cannot restart: SceneTransitionManager was not found.", this);
+            yield break;
+        }
+
+        manager.RestartFromBeginning();
     }
 }

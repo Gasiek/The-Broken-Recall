@@ -116,6 +116,29 @@ public sealed class SceneTransitionManager : MonoBehaviour
         SpawnPlayer(context, spawn, session.PlayerData);
     }
 
+    public void RestartFromBeginning()
+    {
+        if (!initialized || loading)
+            return;
+
+        if (session == null)
+            session = GameSession.Instance;
+
+        if (session == null)
+        {
+            Debug.LogError("Cannot restart: no GameSession exists.", this);
+            return;
+        }
+
+        if (initialDestination == null)
+        {
+            Debug.LogError("Cannot restart: assign an Initial Destination.", this);
+            return;
+        }
+
+        StartCoroutine(RestartRoutine());
+    }
+
     public bool TransitionTo(SceneDestination destination)
     {
         if (!initialized)
@@ -372,6 +395,54 @@ public sealed class SceneTransitionManager : MonoBehaviour
 
         spawn = context.GetDefaultSpawnPoint();
         return spawn != null;
+    }
+
+    private IEnumerator RestartRoutine()
+    {
+        if (session == null || !session.BeginTransition())
+            yield break;
+
+        loading = true;
+        pendingDestination = initialDestination;
+
+        Player oldPlayer = session.CurrentPlayer;
+
+        if (oldPlayer != null)
+        {
+            ActionController controller = oldPlayer.GetComponent<ActionController>();
+
+            if (controller != null)
+                controller.CancelCurrentAction();
+
+            session.UnregisterPlayer(oldPlayer);
+            playerSceneBinder.Unbind();
+            Destroy(oldPlayer.gameObject);
+        }
+
+        session.ResetForNewGame();
+        session.SetDestination(initialDestination.SceneName, initialDestination.name);
+
+        Time.timeScale = 1f;
+
+        AsyncOperation operation = SceneManager.LoadSceneAsync(
+            initialDestination.SceneName,
+            LoadSceneMode.Single
+        );
+
+        if (operation == null)
+        {
+            AbortTransition("Could not reload the starting scene.");
+            yield break;
+        }
+
+        while (!operation.isDone)
+            yield return null;
+
+        // OnSceneLoaded handles spawning the player.
+        yield return null;
+
+        if (loading)
+            AbortTransition("The starting scene loaded, but player spawning did not complete.");
     }
 
     private void OnDestroy()

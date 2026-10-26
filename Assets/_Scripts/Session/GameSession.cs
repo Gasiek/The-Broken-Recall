@@ -175,4 +175,12 @@ public sealed class GameSession : MonoBehaviour
     {
         TransitionInProgress = false;
     }
+
+    public void ResetForNewGame()
+    {
+        PlayerData = null;
+        CurrentSpawnPointId = null;
+        deadEnemyIds.Clear();
+        completedEncounterIds.Clear();
+    }
 }
