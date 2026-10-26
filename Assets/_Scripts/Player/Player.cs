@@ -18,9 +18,21 @@ public sealed class Player : MonoBehaviour
     public ActionMemory ActionMemory { get; private set; }
     public CharacterEffectManager CharacterEffects { get; private set; }
     public CharacterController CharacterController { get; private set; }
-    public Vector3 AimPosition =>
-        CharacterController.transform.TransformPoint(CharacterController.center);
+    public Vector3 AimPosition
+    {
+        get
+        {
+            CharacterController controller = CharacterController;
 
+            if (controller == null)
+                controller = GetComponent<CharacterController>();
+
+            if (controller == null)
+                return transform.position;
+
+            return controller.transform.TransformPoint(controller.center);
+        }
+    }
     private bool initialized;
 
     private void Awake()
