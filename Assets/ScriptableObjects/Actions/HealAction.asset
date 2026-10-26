@@ -16,6 +16,8 @@ MonoBehaviour:
   animationType: 6
   icon: {fileID: -397088048600430730, guid: ee522672538e94df580aff45d885d184, type: 3}
   reshuffleCooldown: 1
-  healAmount: 25
+  healAmount: 7
+  healInterval: 0.5
+  healDuration: 4
   healVfxPrefab: {fileID: 2239275727143023703, guid: 33f1a7125942a4defad32c4c9eb34496, type: 3}
   vfxOffset: {x: 0, y: 0, z: 0}

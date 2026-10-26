@@ -8,6 +8,14 @@ public class ActionRoutineRunner : MonoBehaviour
         return StartCoroutine(routine);
     }
 
+    public void Stop(Coroutine routine)
+    {
+        if (routine == null)
+            return;
+
+        StopCoroutine(routine);
+    }
+
     public void StopAllActionRoutines()
     {
         StopAllCoroutines();

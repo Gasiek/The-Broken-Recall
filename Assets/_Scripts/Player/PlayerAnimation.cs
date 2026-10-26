@@ -22,6 +22,7 @@ public class PlayerAnimation : MonoBehaviour
     private static readonly int ComboStepHash = Animator.StringToHash("BasicHitCombo");
     private static readonly int RollHash = Animator.StringToHash("Roll");
     private static readonly int BasicHitHash = Animator.StringToHash("BasicHit");
+    private static readonly int HealStandUpHash = Animator.StringToHash("HealStandUp");
 
     [SerializeField]
     private Animator animator;
@@ -157,6 +158,14 @@ public class PlayerAnimation : MonoBehaviour
     {
         lastBasicHitFinishedTime = Time.time;
         canContinueCombo = true;
+    }
+
+    public void BeginHealStandUp()
+    {
+        if (animator == null || health.IsDead)
+            return;
+
+        animator.SetTrigger(HealStandUpHash);
     }
 
     private void HandleDeath()

@@ -18,4 +18,4 @@ MonoBehaviour:
   gravity: -20
   dashDistance: 6
   dashDuration: 0.5
-  dashCooldown: 0.5
+  dashCooldown: 0.85

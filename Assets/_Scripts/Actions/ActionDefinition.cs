@@ -47,6 +47,7 @@ public abstract class ActionDefinition : ScriptableObject
     // Called if the action is interrupted or cancelled.
     public virtual void OnCancelled(ActionContext context) { }
 
-    public virtual string GetDescription() => string.Empty;
+    public virtual void OnHealSittingStarted(ActionContext context) { }
 
+    public virtual string GetDescription() => string.Empty;
 }

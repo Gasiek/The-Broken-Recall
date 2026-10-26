@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(ActionMemory))]
 [RequireComponent(typeof(Health))]
+[RequireComponent(typeof(ActionRoutineRunner))]
 public class ActionController : MonoBehaviour
 {
     private PlayerStateMachine stateMachine;
@@ -12,6 +13,7 @@ public class ActionController : MonoBehaviour
     private Player player;
     private ActionMemory actionMemory;
     private Health health;
+    private ActionRoutineRunner routineRunner;
 
     private bool isExecutingAction;
     private bool actionFinished;
@@ -31,6 +33,7 @@ public class ActionController : MonoBehaviour
         player = GetComponent<Player>();
         actionMemory = GetComponent<ActionMemory>();
         health = GetComponent<Health>();
+        routineRunner = GetComponent<ActionRoutineRunner>();
     }
 
     public void ExecuteAction(int slot)
@@ -48,7 +51,7 @@ public class ActionController : MonoBehaviour
 
         ActionDefinition action = card.Definition;
 
-        ActionContext context = new ActionContext(player, playerMovement, health, action, this);
+        ActionContext context = new ActionContext(player, playerMovement, health, action, this, routineRunner);
 
         // Establish the active execution before invoking callbacks.
         currentAction = action;
@@ -116,6 +119,14 @@ public class ActionController : MonoBehaviour
         finishedAction.OnAnimationFinished(finishedContext);
 
         stateMachine.FinishActing();
+    }
+
+    public void HandleHealSittingStarted()
+    {
+        if (!isExecutingAction || actionFinished || currentAction == null || currentContext == null)
+            return;
+
+        currentAction.OnHealSittingStarted(currentContext);
     }
 
     private void OnDisable()

@@ -4,6 +4,7 @@ public class PlayerAnimationEvents : MonoBehaviour
 {
     [SerializeField]
     private ActionController actionController;
+
     [SerializeField]
     private PlayerAnimation playerAnimation;
 
@@ -37,6 +38,11 @@ public class PlayerAnimationEvents : MonoBehaviour
     public void BasicHitAnimationFinished()
     {
         playerAnimation?.BasicHitAnimationFinished();
+    }
+
+    public void HealSittingStarted()
+    {
+        actionController?.HandleHealSittingStarted();
     }
 
     // Optional: add this to the end of the death clip.

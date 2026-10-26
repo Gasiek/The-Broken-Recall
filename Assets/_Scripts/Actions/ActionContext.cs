@@ -7,13 +7,16 @@ public class ActionContext
     public Health Health { get; }
     public ActionDefinition Action { get; }
     public ActionController ActionController { get; }
+    public ActionRoutineRunner RoutineRunner { get; }
+    public Coroutine ActionRoutine { get; set; }
 
     public ActionContext(
         Player player,
         PlayerMovement movement,
         Health health,
         ActionDefinition action,
-        ActionController actionController
+        ActionController actionController,
+        ActionRoutineRunner routineRunner
     )
     {
         Player = player;
@@ -21,5 +24,6 @@ public class ActionContext
         Health = health;
         Action = action;
         ActionController = actionController;
+        RoutineRunner = routineRunner;
     }
 }
