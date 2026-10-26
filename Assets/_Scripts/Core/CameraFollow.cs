@@ -3,10 +3,6 @@ using UnityEngine.InputSystem;
 
 public class CameraFollow : MonoBehaviour
 {
-    [Header("Target")]
-    [SerializeField]
-    private Transform target;
-
     [Header("Distance & Height")]
     [SerializeField]
     private float distance = 8f;
@@ -26,6 +22,7 @@ public class CameraFollow : MonoBehaviour
 
     private float currentYaw;
     private float currentPitch = 40f;
+    private Transform target;
 
     public Transform Target => target;
 

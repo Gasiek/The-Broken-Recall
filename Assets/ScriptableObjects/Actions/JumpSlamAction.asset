@@ -26,7 +26,7 @@ MonoBehaviour:
   effectsToApply: []
   slamImpactForwardOffset: 0.7
   knockbackDistance: 3.5
-  jumpDuration: 0.72
+  jumpDuration: 0.6
   jumpHeight: 2.5
   forwardDistance: 2
   jumpSound: {fileID: 8300000, guid: 2319500d2e0e3458097c1c8834da06ad, type: 3}

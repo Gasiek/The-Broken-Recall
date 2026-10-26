@@ -16,8 +16,8 @@ MonoBehaviour:
   animationType: 3
   icon: {fileID: -1494690649901698760, guid: 16f3c0e9015184fb282770a9a970eab2, type: 3}
   reshuffleCooldown: 0
-  hitboxForwardOffset: 1
-  hitboxRadius: 1.5
+  hitboxForwardOffset: 0.5
+  hitboxRadius: 2.8
   targetLayer:
     serializedVersion: 2
     m_Bits: 64

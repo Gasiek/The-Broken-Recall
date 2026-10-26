@@ -63,7 +63,7 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.8943397
+      - time: 0.7464957
         functionName: ActionFinished
         data: 
         objectReferenceParameter: {instanceID: 0}
