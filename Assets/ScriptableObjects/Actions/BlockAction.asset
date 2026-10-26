@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c557894174fe54a819197a19889f499d, type: 3}
   m_Name: BlockAction
   m_EditorClassIdentifier: Assembly-CSharp::BlockAction
-  id: action.block
   displayName: Block
-  duration: 1
+  animationType: 2
   icon: {fileID: 466824447609058672, guid: bc9f0d0d53d3b4802a73bccf64656fe0, type: 3}
+  reshuffleCooldown: 0

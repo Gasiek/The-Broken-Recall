@@ -12,13 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c24c5382315054a50ad66c0e114476d9, type: 3}
   m_Name: TornadoAction
   m_EditorClassIdentifier: Assembly-CSharp::TornadoAction
-  id: action.tornado
   displayName: Tornado
-  duration: 0.7
+  animationType: 3
   icon: {fileID: -1494690649901698760, guid: 16f3c0e9015184fb282770a9a970eab2, type: 3}
   reshuffleCooldown: 0
-  damage: 10
+  hitboxForwardOffset: 1
   hitboxRadius: 1.5
   targetLayer:
     serializedVersion: 2
     m_Bits: 64
+  dealDamage: 1
+  damage: 10
+  effectsToApply: []

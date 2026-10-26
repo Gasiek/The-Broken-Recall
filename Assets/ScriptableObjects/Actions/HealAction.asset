@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56f68ae96f92447b0a370359880fe988, type: 3}
   m_Name: HealAction
   m_EditorClassIdentifier: Assembly-CSharp::HealAction
-  id: heal
   displayName: Heal
-  duration: 0.5
+  animationType: 6
   icon: {fileID: -397088048600430730, guid: ee522672538e94df580aff45d885d184, type: 3}
   reshuffleCooldown: 1
   healAmount: 25

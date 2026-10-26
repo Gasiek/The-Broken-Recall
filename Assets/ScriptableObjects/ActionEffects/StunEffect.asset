@@ -12,10 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4be0a46c9dc04ffd98eecf11f810338, type: 3}
   m_Name: StunEffect
   m_EditorClassIdentifier: Assembly-CSharp::EffectDefinition
-  id: effect.new
-  displayName: NewStun
+  displayName: Stun
   effectType: 1
-  duration: 5
+  duration: 2
   speedMultiplier: 1
   damageMultiplier: 1
   bonusDamage: 0
+  visuals:
+  - prefab: {fileID: 1809720465487208649, guid: aa5f3ca17ef364c78b76889bd009ee1c, type: 3}
+    attachment: 0
+    positionOffset: {x: 0, y: 2.8, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}

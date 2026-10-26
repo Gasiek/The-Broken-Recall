@@ -12,15 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea64f8d2c49034f0e9d8a0f2ec742615, type: 3}
   m_Name: PushAction
   m_EditorClassIdentifier: Assembly-CSharp::PushAction
-  id: action.push
   displayName: Push
-  duration: 0.5
+  animationType: 8
   icon: {fileID: 6627523530715426189, guid: cbd3823053c754fc09d1e26754990b7f, type: 3}
   reshuffleCooldown: 0
-  damage: 10
-  hitboxOffset: 0.9
+  hitboxForwardOffset: 1
   hitboxRadius: 0.9
-  knockbackDistance: 2
   targetLayer:
     serializedVersion: 2
     m_Bits: 64
+  dealDamage: 1
+  damage: 10
+  effectsToApply: []
+  knockbackDistance: 2

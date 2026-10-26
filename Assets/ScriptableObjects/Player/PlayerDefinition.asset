@@ -16,6 +16,6 @@ MonoBehaviour:
   moveSpeed: 6
   rotationSpeed: 15
   gravity: -20
-  dashDistance: 2
-  dashDuration: 1
+  dashDistance: 6
+  dashDuration: 0.5
   dashCooldown: 0.5

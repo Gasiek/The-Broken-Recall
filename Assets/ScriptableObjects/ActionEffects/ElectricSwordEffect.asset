@@ -12,10 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4be0a46c9dc04ffd98eecf11f810338, type: 3}
   m_Name: ElectricSwordEffect
   m_EditorClassIdentifier: Assembly-CSharp::EffectDefinition
-  id: effect.new
   displayName: Electric sword
   effectType: 2
   duration: 10
-  speedMultiplier: 2
+  speedMultiplier: 1
   damageMultiplier: 1
   bonusDamage: 40
+  visuals:
+  - prefab: {fileID: 765697267218292142, guid: b4dcc6304332d43608df0c85e7f5dd50, type: 3}
+    attachment: 1
+    positionOffset: {x: 0, y: 0, z: 0}
+    rotationOffset: {x: 0, y: 0, z: 0}
+    scale: {x: 1, y: 1, z: 1}

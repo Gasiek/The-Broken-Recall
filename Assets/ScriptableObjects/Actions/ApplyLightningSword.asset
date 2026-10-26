@@ -12,10 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8af445458e8084a1db23402a6fe00a27, type: 3}
   m_Name: ApplyLightningSword
   m_EditorClassIdentifier: Assembly-CSharp::ApplyEffectAction
-  id: 
   displayName: Lightning
-  duration: 0.5
-  icon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
+  animationType: 7
+  icon: {fileID: -7028776058394270243, guid: 8c2fca88b1f4044d681cd1eeb368294d, type: 3}
   reshuffleCooldown: 0
   effectDefinition: {fileID: 11400000, guid: 3172d719f344e4078bb0e836c717669c, type: 2}
-  actionDuration: 0.25
