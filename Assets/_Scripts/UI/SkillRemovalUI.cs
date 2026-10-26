@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PanelRenderer))]
@@ -10,7 +9,7 @@ public sealed class SkillRemovalUI : MonoBehaviour
     private VisualTreeAsset actionListItemTemplate;
 
     private PanelRenderer panelRenderer;
-    private PlayerInput playerInput;
+    private PauseController pauseController;
 
     private VisualElement backdrop;
     private ScrollView scrollView;
@@ -19,9 +18,6 @@ public sealed class SkillRemovalUI : MonoBehaviour
 
     private SkillRemoval currentSkillRemoval;
     private bool isOpen;
-    private bool cameraPausedByThisPanel;
-    private float previousTimeScale = 1f;
-    private string previousActionMap;
 
     private void Awake()
     {
@@ -41,7 +37,7 @@ public sealed class SkillRemovalUI : MonoBehaviour
         if (panelRenderer != null)
             panelRenderer.UnregisterUIReloadCallback(OnUIReload);
 
-        ReleasePause();
+        Close();
 
         if (cancelButton != null)
             cancelButton.clicked -= OnCancelPressed;
@@ -53,12 +49,11 @@ public sealed class SkillRemovalUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Called by SceneContext after the current player
-    /// have been connected.
+    /// Called by scene setup after the player has been bound.
     /// </summary>
-    public void BindRuntimeReferences(PlayerInput currentPlayerInput)
+    public void BindRuntimeReferences(PauseController controller)
     {
-        playerInput = currentPlayerInput;
+        pauseController = controller;
     }
 
     private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
@@ -104,11 +99,11 @@ public sealed class SkillRemovalUI : MonoBehaviour
             return;
         }
 
-        if (playerInput == null)
+        if (pauseController == null)
         {
             Debug.LogWarning(
-                "[SkillRemovalUI] Runtime references have not been bound. "
-                    + "Check SceneContext and SceneTransitionManager setup.",
+                "[SkillRemovalUI] PauseController has not been bound. "
+                    + "Check SceneContext and player scene binding.",
                 this
             );
             return;
@@ -129,17 +124,18 @@ public sealed class SkillRemovalUI : MonoBehaviour
         currentSkillRemoval = skillRemoval;
         PopulateCards(actionCollection.Actions);
 
-        previousTimeScale = Time.timeScale;
-        previousActionMap =
-            playerInput.currentActionMap != null ? playerInput.currentActionMap.name : null;
+        // The central controller owns pause, input-map, and cursor state.
+        if (!pauseController.OpenModal(Close))
+        {
+            currentSkillRemoval = null;
+
+            if (cardContainer != null)
+                cardContainer.Clear();
+
+            return;
+        }
 
         isOpen = true;
-        Time.timeScale = 0f;
-
-        playerInput.SwitchCurrentActionMap("UI");
-        UnityEngine.Cursor.lockState = CursorLockMode.None;
-        UnityEngine.Cursor.visible = true;
-        cameraPausedByThisPanel = true;
 
         backdrop.style.display = DisplayStyle.Flex;
         backdrop.style.visibility = Visibility.Visible;
@@ -212,8 +208,10 @@ public sealed class SkillRemovalUI : MonoBehaviour
         backdrop.style.visibility = Visibility.Hidden;
     }
 
-    private void Close()
+    public void Close()
     {
+        bool wasOpen = isOpen;
+
         Hide();
 
         if (cardContainer != null)
@@ -222,27 +220,7 @@ public sealed class SkillRemovalUI : MonoBehaviour
         currentSkillRemoval = null;
         isOpen = false;
 
-        ReleasePause();
-    }
-
-    private void ReleasePause()
-    {
-        // Don't alter global pause or input state if this panel never opened.
-        if (!isOpen && !cameraPausedByThisPanel && previousActionMap == null)
-            return;
-
-        Time.timeScale = previousTimeScale;
-
-        if (playerInput != null && !string.IsNullOrEmpty(previousActionMap))
-            playerInput.SwitchCurrentActionMap(previousActionMap);
-
-        if (cameraPausedByThisPanel)
-        {
-            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-            UnityEngine.Cursor.visible = false;
-        }
-
-        cameraPausedByThisPanel = false;
-        previousActionMap = null;
+        if (wasOpen && pauseController != null)
+            pauseController.CloseModal();
     }
 }

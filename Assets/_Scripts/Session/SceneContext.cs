@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public sealed class SceneContext : MonoBehaviour
 {
@@ -32,6 +31,9 @@ public sealed class SceneContext : MonoBehaviour
     public PauseController PauseController => pauseController;
     public CardsMenuUI CardsMenuUI => cardsMenuUI;
 
+    public SkillLearnUI SkillLearnUI => skillLearnUI;
+    public SkillRemovalUI SkillRemovalUI => skillRemovalUI;
+
     /// <summary>
     /// Finds the spawn point associated with the supplied destination asset.
     /// </summary>
@@ -50,8 +52,7 @@ public sealed class SceneContext : MonoBehaviour
     }
 
     /// <summary>
-    /// Returns the spawn point named DefaultSpawn, if present.
-    /// Otherwise returns the first valid spawn-point entry.
+    /// Returns DefaultSpawn if present; otherwise returns the first valid entry.
     /// </summary>
     public SceneSpawnPoint GetDefaultSpawnPoint()
     {
@@ -83,8 +84,7 @@ public sealed class SceneContext : MonoBehaviour
     }
 
     /// <summary>
-    /// Validates the required scene references and spawn-point configuration.
-    /// Returns false if a required configuration error is found.
+    /// Validates required scene references and spawn-point configuration.
     /// </summary>
     public bool ValidateConfiguration()
     {
@@ -105,6 +105,7 @@ public sealed class SceneContext : MonoBehaviour
         }
 
         HashSet<SceneDestination> seenDestinations = new HashSet<SceneDestination>();
+
         bool hasValidSpawn = false;
 
         foreach (SceneSpawnPoint point in spawnPoints)
@@ -137,12 +138,12 @@ public sealed class SceneContext : MonoBehaviour
             if (destination == null)
             {
                 Debug.LogWarning(
-                    $"[SceneContext] Spawn point '{point.name}' has no SceneDestination assigned.",
+                    $"[SceneContext] Spawn point '{point.name}' has no "
+                        + "SceneDestination assigned.",
                     point
                 );
 
-                // A destination-less spawn can still be used as the
-                // fallback spawn, so this is a warning, not a failure.
+                // Destination-less points may still be fallback spawn points.
                 continue;
             }
 
@@ -178,33 +179,6 @@ public sealed class SceneContext : MonoBehaviour
         }
 
         return isValid;
-    }
-
-    /// <summary>
-    /// Connects optional scene-specific skill UI to the spawned player.
-    /// </summary>
-    public void BindPlayerUIReferences(Player player)
-    {
-        if (player == null)
-            return;
-
-        PlayerInput input = player.GetComponent<PlayerInput>();
-
-        if (input == null)
-        {
-            Debug.LogWarning(
-                "[SceneContext] The spawned player has no PlayerInput component.",
-                this
-            );
-
-            return;
-        }
-
-        if (skillLearnUI != null)
-            skillLearnUI.BindRuntimeReferences(input);
-
-        if (skillRemovalUI != null)
-            skillRemovalUI.BindRuntimeReferences(input);
     }
 
     private void Awake()

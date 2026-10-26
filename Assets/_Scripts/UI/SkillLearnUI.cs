@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 [RequireComponent(typeof(PanelRenderer))]
@@ -10,7 +9,7 @@ public sealed class SkillLearnUI : MonoBehaviour
     private VisualTreeAsset cardTemplate;
 
     private PanelRenderer panelRenderer;
-    private PlayerInput playerInput;
+    private PauseController pauseController;
 
     private VisualElement backdrop;
     private VisualElement cardContainer;
@@ -18,9 +17,6 @@ public sealed class SkillLearnUI : MonoBehaviour
 
     private TeacherNPC currentTeacher;
     private bool isOpen;
-    private bool cameraPausedByThisPanel;
-    private float previousTimeScale = 1f;
-    private string previousActionMap;
 
     private void Awake()
     {
@@ -40,7 +36,7 @@ public sealed class SkillLearnUI : MonoBehaviour
         if (panelRenderer != null)
             panelRenderer.UnregisterUIReloadCallback(OnUIReload);
 
-        ReleasePause();
+        Close();
 
         if (cancelButton != null)
             cancelButton.clicked -= HandleCancelClicked;
@@ -51,14 +47,11 @@ public sealed class SkillLearnUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Called by SceneContext after the current player
-    /// have been connected.
+    /// Called by the scene's setup code after the player is bound.
     /// </summary>
-    public void BindRuntimeReferences(
-        PlayerInput currentPlayerInput
-    )
+    public void BindRuntimeReferences(PauseController controller)
     {
-        playerInput = currentPlayerInput;
+        pauseController = controller;
     }
 
     private void OnUIReload(PanelRenderer renderer, VisualElement root, int version)
@@ -102,11 +95,11 @@ public sealed class SkillLearnUI : MonoBehaviour
             return;
         }
 
-        if (playerInput == null)
+        if (pauseController == null)
         {
             Debug.LogWarning(
-                "[SkillLearnUI] Runtime references have not been bound. "
-                    + "Check SceneContext and SceneTransitionManager setup.",
+                "[SkillLearnUI] PauseController has not been bound. "
+                    + "Check SceneContext and player scene binding.",
                 this
             );
             return;
@@ -127,18 +120,18 @@ public sealed class SkillLearnUI : MonoBehaviour
         currentTeacher = teacher;
         PopulateCards(choices);
 
-        previousTimeScale = Time.timeScale;
-        previousActionMap =
-            playerInput.currentActionMap != null ? playerInput.currentActionMap.name : null;
+        // The central controller owns pause state, input maps, and cursor state.
+        if (!pauseController.OpenModal(Close))
+        {
+            currentTeacher = null;
+
+            if (cardContainer != null)
+                cardContainer.Clear();
+
+            return;
+        }
 
         isOpen = true;
-        Time.timeScale = 0f;
-
-        playerInput.SwitchCurrentActionMap("UI");
-        UnityEngine.Cursor.lockState = CursorLockMode.None;
-        UnityEngine.Cursor.visible = true;
-        cameraPausedByThisPanel = true;
-
         backdrop.style.display = DisplayStyle.Flex;
         backdrop.style.visibility = Visibility.Visible;
 
@@ -205,8 +198,10 @@ public sealed class SkillLearnUI : MonoBehaviour
         backdrop.style.visibility = Visibility.Hidden;
     }
 
-    private void Close()
+    public void Close()
     {
+        bool wasOpen = isOpen;
+
         Hide();
 
         if (cardContainer != null)
@@ -215,28 +210,7 @@ public sealed class SkillLearnUI : MonoBehaviour
         currentTeacher = null;
         isOpen = false;
 
-        ReleasePause();
-    }
-
-    private void ReleasePause()
-    {
-        if (!isOpen && !cameraPausedByThisPanel && previousActionMap == null)
-            return;
-        if (isOpen)
-            isOpen = false;
-
-        Time.timeScale = previousTimeScale;
-
-        if (playerInput != null && !string.IsNullOrEmpty(previousActionMap))
-            playerInput.SwitchCurrentActionMap(previousActionMap);
-
-        if (cameraPausedByThisPanel)
-        {
-            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-            UnityEngine.Cursor.visible = false;
-        }
-
-        cameraPausedByThisPanel = false;
-        previousActionMap = null;
+        if (wasOpen && pauseController != null)
+            pauseController.CloseModal();
     }
 }

@@ -1,17 +1,17 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public sealed class PlayerSceneBinder
 {
-    private InputAction boundLookAction;
-    private CameraFollow boundCamera;
-
-    private InputAction boundPauseAction;
+    private InputManager inputManager;
     private PauseController boundPauseController;
-    private PlayerInput boundPlayerInput;
 
     private CardsMenuUI boundCardsMenuUI;
     private ActionCollection boundActionCollection;
+
+    private SkillLearnUI boundSkillLearnUI;
+    private SkillRemovalUI boundSkillRemovalUI;
+
+    private CameraFollow boundCamera;
 
     public bool TryBind(Player player, SceneContext context)
     {
@@ -24,6 +24,8 @@ public sealed class PlayerSceneBinder
         CameraFollow cameraFollow = context.CameraFollow;
         PauseController pauseController = context.PauseController;
         CardsMenuUI cardsMenuUI = context.CardsMenuUI;
+        SkillLearnUI skillLearnUI = context.SkillLearnUI;
+        SkillRemovalUI skillRemovalUI = context.SkillRemovalUI;
 
         if (cameraFollow == null)
         {
@@ -43,36 +45,6 @@ public sealed class PlayerSceneBinder
             return false;
         }
 
-        PlayerInput playerInput = player.GetComponent<PlayerInput>();
-
-        if (playerInput == null)
-        {
-            Debug.LogError("[PlayerSceneBinder] Player prefab has no PlayerInput.", player);
-            return false;
-        }
-
-        if (playerInput.actions == null)
-        {
-            Debug.LogError("[PlayerSceneBinder] PlayerInput has no Input Actions asset.", player);
-            return false;
-        }
-
-        InputAction lookAction = playerInput.actions.FindAction("Look", false);
-
-        InputAction pauseAction = playerInput.actions.FindAction("Player/Pause", false);
-
-        if (lookAction == null)
-        {
-            Debug.LogError("[PlayerSceneBinder] No 'Look' action was found.", player);
-            return false;
-        }
-
-        if (pauseAction == null)
-        {
-            Debug.LogError("[PlayerSceneBinder] No 'Player/Pause' action was found.", player);
-            return false;
-        }
-
         ActionCollection actionCollection = player.GetComponent<ActionCollection>();
 
         if (actionCollection == null)
@@ -81,66 +53,90 @@ public sealed class PlayerSceneBinder
             return false;
         }
 
-        // Clear previous subscriptions before binding the new player.
-        Unbind();
+        InputManager manager = InputManager.Instance;
 
-        cameraFollow.SetTarget(player.transform);
-
-        PlayerMovement movement = player.GetComponent<PlayerMovement>();
-
-        if (movement != null)
+        if (manager == null)
         {
-            movement.SetMovementReference(cameraFollow.transform);
+            Debug.LogError(
+                "[PlayerSceneBinder] No InputManager exists. "
+                    + "Ensure the persistent InputManager is created before spawning.",
+                player
+            );
+            return false;
         }
 
-        boundLookAction = lookAction;
+        // Clear bindings left over from a previous player or scene.
+        Unbind();
+
+        inputManager = manager;
         boundCamera = cameraFollow;
-        boundLookAction.performed += boundCamera.OnLook;
-
-        boundPlayerInput = playerInput;
         boundPauseController = pauseController;
-        boundPauseAction = pauseAction;
-
-        boundPauseController.BindPlayer(boundPlayerInput);
-        boundPauseAction.performed += boundPauseController.OnPause;
-
         boundCardsMenuUI = cardsMenuUI;
         boundActionCollection = actionCollection;
-        boundCardsMenuUI.BindActionCollection(boundActionCollection);
+        boundSkillLearnUI = skillLearnUI;
+        boundSkillRemovalUI = skillRemovalUI;
 
-        return true;
+        try
+        {
+            if (!inputManager.BindPlayer(player, cameraFollow, pauseController))
+            {
+                Unbind();
+                return false;
+            }
+            boundPauseController.BindPlayer();
+
+            boundCardsMenuUI.BindActionCollection(boundActionCollection);
+
+            if (boundSkillLearnUI != null)
+            {
+                boundSkillLearnUI.BindRuntimeReferences(boundPauseController);
+            }
+
+            if (boundSkillRemovalUI != null)
+            {
+                boundSkillRemovalUI.BindRuntimeReferences(boundPauseController);
+            }
+
+            return true;
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogException(exception);
+
+            Unbind();
+            return false;
+        }
     }
 
     public void Unbind()
     {
-        if (boundLookAction != null && boundCamera != null)
-        {
-            boundLookAction.performed -= boundCamera.OnLook;
-        }
+        // Clear UI references before disconnecting the pause controller.
+        if (boundSkillLearnUI != null)
+            boundSkillLearnUI.BindRuntimeReferences(null);
 
-        if (boundPauseAction != null && boundPauseController != null)
-        {
-            boundPauseAction.performed -= boundPauseController.OnPause;
-        }
-
-        if (boundPauseController != null && boundPlayerInput != null)
-        {
-            boundPauseController.UnbindPlayer(boundPlayerInput);
-        }
+        if (boundSkillRemovalUI != null)
+            boundSkillRemovalUI.BindRuntimeReferences(null);
 
         if (boundCardsMenuUI != null && boundActionCollection != null)
         {
             boundCardsMenuUI.UnbindActionCollection(boundActionCollection);
         }
 
-        boundLookAction = null;
+        if (boundPauseController != null)
+            boundPauseController.UnbindPlayer();
+
+        if (inputManager != null)
+            inputManager.UnbindPlayer();
+
+        if (boundCamera != null)
+            boundCamera.SetTarget(null);
+
+        inputManager = null;
         boundCamera = null;
-
-        boundPauseAction = null;
         boundPauseController = null;
-        boundPlayerInput = null;
-
         boundCardsMenuUI = null;
         boundActionCollection = null;
+        boundSkillLearnUI = null;
+        boundSkillRemovalUI = null;
     }
 }

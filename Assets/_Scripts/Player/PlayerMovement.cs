@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(Player))]
@@ -85,9 +84,9 @@ public class PlayerMovement : MonoBehaviour
         UpdateNormalMovement();
     }
 
-    public void OnMove(InputAction.CallbackContext context)
+    public void SetMoveInput(Vector2 input)
     {
-        moveInput = context.ReadValue<Vector2>();
+        moveInput = input;
     }
 
     private void UpdateNormalMovement()

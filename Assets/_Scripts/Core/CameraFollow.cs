@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -26,14 +25,6 @@ public class CameraFollow : MonoBehaviour
 
     public Transform Target => target;
 
-    private void Start()
-    {
-        if (target != null)
-            InitializeOrbit();
-
-        LockCursor();
-    }
-
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
@@ -48,6 +39,16 @@ public class CameraFollow : MonoBehaviour
         currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
     }
 
+    public void Look(Vector2 lookInput)
+    {
+        if (target == null)
+            return;
+
+        currentYaw += lookInput.x * mouseSensitivity;
+        currentPitch -= lookInput.y * mouseSensitivity;
+        currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
+    }
+
     private void LateUpdate()
     {
         if (target == null)
@@ -56,52 +57,15 @@ public class CameraFollow : MonoBehaviour
         UpdateCameraPosition();
     }
 
-    public void OnLook(InputAction.CallbackContext context)
-    {
-        if (!context.performed)
-            return;
-
-        Vector2 lookInput = context.ReadValue<Vector2>();
-
-        currentYaw += lookInput.x * mouseSensitivity;
-        currentPitch -= lookInput.y * mouseSensitivity;
-        currentPitch = Mathf.Clamp(currentPitch, minPitch, maxPitch);
-    }
-
-    public void OnPause()
-    {
-        UnlockCursor();
-    }
-
-    public void OnResume()
-    {
-        LockCursor();
-    }
-
     private void UpdateCameraPosition()
     {
         Vector3 targetFocusPoint = target.position + Vector3.up * height;
+
         Quaternion orbitRotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
+
         Vector3 orbitOffset = orbitRotation * (Vector3.back * distance);
 
         transform.position = targetFocusPoint + orbitOffset;
         transform.LookAt(targetFocusPoint);
-    }
-
-    private void LockCursor()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
-
-    private void UnlockCursor()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    private void OnDestroy()
-    {
-        UnlockCursor();
     }
 }

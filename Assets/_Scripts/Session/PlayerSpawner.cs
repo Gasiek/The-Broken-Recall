@@ -48,7 +48,8 @@ public sealed class PlayerSpawner
         if (spawnPoint == null)
         {
             Debug.LogError(
-                $"[PlayerSpawner] No spawn point was provided for scene '{context.gameObject.scene.name}'."
+                $"[PlayerSpawner] No spawn point was provided for scene "
+                    + $"'{context.gameObject.scene.name}'."
             );
             return null;
         }
@@ -92,9 +93,6 @@ public sealed class PlayerSpawner
 
             bindingSucceeded = true;
 
-            // Connect scene-specific UI references.
-            context.BindPlayerUIReferences(player);
-
             // Connect the scene's interaction prompt.
             InteractionController interactionController =
                 player.GetComponent<InteractionController>();
@@ -106,9 +104,7 @@ public sealed class PlayerSpawner
 
             // Restore saved state after the player is initialized.
             if (savedData != null)
-            {
                 player.RestoreState(savedData);
-            }
 
             return player;
         }
@@ -124,13 +120,9 @@ public sealed class PlayerSpawner
     private void DestroyFailedPlayer(GameObject playerObject, bool bindingSucceeded)
     {
         if (bindingSucceeded && sceneBinder != null)
-        {
             sceneBinder.Unbind();
-        }
 
         if (playerObject != null)
-        {
             UnityEngine.Object.Destroy(playerObject);
-        }
     }
 }

@@ -527,6 +527,7 @@ GameObject:
   m_Component:
   - component: {fileID: 310778534}
   - component: {fileID: 310778533}
+  - component: {fileID: 310778535}
   - component: {fileID: 310778532}
   m_Layer: 0
   m_Name: Session
@@ -576,6 +577,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &310778535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 310778531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fd2cfbdcf97d44b28a9b19be8e6f3ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputManager
 --- !u!114 &330585548 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4720734714410908775, guid: d813cb3337fb940ee8544f91acc1b3d8, type: 3}
@@ -11825,7 +11838,6 @@ GameObject:
   - component: {fileID: 1835821089}
   - component: {fileID: 1835821088}
   - component: {fileID: 1835821090}
-  - component: {fileID: 1835821091}
   m_Layer: 5
   m_Name: ScreenFader
   m_TagString: Untagged
@@ -11918,18 +11930,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a36621a6bfc44c3489b6a932a232e6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScreenFader
---- !u!225 &1835821091
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1835821087}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!1 &1844957267
 GameObject:
   m_ObjectHideFlags: 0

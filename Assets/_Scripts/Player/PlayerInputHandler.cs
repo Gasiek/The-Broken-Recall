@@ -7,8 +7,6 @@ using UnityEngine.InputSystem;
 public class PlayerInputHandler : MonoBehaviour
 {
     private ActionController actionController;
-
-    [SerializeField]
     private InteractionController interactionController;
     private DashController dashController;
 
@@ -22,9 +20,7 @@ public class PlayerInputHandler : MonoBehaviour
     public void OnActionSlot1(InputAction.CallbackContext context)
     {
         if (!context.performed)
-        {
             return;
-        }
 
         actionController.ExecuteAction(0);
     }
@@ -32,9 +28,7 @@ public class PlayerInputHandler : MonoBehaviour
     public void OnActionSlot2(InputAction.CallbackContext context)
     {
         if (!context.performed)
-        {
             return;
-        }
 
         actionController.ExecuteAction(1);
     }
@@ -42,29 +36,23 @@ public class PlayerInputHandler : MonoBehaviour
     public void OnActionSlot3(InputAction.CallbackContext context)
     {
         if (!context.performed)
-        {
             return;
-        }
-        Debug.Log("Currently slot 3 is disabled.");
-        // actionController.ExecuteAction(2);
+
+        Debug.Log("Currently slot 3 is disabled.", this);
     }
 
     public void OnInteract(InputAction.CallbackContext context)
     {
         if (!context.performed)
-        {
             return;
-        }
 
         interactionController.Interact();
     }
 
-    public void OnRoll(InputAction.CallbackContext context)
+    public void OnDash(InputAction.CallbackContext context)
     {
         if (!context.performed)
-        {
             return;
-        }
 
         dashController.Dash();
     }
