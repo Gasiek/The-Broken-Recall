@@ -6,6 +6,9 @@ using UnityEngine;
 [RequireComponent(typeof(DashController))]
 public class PlayerAnimation : MonoBehaviour
 {
+    private static readonly string upperBodyLayerName = "UpperBody";
+    private static readonly string upperBodyEmptyStateName = "Router";
+
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int BlockingHash = Animator.StringToHash("Block");
     private static readonly int TornadoHash = Animator.StringToHash("Tornado");
@@ -171,6 +174,11 @@ public class PlayerAnimation : MonoBehaviour
         if (animator == null || health.IsDead)
             return;
 
+        CancelUpperBodyAnimation();
+
+        ResetAnimations();
+        ResetCombo();
+
         animator.SetTrigger(RollHash);
     }
 
@@ -197,7 +205,26 @@ public class PlayerAnimation : MonoBehaviour
     public void ResetCombo()
     {
         currentComboStep = 0;
-        animator.SetInteger(ComboStepHash, 0);
+        canContinueCombo = false;
+        lastBasicHitFinishedTime = -999f;
+
+        if (animator != null)
+            animator.SetInteger(ComboStepHash, 0);
+    }
+
+    private void CancelUpperBodyAnimation()
+    {
+        if (animator == null)
+            return;
+
+        int layerIndex = animator.GetLayerIndex(upperBodyLayerName);
+
+        if (layerIndex < 0)
+            return;
+
+        int stateHash = Animator.StringToHash(upperBodyLayerName + "." + upperBodyEmptyStateName);
+
+        animator.Play(stateHash, layerIndex, 0f);
     }
 
     public void ResetAnimations()

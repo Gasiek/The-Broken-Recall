@@ -1,5 +1,14 @@
 using UnityEngine;
 
+public enum PlayerState
+{
+    Normal,
+    Acting,
+    Dashing,
+    Sleeping,
+    Dead,
+}
+
 public class PlayerStateMachine : MonoBehaviour
 {
     public PlayerState CurrentState { get; private set; } = PlayerState.Normal;

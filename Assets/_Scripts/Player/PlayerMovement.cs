@@ -142,6 +142,15 @@ public class PlayerMovement : MonoBehaviour
         return characterController.Move(displacement);
     }
 
+    public void ApplyGravityOnly()
+    {
+        if (playerDefinition == null || !characterController.enabled)
+            return;
+
+        Vector3 verticalMovement = CalculateGravityDisplacement();
+        characterController.Move(verticalMovement);
+    }
+
     public bool BeginChargeMovement(Vector3 direction, float distance, float duration)
     {
         if (
