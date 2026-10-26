@@ -57,13 +57,13 @@ GameObject:
   - component: {fileID: 4219161143839224977}
   - component: {fileID: 7591839579522978484}
   - component: {fileID: 49074496496937478}
-  - component: {fileID: 3448127732034560218}
-  - component: {fileID: 3606303093360516819}
   - component: {fileID: 1057827206836787202}
   - component: {fileID: -7989781241684946519}
   - component: {fileID: 1194145322}
   - component: {fileID: 1194145323}
   - component: {fileID: -6842629579866276745}
+  - component: {fileID: 5191297732323442478}
+  - component: {fileID: -8586526511504185198}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -337,11 +337,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActionCollection
   actions:
-  - definition: {fileID: 11400000, guid: 59c8d1e2a34b4c7d8e9f0123456789ab, type: 2}
-  - definition: {fileID: 11400000, guid: c1a2b3d4e5f60718293a4b5c6d7e8f99, type: 2}
-  - definition: {fileID: 11400000, guid: 9c1056df884be40fbbadc9d5fcd6aaf3, type: 2}
+  - definition: {fileID: 11400000, guid: 863094e501711436eba8b1bb0c439767, type: 2}
+  - definition: {fileID: 11400000, guid: 25206c2f097234800853ddf22e7aca27, type: 2}
+  - definition: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
+  - definition: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
   - definition: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
-  - definition: {fileID: 11400000, guid: e7f8a9b0c1d234567890abcdef123456, type: 2}
+  - definition: {fileID: 11400000, guid: 59c8d1e2a34b4c7d8e9f0123456789ab, type: 2}
+  - definition: {fileID: 11400000, guid: c9dc09d27964143b08538e7eefc72c5e, type: 2}
+  - definition: {fileID: 11400000, guid: c9dc09d27964143b08538e7eefc72c5e, type: 2}
+  - definition: {fileID: 11400000, guid: c9dc09d27964143b08538e7eefc72c5e, type: 2}
+  - definition: {fileID: 11400000, guid: c9dc09d27964143b08538e7eefc72c5e, type: 2}
 --- !u!114 &514987662265385586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,7 +438,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3586d2a9735c84202976f65c70fa3423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  movementReference: {fileID: 0}
 --- !u!114 &4219161143839224977
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -574,34 +578,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &3448127732034560218
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8871950886247871719}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3be2f3a4b5c678901234abcdef901234, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectManager
---- !u!114 &3606303093360516819
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8871950886247871719}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08b9c0d1e2f345678901abcdef678901, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponBuffManager
-  vfxRotationOffset: {x: 90, y: 0, z: 0}
-  vfxPositionOffset: {x: 0, y: 0.15, z: 0}
-  vfxScale: {x: 1, y: 0.5, z: 1}
-  weapon: {fileID: 427455572}
 --- !u!114 &1057827206836787202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -675,6 +651,32 @@ MonoBehaviour:
   radialRadius: 3.5
   radialOffset: {x: 0, y: 0, z: 0}
   onlyWhenSelected: 0
+--- !u!114 &5191297732323442478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8871950886247871719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5cf331ca3357414bb66a29e9e50c248, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterEffectManager
+--- !u!114 &-8586526511504185198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8871950886247871719}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 482171c14343b42198fbf1242c21649f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EffectVisualController
+  characterAttachment: {fileID: 6200415590071959090}
+  weaponAttachment: {fileID: 1101540988600281725}
 --- !u!1001 &48636446
 PrefabInstance:
   m_ObjectHideFlags: 0

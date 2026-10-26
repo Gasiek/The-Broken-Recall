@@ -15,14 +15,14 @@ public enum EnemyState
 [RequireComponent(typeof(EnemyController))]
 [RequireComponent(typeof(EnemyAggro))]
 [RequireComponent(typeof(EnemyPatrol))]
-[RequireComponent(typeof(StatusEffectManager))]
+[RequireComponent(typeof(CharacterEffectManager))]
 [RequireComponent(typeof(EnemyAnimation))]
 public class EnemyStateMachine : MonoBehaviour
 {
     private EnemyController enemy;
     private EnemyAggro aggro;
     private EnemyPatrol patrol;
-    private StatusEffectManager statusEffects;
+    private CharacterEffectManager characterEffects;
     private EnemyAnimation enemyAnimation;
 
     private readonly List<IEnemyAttack> attacks = new();
@@ -51,7 +51,7 @@ public class EnemyStateMachine : MonoBehaviour
         enemy = GetComponent<EnemyController>();
         aggro = GetComponent<EnemyAggro>();
         patrol = GetComponent<EnemyPatrol>();
-        statusEffects = GetComponent<StatusEffectManager>();
+        characterEffects = GetComponent<CharacterEffectManager>();
         enemyAnimation = GetComponent<EnemyAnimation>();
 
         InitializeAttacks();
@@ -64,8 +64,8 @@ public class EnemyStateMachine : MonoBehaviour
         if (enemy != null)
             enemy.Died += HandleDeath;
 
-        if (statusEffects != null)
-            statusEffects.StunStateChanged += HandleStunStateChanged;
+        if (characterEffects != null)
+            characterEffects.StunStateChanged += HandleStunStateChanged;
     }
 
     private void OnDisable()
@@ -73,13 +73,13 @@ public class EnemyStateMachine : MonoBehaviour
         if (enemy != null)
             enemy.Died -= HandleDeath;
 
-        if (statusEffects != null)
-            statusEffects.StunStateChanged -= HandleStunStateChanged;
+        if (characterEffects != null)
+            characterEffects.StunStateChanged -= HandleStunStateChanged;
     }
 
     private void Start()
     {
-        if (statusEffects.IsStunned)
+        if (characterEffects != null && characterEffects.IsStunned)
         {
             ChangeState(EnemyState.Stunned);
             return;

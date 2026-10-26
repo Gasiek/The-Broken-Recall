@@ -7,7 +7,6 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Reference")]
-    [SerializeField]
     private Transform movementReference;
 
     private PlayerStateMachine stateMachine;
@@ -16,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector2 moveInput;
     private float verticalVelocity;
-    private float currentSpeedMultiplier = 1f;
+    private float effectSpeedMultiplier = 1f;
     private bool isMovementOverridden;
 
     private bool isChargeMoving;
@@ -26,8 +25,12 @@ public class PlayerMovement : MonoBehaviour
     private float chargeRemainingTime;
 
     public float BaseMoveSpeed => playerDefinition != null ? playerDefinition.MoveSpeed : 0f;
+    public float CurrentMoveSpeed => BaseMoveSpeed * effectSpeedMultiplier;
 
-    public float CurrentMoveSpeed => BaseMoveSpeed * currentSpeedMultiplier;
+    public void SetEffectSpeedMultiplier(float multiplier)
+    {
+        effectSpeedMultiplier = Mathf.Max(0f, multiplier);
+    }
 
     public bool IsMoving { get; private set; }
 
@@ -234,11 +237,6 @@ public class PlayerMovement : MonoBehaviour
         );
     }
 
-    public void SetSpeedMultiplier(float multiplier)
-    {
-        currentSpeedMultiplier = Mathf.Max(0f, multiplier);
-    }
-
     public void SetMovementReference(Transform reference)
     {
         movementReference = reference;
@@ -247,11 +245,6 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.LogError($"{name}: Failed to assign the camera movement reference.", this);
         }
-    }
-
-    public void ResetSpeedMultiplier()
-    {
-        currentSpeedMultiplier = 1f;
     }
 
     private void OnDisable()

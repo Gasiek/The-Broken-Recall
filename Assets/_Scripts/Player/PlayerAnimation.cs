@@ -81,44 +81,53 @@ public class PlayerAnimation : MonoBehaviour
         if (animator == null || health.IsDead)
             return;
 
-        switch (actionController.CurrentAction)
+        ActionDefinition action = actionController.CurrentAction;
+
+        if (action == null)
         {
-            case BasicHitAction:
+            ResetAnimations();
+            return;
+        }
+
+        switch (action.AnimationType)
+        {
+            case ActionAnimationType.BasicHitCombo:
                 AdvanceCombo();
                 break;
 
-            case BlockAction:
+            case ActionAnimationType.Block:
                 animator.SetTrigger(BlockingHash);
                 break;
 
-            case TornadoAction:
+            case ActionAnimationType.Tornado:
                 animator.SetTrigger(TornadoHash);
                 break;
 
-            case JumpSlamAction:
+            case ActionAnimationType.JumpSlam:
                 animator.SetTrigger(JumpSlamHash);
                 break;
 
-            case SwordChargeAction:
+            case ActionAnimationType.SwordCharge:
                 animator.SetTrigger(SwordChargeHash);
                 break;
 
-            case HealAction:
+            case ActionAnimationType.Heal:
                 animator.SetTrigger(HealHash);
                 break;
 
-            case LightningChargeAction:
+            case ActionAnimationType.LightningSword:
                 animator.SetTrigger(ElementalChargeHash);
                 break;
 
-            case PushAction:
+            case ActionAnimationType.Kick:
                 animator.SetTrigger(KickHash);
                 break;
 
-            case StunAction:
+            case ActionAnimationType.Stun:
                 animator.SetTrigger(StunHash);
                 break;
 
+            case ActionAnimationType.None:
             default:
                 ResetAnimations();
                 break;

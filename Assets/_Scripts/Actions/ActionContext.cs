@@ -6,20 +6,20 @@ public class ActionContext
     public PlayerMovement Movement { get; }
     public Health Health { get; }
     public ActionDefinition Action { get; }
-    public WeaponBuffManager WeaponBuffs { get; }
+    public ActionController ActionController { get; }
 
     public ActionContext(
         Player player,
         PlayerMovement movement,
         Health health,
         ActionDefinition action,
-        WeaponBuffManager weaponBuffs
+        ActionController actionController
     )
     {
         Player = player;
         Movement = movement;
         Health = health;
         Action = action;
-        WeaponBuffs = weaponBuffs;
+        ActionController = actionController;
     }
 }

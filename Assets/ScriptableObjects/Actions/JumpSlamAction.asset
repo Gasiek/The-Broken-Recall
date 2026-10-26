@@ -16,8 +16,10 @@ MonoBehaviour:
   displayName: Jump Slam
   duration: 0.85
   icon: {fileID: -7803645356194029076, guid: 1fb5a38c20f09416dab236da9835b355, type: 3}
+  reshuffleCooldown: 0
   damage: 25
-  slamRadius: 3.5
+  hitboxOffset: 1.3
+  hitboxRadius: 3
   knockbackDistance: 3.5
   targetLayer:
     serializedVersion: 2

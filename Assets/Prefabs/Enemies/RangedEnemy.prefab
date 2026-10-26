@@ -167,6 +167,10 @@ PrefabInstance:
       propertyPath: projectileSpawnPoint
       value: 
       objectReference: {fileID: 8623367406735168229}
+    - target: {fileID: 7700734552001405465, guid: 50ff51653caed4975940961b3eb7c12b, type: 3}
+      propertyPath: characterAttachment
+      value: 
+      objectReference: {fileID: 4658119569649739775}
     m_RemovedComponents:
     - {fileID: 7857942963183297402, guid: 50ff51653caed4975940961b3eb7c12b, type: 3}
     m_RemovedGameObjects:

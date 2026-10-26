@@ -18,7 +18,8 @@ MonoBehaviour:
   icon: {fileID: 158632775678061307, guid: 87bdb790482e54700be3c112041841da, type: 3}
   reshuffleCooldown: 0
   damage: 25
-  hitRadius: 1.1
+  hitboxOffset: 0.7
+  hitboxRadius: 1
   targetLayer:
     serializedVersion: 2
     m_Bits: 64

@@ -1,29 +1,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-[CreateAssetMenu(fileName = "JumpSlamAction", menuName = "RPG/Actions/Jump Slam")]
-public class JumpSlamAction : ActionDefinition
+[CreateAssetMenu(fileName = "JumpSlamAction", menuName = "RPG/Actions/Attacks/Jump Slam")]
+public class JumpSlamAction : AttackActionDefinition
 {
-    [Header("Combat")]
+    [Header("Slam")]
     [SerializeField]
-    private int damage = 25;
-
-    [Header("Hitbox")]
-    [SerializeField]
-    private float hitboxOffset = 0.7f;
-
-    [SerializeField]
-    private float hitboxRadius = 3.5f;
+    private float slamImpactForwardOffset = 0.7f;
 
     [SerializeField]
     private float knockbackDistance = 3.5f;
 
-    [SerializeField]
-    private LayerMask targetLayer;
-
     [Header("Jump Physics")]
+    [SerializeField, Min(0.01f)]
+    private float jumpDuration = 0.72f;
+
     [SerializeField]
     private float jumpHeight = 2.5f;
 
@@ -60,7 +52,12 @@ public class JumpSlamAction : ActionDefinition
             );
         }
 
-        GetRoutineRunner(context).Run(JumpRoutine(context));
+        ActionRoutineRunner runner = context.Player.GetComponent<ActionRoutineRunner>();
+
+        if (runner != null)
+            runner.Run(JumpRoutine(context));
+        else
+            Cleanup(context);
     }
 
     private IEnumerator JumpRoutine(ActionContext context)
@@ -74,18 +71,25 @@ public class JumpSlamAction : ActionDefinition
         Vector3 forwardDir = Vector3.ProjectOnPlane(playerTransform.forward, Vector3.up);
 
         if (forwardDir.sqrMagnitude < 0.001f)
+        {
+            Cleanup(context);
             yield break;
+        }
 
         forwardDir.Normalize();
 
-        float apexRatio = 0.45f;
-        float landRatio = 0.72f;
-        float totalJumpTime = Duration * landRatio;
-        float apexTime = totalJumpTime * (apexRatio / landRatio);
+        float totalJumpTime = jumpDuration;
+        float apexTime = totalJumpTime * 0.625f;
+
+        if (totalJumpTime <= 0f)
+        {
+            Cleanup(context);
+            yield break;
+        }
 
         float elapsed = 0f;
-        float prevY = 0f;
-        float prevForward = 0f;
+        float previousY = 0f;
+        float previousForward = 0f;
 
         while (elapsed < totalJumpTime)
         {
@@ -95,29 +99,30 @@ public class JumpSlamAction : ActionDefinition
                 yield break;
 
             elapsed += Time.deltaTime;
-            float currentT = Mathf.Min(elapsed, totalJumpTime);
+            float currentTime = Mathf.Min(elapsed, totalJumpTime);
 
             float currentY;
 
-            if (currentT <= apexTime)
+            if (currentTime <= apexTime)
             {
-                float p = currentT / apexTime;
+                float p = currentTime / apexTime;
                 currentY = jumpHeight * (1f - (1f - p) * (1f - p));
             }
             else
             {
-                float p = (currentT - apexTime) / (totalJumpTime - apexTime);
+                float p = (currentTime - apexTime) / (totalJumpTime - apexTime);
 
                 currentY = jumpHeight * (1f - p * p);
             }
 
-            float currentForward = forwardDistance * (currentT / totalJumpTime);
+            float currentForward = forwardDistance * (currentTime / totalJumpTime);
 
             Vector3 displacement =
-                forwardDir * (currentForward - prevForward) + Vector3.up * (currentY - prevY);
+                forwardDir * (currentForward - previousForward)
+                + Vector3.up * (currentY - previousY);
 
-            prevY = currentY;
-            prevForward = currentForward;
+            previousY = currentY;
+            previousForward = currentForward;
 
             CollisionFlags flags = movement.MoveActionDisplacement(displacement);
 
@@ -126,16 +131,22 @@ public class JumpSlamAction : ActionDefinition
                 yield break;
             }
 
-            if (currentT > apexTime && movement.IsGrounded)
+            if (currentTime > apexTime && movement.IsGrounded)
                 yield break;
         }
     }
 
-    private void OnSlamImpact(ActionContext context)
+    public override void OnAnimationImpact(ActionContext context)
     {
-        Vector3 forward = Vector3.ProjectOnPlane(context.Player.transform.forward, Vector3.up).normalized;
+        if (context?.Player == null)
+            return;
 
-        Vector3 impactPosition = context.Player.transform.position + forward * hitboxOffset;
+        Vector3 forward = Vector3
+            .ProjectOnPlane(context.Player.transform.forward, Vector3.up)
+            .normalized;
+
+        Vector3 impactPosition =
+            context.Player.transform.position + forward * slamImpactForwardOffset;
 
         if (slamSound != null && AudioManager.Instance != null)
         {
@@ -147,63 +158,40 @@ public class JumpSlamAction : ActionDefinition
             VfxSpawner.SpawnOneShot(slamVfxPrefab, impactPosition, Quaternion.identity);
         }
 
+        // Shared damage and effect application.
+        PerformAreaHit(context, impactPosition, HitboxRadius);
+
+        // Slam-specific knockback.
         Collider[] hits = ActionHitDetector.DetectRadial(
             impactPosition,
-            hitboxRadius,
-            targetLayer,
+            HitboxRadius,
+            TargetLayer,
             QueryTriggerInteraction.Ignore
         );
 
-        HashSet<IDamageable> damagedEntities = new HashSet<IDamageable>();
-
-        HashSet<IPushable> pushedEntities = new HashSet<IPushable>();
+        HashSet<IPushable> pushedTargets = new HashSet<IPushable>();
 
         foreach (Collider hit in hits)
         {
             if (hit == null)
                 continue;
 
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-
-            if (damageable != null && damagedEntities.Add(damageable))
-            {
-                CombatResolver.ResolveAttackHit(
-                    context.Player.gameObject,
-                    context.WeaponBuffs,
-                    damageable,
-                    damage,
-                    hit.ClosestPoint(impactPosition)
-                );
-            }
-
             IPushable pushable = hit.GetComponent<IPushable>();
 
-            if (pushable != null && pushedEntities.Add(pushable))
-            {
-                Vector3 pushDir = hit.transform.position - impactPosition;
+            if (pushable == null || !pushedTargets.Add(pushable))
+                continue;
 
-                pushDir.y = 0f;
+            Vector3 pushDirection = hit.transform.position - impactPosition;
 
-                if (pushDir.sqrMagnitude < 0.001f)
-                {
-                    pushDir = forward;
-                }
-                else
-                {
-                    pushDir.Normalize();
-                }
+            pushDirection.y = 0f;
 
-                pushable.Push(pushDir, knockbackDistance);
-            }
+            if (pushDirection.sqrMagnitude < 0.001f)
+                pushDirection = forward;
+            else
+                pushDirection.Normalize();
+
+            pushable.Push(pushDirection, knockbackDistance);
         }
-    }
-
-    public override void OnAnimationImpact(ActionContext context)
-    {
-        if (context?.Player == null)
-            return;
-
-        OnSlamImpact(context);
     }
 
     public override void OnAnimationFinished(ActionContext context)
@@ -214,7 +202,12 @@ public class JumpSlamAction : ActionDefinition
     public override void OnCancelled(ActionContext context)
     {
         if (context?.Player != null)
-            GetRoutineRunner(context).StopAllActionRoutines();
+        {
+            ActionRoutineRunner runner = context.Player.GetComponent<ActionRoutineRunner>();
+
+            if (runner != null)
+                runner.StopAllActionRoutines();
+        }
 
         Cleanup(context);
     }
@@ -225,11 +218,14 @@ public class JumpSlamAction : ActionDefinition
             context.Movement.SetMovementOverridden(false);
     }
 
-    public override string GetDescription() =>
-        $"Leaps into the air and slams down, dealing {damage} damage within a {hitboxRadius:0.#}m radius and knocking enemies back {knockbackDistance:0.#}m.";
-
-    private ActionRoutineRunner GetRoutineRunner(ActionContext context)
+    public override string GetDescription()
     {
-        return context.Player.GetComponent<ActionRoutineRunner>();
+        string damageDescription = DealDamage
+            ? $"dealing {Damage} damage"
+            : "applying configured effects";
+
+        return $"Leaps and slams down, {damageDescription} within a "
+            + $"{HitboxRadius:0.#}m radius and knocking enemies back "
+            + $"{knockbackDistance:0.#}m.";
     }
 }

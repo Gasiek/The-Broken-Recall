@@ -5,7 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerStateMachine))]
 [RequireComponent(typeof(ActionCollection))]
 [RequireComponent(typeof(ActionMemory))]
-[RequireComponent(typeof(WeaponBuffManager))]
 [RequireComponent(typeof(CharacterController))]
 public sealed class Player : MonoBehaviour
 {
@@ -17,7 +16,7 @@ public sealed class Player : MonoBehaviour
     public PlayerStateMachine StateMachine { get; private set; }
     public ActionCollection ActionCollection { get; private set; }
     public ActionMemory ActionMemory { get; private set; }
-    public WeaponBuffManager WeaponBuffs { get; private set; }
+    public CharacterEffectManager CharacterEffects { get; private set; }
     public CharacterController CharacterController { get; private set; }
     public Vector3 AimPosition =>
         CharacterController.transform.TransformPoint(CharacterController.center);
@@ -30,9 +29,8 @@ public sealed class Player : MonoBehaviour
         StateMachine = GetComponent<PlayerStateMachine>();
         ActionCollection = GetComponent<ActionCollection>();
         ActionMemory = GetComponent<ActionMemory>();
-        WeaponBuffs = GetComponent<WeaponBuffManager>();
         CharacterController = GetComponent<CharacterController>();
-
+        CharacterEffects = GetComponent<CharacterEffectManager>();
         if (definition == null)
         {
             Debug.LogError("[Player] No PlayerDefinition assigned.", this);
@@ -64,10 +62,8 @@ public sealed class Player : MonoBehaviour
         };
 
         data.Actions.AddRange(ActionCollection.Actions);
-
-        if (WeaponBuffs != null)
-            data.WeaponBuff = WeaponBuffs.CaptureState();
-
+        if (CharacterEffects != null)
+            data.CharacterEffects = CharacterEffects.CaptureState();
         return data;
     }
 
@@ -103,8 +99,7 @@ public sealed class Player : MonoBehaviour
 
         if (data.ActionMemory != null)
             ActionMemory?.RestoreState(data.ActionMemory);
-
-        if (data.WeaponBuff != null)
-            WeaponBuffs?.RestoreState(data.WeaponBuff);
+        if (data.CharacterEffects != null)
+            CharacterEffects?.RestoreState(data.CharacterEffects);
     }
 }

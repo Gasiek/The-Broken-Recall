@@ -11,7 +11,7 @@ public sealed class PlayerSaveData
 
     public ActionMemorySaveData ActionMemory = new();
 
-    public WeaponBuffSaveData WeaponBuff = new();
+    public CharacterEffectSaveData CharacterEffects = new();
 }
 
 [Serializable]
@@ -31,21 +31,4 @@ public sealed class ActionCooldownSaveData
 {
     public ActionCardInstance Card;
     public int RemainingDrawCycles;
-}
-
-[Serializable]
-public sealed class WeaponBuffSaveData
-{
-    public WeaponBuffDefinition Definition;
-
-    public bool HasCustomBuff;
-    public int CustomBonusDamage;
-
-    public LightningVfx CustomSwordLightningVfx;
-    public ParticleSystem CustomOnHitVfx;
-
-    public AudioClip CustomOnHitSound;
-    public float CustomVolume = 1f;
-
-    public float RemainingDuration;
 }

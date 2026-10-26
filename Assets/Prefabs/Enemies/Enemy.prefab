@@ -88,8 +88,8 @@ GameObject:
   - component: {fileID: -196632083092022130}
   - component: {fileID: 798186275855912458}
   - component: {fileID: 1989367088531153839}
-  - component: {fileID: 413059546935791531}
   - component: {fileID: 487032903218042578}
+  - component: {fileID: 4792057677336081137}
   m_Layer: 6
   m_Name: Enemy
   m_TagString: Untagged
@@ -375,18 +375,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HitVisuals
   hitParticlePrefab: {fileID: 3999699402599864446, guid: dec6211596081439fb7d9889c59f582b, type: 3}
   spawnOffset: {x: 0, y: 1, z: 0}
---- !u!114 &413059546935791531
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3603842340316313691}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3be2f3a4b5c678901234abcdef901234, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectManager
 --- !u!114 &487032903218042578
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -401,6 +389,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimation
   animator: {fileID: 0}
   speedSmoothTime: 0.15
+--- !u!114 &4792057677336081137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3603842340316313691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5cf331ca3357414bb66a29e9e50c248, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterEffectManager
 --- !u!1 &8429344976343167520
 GameObject:
   m_ObjectHideFlags: 0

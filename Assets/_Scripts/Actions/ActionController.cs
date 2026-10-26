@@ -4,7 +4,6 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerStateMachine))]
 [RequireComponent(typeof(PlayerMovement))]
 [RequireComponent(typeof(ActionMemory))]
-[RequireComponent(typeof(WeaponBuffManager))]
 [RequireComponent(typeof(Health))]
 public class ActionController : MonoBehaviour
 {
@@ -13,7 +12,6 @@ public class ActionController : MonoBehaviour
     private Player player;
     private ActionMemory actionMemory;
     private Health health;
-    private WeaponBuffManager weaponBuffs;
 
     private bool isExecutingAction;
     private bool actionFinished;
@@ -33,7 +31,6 @@ public class ActionController : MonoBehaviour
         player = GetComponent<Player>();
         actionMemory = GetComponent<ActionMemory>();
         health = GetComponent<Health>();
-        weaponBuffs = GetComponent<WeaponBuffManager>();
     }
 
     public void ExecuteAction(int slot)
@@ -51,13 +48,7 @@ public class ActionController : MonoBehaviour
 
         ActionDefinition action = card.Definition;
 
-        ActionContext context = new ActionContext(
-            player,
-            playerMovement,
-            health,
-            action,
-            weaponBuffs
-        );
+        ActionContext context = new ActionContext(player, playerMovement, health, action, this);
 
         // Establish the active execution before invoking callbacks.
         currentAction = action;
@@ -91,9 +82,7 @@ public class ActionController : MonoBehaviour
         FinishCurrentAction(null);
     }
 
-    // Used by actions that finish through a timer rather than
-    // an animation event.
-    public void CompleteTimedAction(ActionContext expectedContext)
+    public void CompleteAction(ActionContext expectedContext)
     {
         if (expectedContext == null)
             return;

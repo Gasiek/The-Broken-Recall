@@ -1,57 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "TornadoAction", menuName = "RPG/Actions/Tornado")]
-public class TornadoAction : ActionDefinition
+[CreateAssetMenu(fileName = "TornadoAction", menuName = "RPG/Actions/Attacks/Tornado")]
+public class TornadoAction : AttackActionDefinition
 {
-    [SerializeField]
-    private int damage = 10;
-
-    [Header("Hitbox")]
-    [SerializeField]
-    private float hitboxRadius = 1.1f;
-
-    [SerializeField]
-    private LayerMask targetLayer;
-
     public override void OnAnimationImpact(ActionContext context)
     {
-        if (context == null || context.Player == null)
+        if (context?.Player == null)
             return;
 
-        DealDamage(context);
+        PerformAreaHit(context, context.Player.AimPosition, HitboxRadius);
     }
 
-    private void DealDamage(ActionContext context)
+    public override string GetDescription()
     {
-        if (context == null || context.Player == null)
-            return;
+        if (!DealDamage)
+            return $"Applies configured effects within a " + $"{HitboxRadius:0.#}m radius.";
 
-        Collider[] hits = ActionHitDetector.DetectRadial(context.Player.AimPosition, hitboxRadius, targetLayer);
-
-        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
-
-        foreach (Collider hit in hits)
-        {
-            if (hit == null)
-                continue;
-
-            IDamageable damageable = hit.GetComponent<IDamageable>();
-
-            if (damageable == null || !damagedTargets.Add(damageable))
-                continue;
-
-            CombatResolver.ResolveAttackHit(
-                context.Player.gameObject,
-                context.WeaponBuffs,
-                damageable,
-                damage,
-                hit.ClosestPoint(context.Player.AimPosition)
-            );
-        }
+        return $"Spins rapidly, dealing {Damage} damage within a "
+            + $"{HitboxRadius:0.#}m radius and applying configured effects.";
     }
-
-    public override string GetDescription() =>
-        $"Spins rapidly, dealing {damage} damage to all enemies within a {hitboxRadius:0.#}m radius.";
 }

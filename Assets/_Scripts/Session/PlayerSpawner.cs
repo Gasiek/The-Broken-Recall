@@ -110,12 +110,6 @@ public sealed class PlayerSpawner
                 player.RestoreState(savedData);
             }
 
-            // Resume timers for the newly spawned player.
-            if (player.WeaponBuffs != null)
-            {
-                player.WeaponBuffs.ResumeBuffTimer();
-            }
-
             return player;
         }
         catch (Exception exception)

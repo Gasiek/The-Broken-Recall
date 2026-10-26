@@ -1,16 +1,27 @@
-using System.Collections;
 using UnityEngine;
+
+public enum ActionAnimationType
+{
+    None,
+    BasicHitCombo,
+    Block,
+    Tornado,
+    JumpSlam,
+    SwordCharge,
+    Heal,
+    LightningSword,
+    Kick,
+    Stun,
+}
 
 public abstract class ActionDefinition : ScriptableObject
 {
     [SerializeField]
-    private string id;
-
-    [SerializeField]
     private string displayName;
 
+    [Header("Animation")]
     [SerializeField]
-    private float duration = 0.5f;
+    private ActionAnimationType animationType = ActionAnimationType.None;
 
     [SerializeField]
     private Sprite icon;
@@ -19,9 +30,8 @@ public abstract class ActionDefinition : ScriptableObject
     [SerializeField, Min(0)]
     private int reshuffleCooldown = 0;
 
-    public string Id => id;
     public string DisplayName => displayName;
-    public float Duration => duration;
+    public ActionAnimationType AnimationType => animationType;
     public Sprite Icon => icon;
     public int ReshuffleCooldown => reshuffleCooldown;
 
@@ -38,4 +48,5 @@ public abstract class ActionDefinition : ScriptableObject
     public virtual void OnCancelled(ActionContext context) { }
 
     public virtual string GetDescription() => string.Empty;
+
 }

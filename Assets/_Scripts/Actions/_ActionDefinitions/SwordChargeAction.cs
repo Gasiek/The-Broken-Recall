@@ -2,29 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SwordChargeAction", menuName = "RPG/Actions/Sword Charge")]
-public class SwordChargeAction : ActionDefinition
+[CreateAssetMenu(fileName = "SwordChargeAction", menuName = "RPG/Actions/Attacks/Sword Charge")]
+public class SwordChargeAction : AttackActionDefinition
 {
-    [Header("Combat")]
-    [SerializeField]
-    private int damage = 25;
-
-    [Header("Charge Hitbox")]
-    [SerializeField]
-    private float hitboxOffset = 0.8f;
-
-    [SerializeField]
-    private float hitboxRadius = 1.1f;
-
-    [SerializeField]
-    private LayerMask targetLayer;
-
     [Header("Charge Motion & Timing")]
     [SerializeField]
-    private float chargeMoveDuration = 1.0f;
+    private float chargeMoveDuration = 1f;
 
     [SerializeField]
-    private float chargeDistance = 4.0f;
+    private float chargeDistance = 4f;
 
     [Header("Audio & Effects")]
     [SerializeField]
@@ -37,9 +23,12 @@ public class SwordChargeAction : ActionDefinition
     [SerializeField]
     private ParticleSystem dashTrailVfxPrefab;
 
-    public int Damage => damage;
+    public new int Damage => base.Damage;
     public float ChargeDistance => chargeDistance;
     public float ChargeMoveDuration => chargeMoveDuration;
+
+    // Charge completion follows its existing animation/action lifecycle.
+    public override void OnStarted(ActionContext context) { }
 
     public override void OnAnimationImpact(ActionContext context)
     {
@@ -64,23 +53,38 @@ public class SwordChargeAction : ActionDefinition
 
         PlayChargeEffects(context, direction);
 
-        GetRoutineRunner(context).Run(ChargeRoutine(context, direction));
+        ActionRoutineRunner runner = context.Player.GetComponent<ActionRoutineRunner>();
+
+        if (runner != null)
+            runner.Run(ChargeRoutine(context));
+        else
+            context.Movement.CancelChargeMovement();
     }
 
-    private IEnumerator ChargeRoutine(ActionContext context, Vector3 direction)
+    private IEnumerator ChargeRoutine(ActionContext context)
     {
-        // Keep this set for the entire charge so targets cannot be hit
-        // repeatedly on successive frames or through multiple colliders.
-        HashSet<IDamageable> damagedTargets = new HashSet<IDamageable>();
-
         PlayerMovement movement = context.Movement;
+
+        // Shared across all frames of this charge.
+        HashSet<GameObject> alreadyHit = new HashSet<GameObject>();
 
         while (movement != null && movement.IsChargeMoving)
         {
             if (context.Health == null || context.Health.IsDead)
                 break;
 
-            PerformChargeDamage(context, direction, damagedTargets);
+            if (context.Player == null)
+                yield break;
+
+            Collider[] hits = ActionHitDetector.DetectForward(
+                context.Player,
+                HitboxForwardOffset,
+                HitboxRadius,
+                TargetLayer,
+                QueryTriggerInteraction.Ignore
+            );
+
+            ProcessHits(context, hits, alreadyHit);
 
             yield return null;
         }
@@ -89,30 +93,15 @@ public class SwordChargeAction : ActionDefinition
             movement.CancelChargeMovement();
     }
 
-    public override void OnAnimationFinished(ActionContext context)
-    {
-        CleanupCharge(context);
-    }
-
-    public override void OnCancelled(ActionContext context)
-    {
-        if (context?.Player != null)
-            GetRoutineRunner(context).StopAllActionRoutines();
-
-        CleanupCharge(context);
-    }
-
-    private void CleanupCharge(ActionContext context)
-    {
-        if (context?.Movement != null)
-            context.Movement.CancelChargeMovement();
-    }
-
     private void PlayChargeEffects(ActionContext context, Vector3 direction)
     {
         if (dashSound != null && AudioManager.Instance != null)
         {
-            AudioManager.Instance.PlayWorldSFX(dashSound, context.Player.transform.position, soundVolume);
+            AudioManager.Instance.PlayWorldSFX(
+                dashSound,
+                context.Player.transform.position,
+                soundVolume
+            );
         }
 
         if (dashTrailVfxPrefab != null)
@@ -125,47 +114,33 @@ public class SwordChargeAction : ActionDefinition
         }
     }
 
-    private void PerformChargeDamage(
-        ActionContext context,
-        Vector3 chargeDirection,
-        HashSet<IDamageable> damagedTargets
-    )
+    public override void OnAnimationFinished(ActionContext context)
     {
-        if (context.Player == null)
-            return;
-
-        Collider[] hits = ActionHitDetector.DetectForward(
-            context.Player,
-            hitboxOffset,
-            hitboxRadius,
-            targetLayer,
-            QueryTriggerInteraction.Ignore
-        );
-
-        foreach (Collider hitCol in hits)
-        {
-            if (hitCol == null)
-                continue;
-
-            IDamageable damageable = hitCol.GetComponent<IDamageable>();
-
-            if (damageable == null || !damagedTargets.Add(damageable))
-                continue;
-
-            Vector3 hitPoint = hitCol.ClosestPoint(context.Player.AimPosition);
-
-            CombatResolver.ResolveAttackHit(
-                context.Player.gameObject,
-                context.WeaponBuffs,
-                damageable,
-                damage,
-                hitPoint
-            );
-        }
+        CleanupCharge(context);
     }
 
-    private ActionRoutineRunner GetRoutineRunner(ActionContext context)
+    public override void OnCancelled(ActionContext context)
     {
-        return context.Player.GetComponent<ActionRoutineRunner>();
+        if (context?.Player != null)
+        {
+            ActionRoutineRunner runner = context.Player.GetComponent<ActionRoutineRunner>();
+
+            if (runner != null)
+                runner.StopAllActionRoutines();
+        }
+
+        CleanupCharge(context);
+    }
+
+    private void CleanupCharge(ActionContext context)
+    {
+        if (context?.Movement != null)
+            context.Movement.CancelChargeMovement();
+    }
+
+    public override string GetDescription()
+    {
+        return $"Charges forward {chargeDistance:0.#}m, dealing "
+            + $"{Damage} damage and applying configured effects to enemies hit.";
     }
 }

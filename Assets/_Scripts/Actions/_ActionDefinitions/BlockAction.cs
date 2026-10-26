@@ -19,5 +19,5 @@ public class BlockAction : ActionDefinition
     }
 
     public override string GetDescription() =>
-        $"Raises a guard, granting complete invincibility against damage for {Duration:0.#}s.";
+        $"Raises a guard, granting complete invincibility against damage.";
 }

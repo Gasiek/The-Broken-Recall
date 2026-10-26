@@ -183,9 +183,6 @@ public sealed class SceneTransitionManager : MonoBehaviour
             if (controller != null)
                 controller.CancelCurrentAction();
 
-            if (oldPlayer.WeaponBuffs != null)
-                oldPlayer.WeaponBuffs.PauseBuffTimer();
-
             session.SetPlayerData(oldPlayer.CaptureState());
             session.UnregisterPlayer(oldPlayer);
 
