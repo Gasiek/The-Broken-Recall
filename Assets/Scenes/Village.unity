@@ -548,7 +548,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53a6a887498894e929e00099c7920880, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneTransitionManager
-  playerPrefab: {fileID: 8871950886247871719, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
+  playerPrefab: {fileID: 6183044417738206466, guid: 762677de879d8408d816404b9a6e9573, type: 3}
   initialDestination: {fileID: 11400000, guid: 09c7db0869a9d410ab0055e505263b7a, type: 2}
 --- !u!114 &310778533
 MonoBehaviour:

@@ -24,3 +24,4 @@ MonoBehaviour:
   dealDamage: 1
   damage: 10
   effectsToApply: []
+  impactVFX: {fileID: 11400000, guid: 1308e3199e643490c8b7d391400521ad, type: 2}

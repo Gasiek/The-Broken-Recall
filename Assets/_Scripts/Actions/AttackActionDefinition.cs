@@ -27,11 +27,15 @@ public abstract class AttackActionDefinition : ActionDefinition
     [SerializeField]
     private List<EffectDefinition> effectsToApply = new List<EffectDefinition>();
 
+    [Header("Attack VFX")]
+    [SerializeField]
+    private AttackVFXDefinition impactVFX;
     protected int Damage => damage;
     protected float HitboxRadius => hitboxRadius;
     protected float HitboxForwardOffset => hitboxForwardOffset;
     protected LayerMask TargetLayer => targetLayer;
     protected bool DealDamage => dealDamage;
+    public AttackVFXDefinition ImpactVFX => impactVFX;
 
     public override void OnAnimationImpact(ActionContext context)
     {

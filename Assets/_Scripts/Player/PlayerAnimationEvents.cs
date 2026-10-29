@@ -8,6 +8,9 @@ public class PlayerAnimationEvents : MonoBehaviour
     [SerializeField]
     private PlayerAnimation playerAnimation;
 
+    [SerializeField]
+    private ParticleSystem swordSlashVFX;
+
     private void Awake()
     {
         if (actionController == null)
@@ -50,5 +53,26 @@ public class PlayerAnimationEvents : MonoBehaviour
     {
         // Forward to your player death/respawn system
         // if it needs to know when the death animation ends.
+    }
+
+    public void PlayAttackVFX()
+    {
+        if (actionController == null)
+            return;
+
+        if (actionController.CurrentAction is not AttackActionDefinition attack)
+            return;
+
+        AttackVFXDefinition vfx = attack.ImpactVFX;
+
+        if (vfx == null || vfx.Prefab == null)
+            return;
+
+        Transform player = transform;
+
+        Quaternion localRotation = Quaternion.Euler(vfx.LocalRotation);
+        Vector3 scale = Vector3.Scale(vfx.Prefab.transform.localScale, vfx.Scale);
+
+        VfxSpawner.SpawnAttached(vfx.Prefab, player, vfx.LocalPosition, localRotation, scale);
     }
 }
