@@ -76,7 +76,14 @@ public class PlayerAnimation : MonoBehaviour
             canContinueCombo = false;
         }
 
-        float targetSpeed = playerMovement.IsMoving ? 1f : 0f;
+        float targetSpeed = 0f;
+
+        if (playerMovement.IsMoving)
+        {
+            targetSpeed =
+                playerMovement.CurrentMoveSpeed > playerMovement.BaseMoveSpeed ? 1f : 0.5f;
+        }
+
         animator.SetFloat(SpeedHash, targetSpeed, dampTime, Time.deltaTime);
     }
 
