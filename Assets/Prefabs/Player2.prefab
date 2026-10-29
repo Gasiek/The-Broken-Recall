@@ -22,48 +22,48 @@ PrefabInstance:
       objectReference: {fileID: 2237608069113284699}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.size
-      value: 10
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[0].definition
       value: 
-      objectReference: {fileID: 11400000, guid: 863094e501711436eba8b1bb0c439767, type: 2}
+      objectReference: {fileID: 11400000, guid: 4ded916a11731426389cfff2e0d5992e, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[1].definition
       value: 
-      objectReference: {fileID: 11400000, guid: 25206c2f097234800853ddf22e7aca27, type: 2}
+      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[2].definition
       value: 
-      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
+      objectReference: {fileID: 11400000, guid: 59c8d1e2a34b4c7d8e9f0123456789ab, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[3].definition
       value: 
-      objectReference: {fileID: 11400000, guid: c9dc09d27964143b08538e7eefc72c5e, type: 2}
+      objectReference: {fileID: 11400000, guid: 4ded916a11731426389cfff2e0d5992e, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[4].definition
       value: 
-      objectReference: {fileID: 11400000, guid: 7a0001411cf974d54a22812e5c4b9b67, type: 2}
+      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[5].definition
       value: 
-      objectReference: {fileID: 11400000, guid: 8f3fbc3bbd5c9413b846cf1a1f34a4c8, type: 2}
+      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[6].definition
       value: 
-      objectReference: {fileID: 11400000, guid: 59c8d1e2a34b4c7d8e9f0123456789ab, type: 2}
+      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[7].definition
       value: 
-      objectReference: {fileID: 11400000, guid: 2653b44309e5e430ba12bb6e79ac85f7, type: 2}
+      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[8].definition
       value: 
-      objectReference: {fileID: 11400000, guid: c1a2b3d4e5f60718293a4b5c6d7e8f99, type: 2}
+      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
     - target: {fileID: 2037674134365129869, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: actions.Array.data[9].definition
       value: 
-      objectReference: {fileID: 11400000, guid: 4ded916a11731426389cfff2e0d5992e, type: 2}
+      objectReference: {fileID: 11400000, guid: f5cd674e38b0d4c578ce1a15dff44b60, type: 2}
     - target: {fileID: 3541123842928489354, guid: 0971fbd435d9c4f50a89f23a1cf30cae, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -255,6 +255,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
   actionController: {fileID: 7572525775440598614}
   playerAnimation: {fileID: 3373502268536418255}
+  swordSlashVFX: {fileID: 0}
 --- !u!4 &5280230244514982755 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8709921643908178263, guid: c0e345164de57b84bab5bc577b181040, type: 3}

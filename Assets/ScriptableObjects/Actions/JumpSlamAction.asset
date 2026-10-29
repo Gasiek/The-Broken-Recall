@@ -24,6 +24,7 @@ MonoBehaviour:
   dealDamage: 1
   damage: 25
   effectsToApply: []
+  impactVFX: {fileID: 11400000, guid: a103628f070b14b759afa6dda14ba07f, type: 2}
   slamImpactForwardOffset: 1.15
   knockbackDistance: 2.5
   jumpDuration: 0.5
