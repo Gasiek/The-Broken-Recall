@@ -26,6 +26,13 @@ public abstract class ActionDefinition : ScriptableObject
     [SerializeField]
     private Sprite icon;
 
+    [Header("Action Audio")]
+    [SerializeField]
+    private AudioClip[] actionSounds;
+
+    [SerializeField, Range(0f, 1f)]
+    private float actionVolume = 1f;
+
     [Header("Reshuffle Cooldown")]
     [SerializeField, Min(0)]
     private int reshuffleCooldown = 0;
@@ -34,6 +41,23 @@ public abstract class ActionDefinition : ScriptableObject
     public ActionAnimationType AnimationType => animationType;
     public Sprite Icon => icon;
     public int ReshuffleCooldown => reshuffleCooldown;
+    public AudioClip GetRandomActionSound()
+    {
+        if (actionSounds == null || actionSounds.Length == 0)
+            return null;
+
+        // Avoid selecting null entries.
+        for (int i = 0; i < 10; i++)
+        {
+            AudioClip clip = actionSounds[Random.Range(0, actionSounds.Length)];
+            if (clip != null)
+                return clip;
+        }
+
+        return null;
+    }
+
+    public float ActionVolume => actionVolume;
 
     // Called when the action begins.
     public virtual void OnStarted(ActionContext context) { }

@@ -6,7 +6,7 @@ public class CharacterAudio : MonoBehaviour
 {
     [Header("Damage")]
     [SerializeField]
-    private AudioClip hitSound;
+    private AudioClip[] hitSounds;
 
     [SerializeField]
     [Range(0f, 1f)]
@@ -59,10 +59,13 @@ public class CharacterAudio : MonoBehaviour
 
     private void OnDamageReceived(int amount)
     {
-        if (hitSound == null)
+        if (hitSounds == null || hitSounds.Length == 0)
             return;
 
-        audioSource.PlayOneShot(hitSound, hitVolume);
+        AudioClip clip = GetRandomClip(hitSounds);
+
+        if (clip != null)
+            audioSource.PlayOneShot(clip, hitVolume);
     }
 
     private void OnDamageBlocked()
@@ -79,5 +82,23 @@ public class CharacterAudio : MonoBehaviour
             return;
 
         audioSource.PlayOneShot(healSound, healVolume);
+    }
+
+    private AudioClip GetRandomClip(AudioClip[] clips)
+    {
+        if (clips == null || clips.Length == 0)
+            return null;
+
+        int startIndex = Random.Range(0, clips.Length);
+
+        for (int i = 0; i < clips.Length; i++)
+        {
+            AudioClip clip = clips[(startIndex + i) % clips.Length];
+
+            if (clip != null)
+                return clip;
+        }
+
+        return null;
     }
 }

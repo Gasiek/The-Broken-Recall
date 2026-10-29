@@ -75,4 +75,22 @@ public class PlayerAnimationEvents : MonoBehaviour
 
         VfxSpawner.SpawnAttached(vfx.Prefab, player, vfx.LocalPosition, localRotation, scale);
     }
+
+    public void PlayActionSound()
+    {
+        if (actionController == null || AudioManager.Instance == null)
+            return;
+
+        ActionDefinition action = actionController.CurrentAction;
+
+        if (action == null)
+            return;
+
+        AudioClip clip = action.GetRandomActionSound();
+
+        if (clip != null)
+        {
+            AudioManager.Instance.PlayGlobalSFX(clip, action.ActionVolume);
+        }
+    }
 }

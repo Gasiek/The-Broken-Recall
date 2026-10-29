@@ -8,6 +8,12 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovement))]
 public class DashController : MonoBehaviour
 {
+    [Header("Dash Audio")]
+    [SerializeField]
+    private AudioClip[] dashSounds;
+
+    [SerializeField, Range(0f, 1f)]
+    private float dashVolume = 1f;
     private PlayerStateMachine stateMachine;
     private PlayerDefinition playerDefinition;
     private CharacterController characterController;
@@ -79,6 +85,8 @@ public class DashController : MonoBehaviour
 
         stateMachine.StartDashing();
 
+        PlayDashSound();
+
         DashStarted?.Invoke();
     }
 
@@ -114,5 +122,28 @@ public class DashController : MonoBehaviour
     private void EndDash()
     {
         stateMachine.FinishDashing();
+    }
+
+    private void PlayDashSound()
+    {
+        if (dashSounds == null || dashSounds.Length == 0)
+            return;
+
+        int startIndex = UnityEngine.Random.Range(0, dashSounds.Length);
+
+        for (int i = 0; i < dashSounds.Length; i++)
+        {
+            AudioClip clip = dashSounds[(startIndex + i) % dashSounds.Length];
+
+            if (clip == null)
+                continue;
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlayGlobalSFX(clip, dashVolume);
+            }
+
+            return;
+        }
     }
 }
