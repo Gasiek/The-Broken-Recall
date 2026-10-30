@@ -15,6 +15,12 @@ MonoBehaviour:
   displayName: Tornado
   animationType: 3
   icon: {fileID: -1494690649901698760, guid: 16f3c0e9015184fb282770a9a970eab2, type: 3}
+  actionSounds:
+  - {fileID: 8300000, guid: 7c6a0264f10f14850955edb6eca4a4cb, type: 3}
+  - {fileID: 8300000, guid: 254890d9634594446b2b1d90db1760e8, type: 3}
+  - {fileID: 8300000, guid: 6043373f438a9436585022bbd953dc2f, type: 3}
+  - {fileID: 8300000, guid: b78deae75676b480d987754877f430b4, type: 3}
+  actionVolume: 1
   reshuffleCooldown: 0
   hitboxForwardOffset: 0.5
   hitboxRadius: 2.8
